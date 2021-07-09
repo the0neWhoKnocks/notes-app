@@ -1,0 +1,12 @@
+# Folders
+.git
+certs.*
+e2e/cypress/screenshots
+data
+dist
+node_modules
+
+# Files
+*.log
+*.patch
+.DS_STORE
