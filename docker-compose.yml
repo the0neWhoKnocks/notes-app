@@ -1,0 +1,45 @@
+version: "2" # using 2 because 3 doesn't support extending
+
+services:
+  notes:
+    build:
+      context: ./
+      dockerfile: .docker/Dockerfile
+    container_name: notes
+    environment:
+      DATA_PATH: /home/node/app/data
+      NODE_EXTRA_CA_CERTS: /home/node/app/server/certs/localhost.crt
+      NODE_ENV: production
+      TZ: America/Los_Angeles
+    image: theonewhoknocks/notes
+    ports:
+      # Map Local port to the Container's exposed port
+      - "3000:3000"
+    volumes:
+      - "${PWD}/certs.localhost:/home/node/app/server/certs"
+      - "${PWD}/data:/home/node/app/data"
+      # Uncomment to map Local assets
+      # - "${PWD}/dist/public:/home/node/app/public"
+      # - "${PWD}/dist/server:/home/node/app/server"
+      # - "${PWD}/dist/utils:/home/node/app/utils"
+      # - "${PWD}/dist/constants.js:/home/node/app/constants.js"
+  
+  e2e:
+    build:
+      context: ./e2e/
+      dockerfile: Dockerfile
+    # command: 'cypress run --browser chrome'
+    container_name: e2e-notes
+    depends_on:
+      - notes
+    environment:
+      CYPRESS_baseUrl: http://host.docker.internal:3000
+      # ELECTRON_ENABLE_LOGGING: 1 # view console logs from Browser (headless)
+      # DEBUG: cypress:server:browsers:electron # view Electron internal logging
+    ipc: host # https://github.com/cypress-io/cypress/issues/350#issuecomment-267704772
+    ports:
+      - "3001:3000"
+    working_dir: /e2e
+    volumes:
+      - "${PWD}/e2e:/e2e"
+      - "${PWD}/data:/app/data"
