@@ -17,3 +17,5 @@ export const currentNoteGroupNotes = derived(
     return notes;
   }
 );
+
+export const userData = writable();

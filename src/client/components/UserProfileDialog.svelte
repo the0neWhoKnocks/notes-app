@@ -4,6 +4,7 @@
     ROUTE__API__USER_GET_PROFILE,
     ROUTE__API__USER_SET_PROFILE,
   } from '../../constants';
+  import { userData } from '../stores';
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   import LabeledInput from './LabeledInput.svelte';
@@ -11,7 +12,6 @@
   export let onClose = undefined;
   export let onError = undefined;
   export let onSuccess = undefined;
-  export let userInfo = undefined;
   let oldPassword = '';
   let oldUsername = '';
   let password = '';
@@ -31,7 +31,7 @@
   }
   
   function getUserProfile() {
-    return postData(ROUTE__API__USER_GET_PROFILE, userInfo)
+    return postData(ROUTE__API__USER_GET_PROFILE, $userData)
       .catch(({ message }) => {
         if (onError) onError();
         alert(message);
