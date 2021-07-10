@@ -9,6 +9,11 @@ module.exports = async function setData(req, res) {
     body: { data, password, username },
   } = req;
   
+  if (!data) return res.error(400, 'Missing `data`');
+  else if (!username && !password) return res.error(400, 'Missing `username` and `password`');
+  else if (!username) return res.error(400, 'Missing `username`');
+  else if (!password) return res.error(400, 'Missing `password`');
+  
   const { valueHex: encryptedUsername } = await encrypt(appConfig, username);
   const filePath = getUserDataPath(encryptedUsername);
   const { combined: encryptedData } = (await encrypt(appConfig, data, password));
@@ -20,7 +25,7 @@ module.exports = async function setData(req, res) {
       return res.error(500, msg);
     }
     
-    log.info(`Set data:\n${encryptedData}`);
+    log.info('Data set');
     res.json({ message: 'Data set' });
   });
 }

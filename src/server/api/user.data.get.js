@@ -18,8 +18,8 @@ module.exports = async function getData(req, res) {
       ? await decrypt(appConfig, userData, password)
       : userData;
     
-    log.info(`Got data: \n"${decryptedData}"`);
-    res.json({ data: decryptedData });
+    log.info('Got data');
+    res.json(JSON.parse(decryptedData));
   }
   catch (err) {
     const msg = `Error getting data\n${err.stack}`;
