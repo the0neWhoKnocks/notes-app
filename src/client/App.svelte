@@ -11,8 +11,11 @@
     ICON__USER,
   } from './components/Icon.svelte';
   import LoginDialog from './components/LoginDialog.svelte';
+  import NoteBlurb from './components/NoteBlurb.svelte';
+  import NoteGroups from './components/NoteGroups.svelte';
   // import UserDataDialog from './components/UserDataDialog.svelte';
   import UserProfileDialog from './components/UserProfileDialog.svelte';
+  import { currentNoteGroupNotes } from './stores.js';
   import {
     getStorageType,
     setStorage,
@@ -132,7 +135,7 @@
         <div class="user-menu">
           <button on:click={toggleUserNav}>
             <Icon type={ICON__USER} />
-            {username}
+            <div class="username">{username}</div>
             {#if userNavOpen}
               <Icon type={ICON__ANGLE_UP} />
             {:else}
@@ -145,6 +148,18 @@
           </nav>
         </div>
       </nav>
+      <section class="user-content">
+        <NoteGroups />
+        <section class="grouped-notes">
+          {#if $currentNoteGroupNotes.length}
+            {#each $currentNoteGroupNotes as note}
+              <NoteBlurb content={note.content} title={note.title}  />
+            {/each}
+          {:else}
+            No notes for group
+          {/if}
+        </section>
+      </section>
     {/if}
     
     {#if !userIsLoggedIn}
@@ -173,10 +188,15 @@
 </div>
 
 <style>
+  :root {
+    --bg-color--app: #333;
+    --fg-color--app: #eee;
+  }
+
   .app {
     width: 100%;
     height: 100%;
-    background: #333;
+    background: var(--bg-color--app);
     display: flex;
     flex-direction: column;
   }
@@ -185,12 +205,11 @@
     width: 100%;
     font-size: 1.25em;
     font-weight: bold;
-    padding: 0.25em;
   }
   
   .top-nav {
-    color: #eee;
-    padding-bottom: 0.25em;
+    color: var(--fg-color--app);
+    padding: 0.25em 0.5em;
     border-bottom: solid 1px;
     display: flex;
   }
@@ -207,20 +226,28 @@
   }
   .user-menu > button {
     height: 100%;
-    border-radius: 0.5em;
+    color: currentColor;
+    border: none;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
   :global(.user-menu > button svg) {
-    color: #000;
     font-size: 1.1em;
   }
   .user-menu nav {
-    padding: 0.25em;
+    --nav-padding: 0.25em;
+    
+    min-width: 100%;
+    padding: var(--nav-padding);
+    padding-top: 0;
+    border: solid 1px;
+    border-top: none;
     margin: 0;
+    background: var(--bg-color--app);
     position: absolute;
-    top: 100%;
+    top: calc(100% + var(--nav-padding));
     right: 0;
     opacity: 0;
     transform: translateY(-20%);
@@ -234,6 +261,24 @@
   }
   .user-menu nav button {
     width: 100%;
+    color: currentColor;
     white-space: nowrap;
+    background: transparent;
+  }
+  .user-menu .username {
+    padding: 0 0.5em;
+  }
+  
+  .user-content {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+  }
+  
+  .grouped-notes {
+    width: 100%;
+    height: 100%;
+    color: var(--fg-color--app);
+    padding: 1em;
   }
 </style>
