@@ -1,0 +1,80 @@
+<script>
+  import { currentGroupPath } from '../stores';
+  import NoteBlurb from './NoteBlurb.svelte';
+
+  export let path = 'root';
+  export let groupName = '';
+  export let groups = undefined;
+  export let notes = undefined;
+  
+  const isRoot = path === 'root';
+  
+  function handleNameClick() {
+    currentGroupPath.update(() => path);
+  }
+</script>
+
+<section class="note-group" class:is--root={isRoot}>
+  <header class="note-group__header">
+    <div
+      class="note-group__name"
+      on:click={handleNameClick}
+    >{groupName}</div>
+    <nav class="note-group__nav">
+      <button
+        title="Create Group"
+        data-path={path}
+        data-type="createGroupBtn"
+      >+ Group</button>
+      <button
+        title="Create Note"
+        data-path={path}
+        data-type="createNoteBtn"
+      >+ Note</button>
+    </nav>
+  </header>
+  
+  {#each Object.keys(groups) as group}
+    <svelte:self groupName={group} path={`${path}/${group}`} {...groups[group]} />
+  {/each}
+  {#each notes as note}
+    <NoteBlurb content={note.content} title={note.title}  />
+  {/each}
+</section>
+
+<style>
+  .note-group {
+    color: var(--fg-color--app);
+  }
+  
+  .note-group__header {
+    position: relative;
+  }
+  
+  .note-group__name {
+    width: 100%;
+    min-height: 1.4em;
+    cursor: pointer;
+  }
+  
+  .note-group__nav {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .note-group__nav button {
+    white-space: nowrap;
+    padding: 0;
+  }
+  
+  .note-group:not(.is--root) {
+    padding-left: 0.5em;
+  }
+  .note-group:not(.is--root) .note-group__nav {
+    visibility: hidden;
+  }
+  .note-group:not(.is--root) .note-group__header:hover .note-group__nav {
+    visibility: visible;
+  }
+</style>
