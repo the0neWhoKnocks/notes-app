@@ -1,11 +1,11 @@
 <script>
   import { currentGroupPath } from '../stores';
   import NoteBlurb from './NoteBlurb.svelte';
-
-  export let path = 'root';
+  
   export let groupName = '';
   export let groups = undefined;
   export let notes = undefined;
+  export let path = 'root';
   
   const isRoot = path === 'root';
   
@@ -34,15 +34,25 @@
     </nav>
   </header>
   
-  {#each Object.keys(groups) as group}
-    <svelte:self groupName={group} path={`${path}/${group}`} {...groups[group]} />
+  {#each Object.keys(groups) as group, ndx}
+    {#if isRoot && ndx === 0}
+      <hr class="root-separator" />
+    {/if}
+    <svelte:self path={`${path}/${group}`} {...groups[group]} />
   {/each}
-  {#each notes as note}
+  {#each notes as note, ndx}
+    {#if isRoot && ndx === 0}
+      <hr class="root-separator" />
+    {/if}
     <NoteBlurb content={note.content} title={note.title}  />
   {/each}
 </section>
 
 <style>
+  .root-separator:first-of-type {
+    margin-top: 0;
+  }
+
   .note-group {
     color: var(--fg-color--app);
   }

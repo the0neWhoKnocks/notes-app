@@ -150,13 +150,13 @@
       </nav>
       <section class="user-content">
         <NoteGroups />
-        <section class="grouped-notes">
+        <section class="current-grouped-notes">
           {#if $currentNoteGroupNotes.length}
             {#each $currentNoteGroupNotes as note}
               <NoteBlurb content={note.content} title={note.title}  />
             {/each}
           {:else}
-            No notes for group
+            There are no notes in this group
           {/if}
         </section>
       </section>
@@ -275,10 +275,11 @@
     display: flex;
   }
   
-  .grouped-notes {
+  .current-grouped-notes {
     width: 100%;
     height: 100%;
     color: var(--fg-color--app);
+    overflow: auto;
     padding: 1em;
   }
 </style>
