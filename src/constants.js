@@ -1,5 +1,5 @@
 const API_PREFIX = '/api';
-const NAMESPACE__STORAGE = 'app';
+const NAMESPACE__STORAGE = 'notes';
 
 // Shared by both Client and Server
 const constants = {
