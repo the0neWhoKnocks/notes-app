@@ -10,7 +10,6 @@ const {
   PATH__DATA,
   PATH__PUBLIC,
   ROUTE__API__CONFIG_CREATE,
-  ROUTE__API__HELLO,
   ROUTE__API__USER_CREATE,
   ROUTE__API__USER_GET_DATA,
   ROUTE__API__USER_GET_PROFILE,
@@ -128,13 +127,6 @@ app
   .post(ROUTE__API__USER_LOGIN, jsonParser, userLogin)
   .post(ROUTE__API__USER_SET_DATA, jsonParser, setUserData)
   .post(ROUTE__API__USER_SET_PROFILE, jsonParser, setUserProfile)
-  .get(ROUTE__API__HELLO, (req, res) => {
-    const { parse: parseQuery } = require('querystring');
-    const { parse: parseURL } = require('url');
-    const params = { ...parseQuery(parseURL(req.url).query) };
-    log.info(`[API] Recieved params: ${JSON.stringify(params)}`);
-    res.json({ hello: 'dave' });
-  })
   .get('/', (req, res) => {
     res.end(shell({
       props: {

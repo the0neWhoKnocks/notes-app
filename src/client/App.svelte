@@ -1,9 +1,9 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import logger from '../utils/logger';
   import {
     NAMESPACE__STORAGE__USER,
-    // ROUTE__API__HELLO,
+    ROUTE__API__USER_GET_DATA,
   } from '../constants';
   import Icon, {
     ICON__ANGLE_DOWN,
@@ -13,12 +13,13 @@
   import LoginDialog from './components/LoginDialog.svelte';
   import NoteBlurb from './components/NoteBlurb.svelte';
   import NoteGroups from './components/NoteGroups.svelte';
-  // import UserDataDialog from './components/UserDataDialog.svelte';
   import UserProfileDialog from './components/UserProfileDialog.svelte';
   import {
     currentNoteGroupNotes,
+    noteGroups,
     userData,
   } from './stores.js';
+  import postData from './utils/postData';
   import {
     getStorageType,
     setStorage,
@@ -27,25 +28,11 @@
   export let appTitle = '';
   
   const log = logger('app');
-  // let loginCompOpened = false;
   let userStorageType;
   let mounted = false;
   let userNavOpen = false;
-  let userDataOpened = false;
   let userProfileOpened = false;
   let userIsLoggedIn = false;
-  
-  // function callAPI() {
-  //   fetch(`${ROUTE__API__HELLO}?name=hal`)
-  //     .then(resp => resp.json())
-  //     .then(data => {
-  //       log.info('API', JSON.stringify(data));
-  //     })
-  //     .catch(err => {
-  //       log.error(err);
-  //       alert(err);
-  //     });
-  // }
   
   function setUserInfo() {
     userStorageType = getStorageType(NAMESPACE__STORAGE__USER);
@@ -83,17 +70,6 @@
     userNavOpen = !userNavOpen;
   }
   
-  // function openUserData() {
-  //   userDataOpened = true;
-  // }
-  // function closeUserData() {
-  //   userDataOpened = false;
-  // }
-  // function handleUserDataUpdate() {
-  //   closeUserData();
-  //   log.info('USER', 'data updated');
-  // }
-  
   function openUserProfile() {
     userProfileOpened = true;
   }
@@ -115,17 +91,31 @@
     log.info('USER', `profile updated: ${JSON.stringify(data)}`);
   }
   
-  $: if (userProfileOpened || userDataOpened) {
+  $: if (userProfileOpened) {
     userNavOpen = false;
   }
   
-  onMount(async () => {
+  let currNotes;
+	const unsubCurrNotes = currentNoteGroupNotes.subscribe(async data => {
+		currNotes = await data;
+	});
+  
+  onMount(() => {
     log.info('App starting');
     
     setUserInfo();
     
+    try {
+      noteGroups.set(
+        postData(ROUTE__API__USER_GET_DATA, $userData)
+      );
+    }
+    catch ({ message }) { alert(message); }
+    
     mounted = true;
   });
+  
+  onDestroy(unsubCurrNotes);
 </script>
 
 <div class="app">
@@ -152,8 +142,8 @@
       <section class="user-content">
         <NoteGroups />
         <section class="current-grouped-notes">
-          {#if $currentNoteGroupNotes.length}
-            {#each $currentNoteGroupNotes as note}
+        	{#if currNotes && currNotes.length}
+            {#each currNotes as note}
               <NoteBlurb content={note.content} title={note.title}  />
             {/each}
           {:else}
@@ -169,14 +159,6 @@
         onSuccess={handleLogin}
       />
     {/if}
-    <!-- {#if userDataOpened}
-      <UserDataDialog
-        onClose={closeUserData}
-        onError={closeUserData}
-        onSuccess={handleUserDataUpdate}
-        {userInfo}
-      />
-    {/if} -->
     {#if userProfileOpened}
       <UserProfileDialog
         onClose={closeUserProfile}
