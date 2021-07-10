@@ -1,4 +1,5 @@
 <script>
+  import kebabCase from '../../utils/kebabCase';
   import logger from '../../utils/logger';
   import { noteGroups } from '../stores.js';
   import getPathNode from '../utils/getPathNode';
@@ -12,7 +13,11 @@
     noteGroups.update(data => {
       const { groups } = getPathNode(data, path);
       
-      groups['tempGroupName'] = { groups: {}, notes: [] };
+      const MOCK_NAME = 'Temp Group Name';
+      const nameNdx = Object.keys(groups).length + 1;
+      const indexedName = `${MOCK_NAME} ${nameNdx}`;
+      
+      groups[kebabCase(indexedName)] = { groupName: indexedName, groups: {}, notes: [] };
       
       return data;
     });
@@ -24,9 +29,13 @@
     noteGroups.update(data => {
       const node = getPathNode(data, path);
       
+      const MOCK_NAME = 'Temp Note Title';
+      const nameNdx = node.notes.length + 1;
+      const indexedName = `${MOCK_NAME} ${nameNdx}`;
+      
       node.notes = [
         ...node.notes,
-        { content: 'tempNoteContent', title: 'tempNoteTitle' },
+        { content: 'tempNoteContent', title: indexedName },
       ];
       
       return data;
@@ -50,12 +59,12 @@
   // $: console.log($noteGroups);
 </script>
 
-<section class="note-groups" on:click={delegateGroupsClick}>
+<section class="full-notes-list" on:click={delegateGroupsClick}>
   <NoteGroup {...$noteGroups.root} />
 </section>
 
 <style>
-  .note-groups {
+  .full-notes-list {
     width: 20vw;
     overflow: auto;
     min-width: 250px;
