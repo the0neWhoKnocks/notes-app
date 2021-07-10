@@ -15,7 +15,10 @@
   import NoteGroups from './components/NoteGroups.svelte';
   // import UserDataDialog from './components/UserDataDialog.svelte';
   import UserProfileDialog from './components/UserProfileDialog.svelte';
-  import { currentNoteGroupNotes } from './stores.js';
+  import {
+    currentNoteGroupNotes,
+    userData,
+  } from './stores.js';
   import {
     getStorageType,
     setStorage,
@@ -27,10 +30,8 @@
   // let loginCompOpened = false;
   let userStorageType;
   let mounted = false;
-  let username;
   let userNavOpen = false;
   let userDataOpened = false;
-  let userInfo;
   let userProfileOpened = false;
   let userIsLoggedIn = false;
   
@@ -50,9 +51,10 @@
     userStorageType = getStorageType(NAMESPACE__STORAGE__USER);
     
     if (userStorageType) {
-      userInfo = JSON.parse(window[userStorageType].getItem(NAMESPACE__STORAGE__USER));
-      username = userInfo.username;
+      const _userData = JSON.parse(window[userStorageType].getItem(NAMESPACE__STORAGE__USER));
       userIsLoggedIn = true;
+      
+      userData.set(_userData);
     }
   }
   
@@ -106,8 +108,7 @@
       persistent,
     });
     
-    userInfo = data;
-    username = data.username;
+    userData.set(data);
     
     closeUserProfile();
     
@@ -135,7 +136,7 @@
         <div class="user-menu">
           <button on:click={toggleUserNav}>
             <Icon type={ICON__USER} />
-            <div class="username">{username}</div>
+            <div class="username">{$userData.username}</div>
             {#if userNavOpen}
               <Icon type={ICON__ANGLE_UP} />
             {:else}
@@ -181,7 +182,6 @@
         onClose={closeUserProfile}
         onError={closeUserProfile}
         onSuccess={handleProfileUpdate}
-        {userInfo}
       />
     {/if}
   {/if}
