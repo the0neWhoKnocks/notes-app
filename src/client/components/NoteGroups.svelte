@@ -1,73 +1,35 @@
 <script>
   import { onDestroy } from 'svelte';
-  import { ROUTE__API__USER_SET_DATA } from '../../constants';
-  import kebabCase from '../../utils/kebabCase';
   import logger from '../../utils/logger';
-  import { noteGroups, userData } from '../stores.js';
-  import getPathNode from '../utils/getPathNode';
-  import postData from '../utils/postData';
+  import {
+    groupDialogData,
+    noteDialogData,
+    noteGroups,
+  } from '../stores.js';
   import NoteGroup from './NoteGroup.svelte';
   
   const log = logger('noteGroups');
   
-  async function updateData(updatedData, oldData) {
-    try {
-      await postData(ROUTE__API__USER_SET_DATA, { ...$userData, data: updatedData });
-      return updatedData;
-    }
-    catch ({ message }) {
-      alert(message);
-      return oldData;
-    }
+  function handleAddGroupClick({ path }) {
+    log.info(`ADD: Group in "${path}"`);
+    groupDialogData.set({ action: 'add', path });
   }
   
-  function handleCreateGroupClick({ path }) {
-    log.info(`CREATE: Group in "${path}"`);
-    
-    noteGroups.update(async data => {
-      const dataCopy = { ...(await data) }; // TODO - probably want a deep copy
-      const { groups } = getPathNode(dataCopy, path);
-      
-      const MOCK_NAME = 'Temp Group Name';
-      const nameNdx = Object.keys(groups).length + 1;
-      const indexedName = `${MOCK_NAME} ${nameNdx}`;
-      
-      groups[kebabCase(indexedName)] = { groupName: indexedName, groups: {}, notes: [] };
-      
-      return updateData(dataCopy, data);
-    });
-  }
-  
-  function handleCreateNoteClick({ path }) {
-    log.info(`CREATE: Note in "${path}"`);
-    
-    noteGroups.update(async data => {
-      const dataCopy = { ...(await data) }; // TODO - probably want a deep copy
-      const node = getPathNode(dataCopy, path);
-      
-      const MOCK_NAME = 'Temp Note Title';
-      const nameNdx = node.notes.length + 1;
-      const indexedName = `${MOCK_NAME} ${nameNdx}`;
-      
-      node.notes = [
-        ...node.notes,
-        { content: 'tempNoteContent', title: indexedName },
-      ];
-      
-      return updateData(dataCopy, data);
-    });
+  function handleAddNoteClick({ path }) {
+    log.info(`ADD: Note in "${path}"`);
+    noteDialogData.set({ action: 'add', path });
   }
   
   function delegateGroupsClick({ target: { dataset } }) {
     if (dataset && dataset.type) {
       switch (dataset.type) {
-        case 'createGroupBtn':
-        handleCreateGroupClick(dataset);
-        break;
+        case 'addGroupBtn':
+          handleAddGroupClick(dataset);
+          break;
         
-        case 'createNoteBtn':
-        handleCreateNoteClick(dataset);
-        break;
+        case 'addNoteBtn':
+          handleAddNoteClick(dataset);
+          break;
       }
     }
   }

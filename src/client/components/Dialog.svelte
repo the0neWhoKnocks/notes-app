@@ -150,6 +150,7 @@
   }
   
   .dialog {
+    max-height: 100vh;
     overflow: hidden;
     padding: 0;
     border: solid 4px var(--dialog-border-color);
