@@ -22,14 +22,14 @@
     >{groupName}</div>
     <nav class="note-group__nav">
       <button
-        title="Create Group"
+        title="Add Group"
         data-path={path}
-        data-type="createGroupBtn"
+        data-type="addGroupBtn"
       >+ Group</button>
       <button
-        title="Create Note"
+        title="Add Note"
         data-path={path}
-        data-type="createNoteBtn"
+        data-type="addNoteBtn"
       >+ Note</button>
     </nav>
   </header>
@@ -40,7 +40,7 @@
     {/if}
     <svelte:self path={`${path}/${group}`} {...groups[group]} />
   {/each}
-  {#each notes as note, ndx}
+  {#each Object.entries(notes) as [noteId, note], ndx}
     {#if isRoot && ndx === 0}
       <hr class="root-separator" />
     {/if}
@@ -76,6 +76,14 @@
   .note-group__nav button {
     white-space: nowrap;
     padding: 0;
+  }
+  
+  .note-group.is--root > .note-group__header {
+    border-bottom: solid 1px;
+    background: var(--bg-color--app);
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
   
   .note-group:not(.is--root) {

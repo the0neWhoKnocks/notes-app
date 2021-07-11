@@ -1,7 +1,4 @@
 const log = require('../../utils/logger')('api.user.data.get');
-const decrypt = require('../utils/decrypt');
-const encrypt = require('../utils/encrypt');
-const getUserDataPath = require('../utils/getUserDataPath');
 const loadUserData = require('../utils/loadUserData');
 
 module.exports = async function getData(req, res) {
@@ -11,15 +8,10 @@ module.exports = async function getData(req, res) {
   } = req;
   
   try {
-    const { valueHex: encryptedUsername } = await encrypt(appConfig, username);
-    const filePath = getUserDataPath(encryptedUsername);
-    const userData = await loadUserData(filePath);
-    const decryptedData = userData
-      ? await decrypt(appConfig, userData, password)
-      : userData;
+    const data = await loadUserData(appConfig, username, password);
     
     log.info('Got data');
-    res.json(JSON.parse(decryptedData));
+    res.json(data);
   }
   catch (err) {
     const msg = `Error getting data\n${err.stack}`;

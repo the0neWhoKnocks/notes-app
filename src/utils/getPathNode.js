@@ -1,4 +1,4 @@
-export default function getPathNode(obj, path) {
+module.exports = function getPathNode(obj, path) {
   let node;
   
   path.split('/').forEach(group => {

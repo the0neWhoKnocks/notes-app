@@ -1,5 +1,6 @@
 module.exports = function kebabCase(str) {
   return str
+    .trim()
     .toLocaleLowerCase()
     // kill any non alpha-numeric chars (but leave spaces)
     .replace(/[^a-zA-Z0-9 ]/g, '')

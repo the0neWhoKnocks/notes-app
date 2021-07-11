@@ -5,6 +5,7 @@
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
   } from '../constants';
+  import GroupDialog from './components/GroupDialog.svelte';
   import Icon, {
     ICON__ANGLE_DOWN,
     ICON__ANGLE_UP,
@@ -12,10 +13,13 @@
   } from './components/Icon.svelte';
   import LoginDialog from './components/LoginDialog.svelte';
   import NoteBlurb from './components/NoteBlurb.svelte';
+  import NoteDialog from './components/NoteDialog.svelte';
   import NoteGroups from './components/NoteGroups.svelte';
   import UserProfileDialog from './components/UserProfileDialog.svelte';
   import {
     currentNoteGroupNotes,
+    groupDialogData,
+    noteDialogData,
     noteGroups,
     userData,
   } from './stores.js';
@@ -100,15 +104,14 @@
 		currNotes = await data;
 	});
   
-  onMount(() => {
+  onMount(async () => {
     log.info('App starting');
     
     setUserInfo();
     
     try {
-      noteGroups.set(
-        postData(ROUTE__API__USER_GET_DATA, $userData)
-      );
+      const data = await postData(ROUTE__API__USER_GET_DATA, $userData);
+      noteGroups.set(data);
     }
     catch ({ message }) { alert(message); }
     
@@ -142,8 +145,8 @@
       <section class="user-content">
         <NoteGroups />
         <section class="current-grouped-notes">
-        	{#if currNotes && currNotes.length}
-            {#each currNotes as note}
+        	{#if currNotes && Object.keys(currNotes).length}
+            {#each Object.entries(currNotes) as [noteId, note]}
               <NoteBlurb content={note.content} title={note.title}  />
             {/each}
           {:else}
@@ -165,6 +168,12 @@
         onError={closeUserProfile}
         onSuccess={handleProfileUpdate}
       />
+    {/if}
+    {#if $noteDialogData}
+      <NoteDialog />
+    {/if}
+    {#if $groupDialogData}
+      <GroupDialog />
     {/if}
   {/if}
 </div>
