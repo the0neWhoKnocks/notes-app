@@ -13,6 +13,7 @@
   import LabeledInput from './LabeledInput.svelte';  
   
   let formRef;
+  let textareaRef;
   
   const genQuery = (title = '') => {
     let query = `?p=${encodeURIComponent($noteDialogData.path)}`;
@@ -48,6 +49,31 @@
       if (err.stack) throw (err);
     }
   }
+  
+  function handleToolClick({ target }) {
+    if (target.dataset) {
+      switch (target.dataset.type) {
+        case 'heading': {
+          const cursorStart = textareaRef.selectionStart;
+          const leadingTxt = textareaRef.value.substring(0, cursorStart);
+          const line = leadingTxt.match(/^\n?.*/gm).pop();
+          
+          let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
+          if (hashes > 6) hashes = 1;
+          const updatedLine = line.replace(/^(\n?)([#]+\s)?(.)/, `$1${Array(hashes).fill('#').join('')} $3`);
+          
+          const s = textareaRef.value.substring(0, cursorStart - line.length);
+          const e = textareaRef.value.substring(cursorStart, textareaRef.value.length);
+          const newCursorPos = cursorStart + (updatedLine.length - line.length);
+          
+          textareaRef.value = `${s}${updatedLine}${e}`;
+          textareaRef.focus();
+          textareaRef.setSelectionRange(newCursorPos, newCursorPos);
+          break;
+        }
+      }
+    }
+  }
 </script>
 
 {#if $noteDialogData}
@@ -71,8 +97,26 @@
       <LabeledInput label="Title" name="title" value={$noteDialogData.title} autoFocus required />
       <div class="note-form__query">{query}</div>
       <div class="note-form__content-area">
-        <nav></nav>
-        <textarea class="note-form__content" name="content" value={$noteDialogData.content || ''}></textarea>
+        <nav class="note-form__toolbar" on:click={handleToolClick}>
+          <button type="button" title="Heading" data-type="heading">#</button>
+          <button type="button" title="Bold" data-type="bold">B</button>
+          <button type="button" title="Italic" data-type="italic">I</button>
+          <button type="button" title="Strike Through" data-type="strikethrough">S</button>
+          <button type="button" title="Inline Code" data-type="inlineCode">`</button>
+          <div class="note-form__sep"></div>
+          <button type="button" title="Code Block" data-type="codeBlock">```</button>
+          <button type="button" title="Block Quote" data-type="blockquote">"</button>
+          <div class="note-form__sep"></div>
+          <button type="button" title="Table of Contents" data-type="toc">TOC</button>
+          <div class="note-form__sep"></div>
+          <button type="button" data-type="preview">Preview</button>
+        </nav>
+        <textarea
+          bind:this={textareaRef}
+          class="note-form__content"
+          name="content"
+          value={$noteDialogData.content || ''}
+        ></textarea>
       </div>
       <nav class="note-form__btm-nav">
         <button type="button" on:click={handleCloseClick}>Cancel</button>
@@ -104,6 +148,28 @@
   
   .note-form__content-area {
     height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .note-form__toolbar {
+    padding: 2px;
+    background: var(--bg-color--app);
+    display: flex;
+  }
+  .note-form__toolbar button {
+    padding: 2px;
+    border: solid 1px;
+    border-radius: unset;
+    margin: 2px;
+    background: transparent;
+  }
+  
+  .note-form__sep {
+    width: 2px;
+    height: 100%;
+    margin: 0 6px;
+    background: var(--fg-color--app);
   }
   
   .note-form__content {
