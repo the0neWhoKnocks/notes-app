@@ -50,25 +50,102 @@
     }
   }
   
+  function updateEditorValue(newSelStart, newSelEnd, newValue) {
+    if (newValue && newValue !== textareaRef.value) textareaRef.value = newValue;
+    textareaRef.focus();
+    textareaRef.setSelectionRange(newSelStart, newSelEnd);
+  }
+  
+  function selectionIsSurroundedBy(char) {
+    const textVal = textareaRef.value;
+    const selStart = textareaRef.selectionStart;
+    const selEnd = textareaRef.selectionEnd;
+    return (
+      textVal.substring(selStart - char.length, selStart) === char
+      && textVal.substring(selEnd, selEnd + char.length) === char
+    );
+  }
+  
+  function selectionIsWrappedWith(char) {
+    const selection = textareaRef.value.substring(textareaRef.selectionStart, textareaRef.selectionEnd);
+    return selection.startsWith(char) && selection.endsWith(char);
+  }
+  
+  function wrapSelectionWithChar(char) {
+    const textVal = textareaRef.value;
+    let selStart = textareaRef.selectionStart;
+    let selEnd = textareaRef.selectionEnd;
+    let newSelStart = selStart;
+    let newSelEnd = selEnd;
+    let newValue;
+    
+    if (selEnd > selStart) {
+      const selIsSurrounded = selectionIsSurroundedBy(char);
+      const selIsWrapped = selectionIsWrappedWith(char);
+      let wrapper = selIsSurrounded ? '' : char;
+      const padding = selIsSurrounded ? char.length : 0;
+      let selPadding = selIsSurrounded ? -padding : wrapper.length;
+      const s = textVal.substring(0, selStart - padding);
+      let selection = textVal.substring(selStart, selEnd);
+      const e = textVal.substring(selEnd + padding, textVal.length);
+      
+      if (selIsWrapped) {
+        wrapper = '';
+        selStart = selStart + char.length;
+        selEnd = selEnd - char.length;
+        selection = textVal.substring(selStart, selEnd);
+        selPadding = -char.length;
+      }
+      
+      newSelStart = selStart + selPadding;
+      newSelEnd = selEnd + selPadding;
+      newValue = `${s}${wrapper}${selection}${wrapper}${e}`;
+    }
+    
+    updateEditorValue(newSelStart, newSelEnd, newValue);
+  }
+  
   function handleToolClick({ target }) {
     if (target.dataset) {
+      const textVal = textareaRef.value;
+      const selStart = textareaRef.selectionStart;
+      
       switch (target.dataset.type) {
         case 'heading': {
-          const cursorStart = textareaRef.selectionStart;
-          const leadingTxt = textareaRef.value.substring(0, cursorStart);
-          const line = leadingTxt.match(/^\n?.*/gm).pop();
+          const leadingText = textVal.substring(0, selStart);
+          const line = leadingText.match(/^\n?.*/gm).pop();
           
           let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
           if (hashes > 6) hashes = 1;
-          const updatedLine = line.replace(/^(\n?)([#]+\s)?(.)/, `$1${Array(hashes).fill('#').join('')} $3`);
           
-          const s = textareaRef.value.substring(0, cursorStart - line.length);
-          const e = textareaRef.value.substring(cursorStart, textareaRef.value.length);
-          const newCursorPos = cursorStart + (updatedLine.length - line.length);
+          const s = textVal.substring(0, selStart - line.length);
+          const e = textVal.substring(selStart, textVal.length);
+          const updatedLine = line.replace(/^(\n?)([#]+\s)?(.)?/, `$1${Array(hashes).fill('#').join('')} $3`);
+          const updatedText = `${s}${updatedLine}${e}`;
+          const newCursorPos = selStart + (updatedLine.length - line.length);
           
-          textareaRef.value = `${s}${updatedLine}${e}`;
-          textareaRef.focus();
-          textareaRef.setSelectionRange(newCursorPos, newCursorPos);
+          updateEditorValue(newCursorPos, newCursorPos, updatedText);
+          
+          break;
+        }
+        
+        case 'bold': {
+          wrapSelectionWithChar('**');
+          break;
+        }
+        
+        case 'italic': {
+          wrapSelectionWithChar('__');
+          break;
+        }
+        
+        case 'strikethrough': {
+          wrapSelectionWithChar('~~');
+          break;
+        }
+        
+        case 'inlineCode': {
+          wrapSelectionWithChar('`');
           break;
         }
       }
@@ -130,7 +207,7 @@
   .note-form {
     --labeled-input__input-width: 100%;
     
-    height: 60vh;
+    height: 80vh;
     min-width: 50vw;
     overflow: auto;
     padding: 1em;
@@ -178,6 +255,9 @@
     font-size: inherit;
     padding: 1em;
     resize: none;
+  }
+  .note-form__content:focus {
+    outline: none;
   }
   
   .note-form__btm-nav {
