@@ -1,5 +1,5 @@
 import { DOM__SVELTE_MOUNT_POINT } from '../constants';
-import App from './App.svelte';
+import App from './components/App.svelte';
 import ConfigDialog from './components/ConfigDialog.svelte';
 
 const props = {
