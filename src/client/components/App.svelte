@@ -1,33 +1,33 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
-  import logger from '../utils/logger';
+  import logger from '../../utils/logger';
   import {
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
-  } from '../constants';
-  import GroupDialog from './components/GroupDialog.svelte';
-  import Icon, {
-    ICON__ANGLE_DOWN,
-    ICON__ANGLE_UP,
-    ICON__USER,
-  } from './components/Icon.svelte';
-  import LoginDialog from './components/LoginDialog.svelte';
-  import NoteBlurb from './components/NoteBlurb.svelte';
-  import NoteDialog from './components/NoteDialog.svelte';
-  import NoteGroups from './components/NoteGroups.svelte';
-  import UserProfileDialog from './components/UserProfileDialog.svelte';
+  } from '../../constants';
   import {
     currentNoteGroupNotes,
     groupDialogData,
     noteDialogData,
     noteGroups,
     userData,
-  } from './stores.js';
-  import postData from './utils/postData';
+  } from '../stores.js';
+  import postData from '../utils/postData';
   import {
     getStorageType,
     setStorage,
-  } from './utils/storage';
+  } from '../utils/storage';
+  import GroupDialog from './GroupDialog.svelte';
+  import Icon, {
+    ICON__ANGLE_DOWN,
+    ICON__ANGLE_UP,
+    ICON__USER,
+  } from './Icon.svelte';
+  import LoginDialog from './LoginDialog.svelte';
+  import NoteBlurb from './NoteBlurb.svelte';
+  import NoteDialog from './NoteDialog.svelte';
+  import NoteGroups from './NoteGroups.svelte';
+  import UserProfileDialog from './UserProfileDialog.svelte';
   
   export let appTitle = '';
   
@@ -49,11 +49,7 @@
     }
   }
   
-  // function openLogin() {
-  //   loginCompOpened = true;
-  // }
   function closeLogin() {
-    // loginCompOpened = false;
     userStorageType = getStorageType(NAMESPACE__STORAGE__USER);
   }
   function handleLogin() {
