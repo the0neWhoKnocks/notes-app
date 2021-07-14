@@ -1,12 +1,14 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
-  import logger from '../../utils/logger';
   import {
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
   } from '../../constants';
+  import getPathNode from '../../utils/getPathNode';
+  import logger from '../../utils/logger';
   import {
     currentNoteGroupNotes,
+    deleteDialogData,
     groupDialogData,
     noteDialogData,
     noteGroups,
@@ -17,6 +19,7 @@
     getStorageType,
     setStorage,
   } from '../utils/storage';
+  import DeleteDialog from './DeleteDialog.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import Icon, {
     ICON__ANGLE_DOWN,
@@ -91,6 +94,33 @@
     log.info('USER', `profile updated: ${JSON.stringify(data)}`);
   }
   
+  function delegateClick({ target }) {
+    if (target.dataset) {
+      const { action, btnType, id, path, type } = target.dataset;
+      
+      if (btnType === 'modifyBtn') {
+        const { content, groupName, title } = getPathNode($noteGroups, path)[`${type}s`][id];
+        
+        switch (action) {
+          case 'delete': {
+            deleteDialogData.set({ groupName, id, path, title, type });
+            break;
+          }
+          
+          case 'edit': {
+            if (type === 'note') {
+              noteDialogData.set({ action: 'edit', content, path, title });
+            }
+            else if (type === 'group') {
+              groupDialogData.set({ action: 'edit', content, name: groupName, path });
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  
   $: if (userProfileOpened) {
     userNavOpen = false;
   }
@@ -138,12 +168,12 @@
           </nav>
         </div>
       </nav>
-      <section class="user-content">
+      <section class="user-content" on:click={delegateClick}>
         <NoteGroups />
         <section class="current-grouped-notes">
-        	{#if currNotes && Object.keys(currNotes).length}
-            {#each Object.entries(currNotes) as [noteId, note]}
-              <NoteBlurb content={note.content} title={note.title}  />
+        	{#if currNotes && currNotes.notes && Object.keys(currNotes.notes).length}
+            {#each Object.entries(currNotes.notes) as [noteId, note]}
+              <NoteBlurb content={note.content} id={noteId} path={currNotes.path} title={note.title}  />
             {/each}
           {:else}
             There are no notes in this group
@@ -170,6 +200,9 @@
     {/if}
     {#if $groupDialogData}
       <GroupDialog />
+    {/if}
+    {#if $deleteDialogData}
+      <DeleteDialog />
     {/if}
   {/if}
 </div>

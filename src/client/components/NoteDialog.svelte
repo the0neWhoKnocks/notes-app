@@ -14,6 +14,7 @@
   
   let formRef;
   let textareaRef;
+  let titleValue = $noteDialogData.title;
   
   const genQuery = (title = '') => {
     let query = `?p=${encodeURIComponent($noteDialogData.path)}`;
@@ -21,7 +22,8 @@
     return query;
   };
   
-  let saveBtnDisabled = $noteDialogData.action === 'edit';
+  const editingNote = $noteDialogData.action === 'edit';
+  let saveBtnDisabled = editingNote;
   let query = genQuery();
   
   function closeDialog() {
@@ -32,9 +34,28 @@
     closeDialog();
   }
   
+  function diffCheck() {
+    if (editingNote) {
+      saveBtnDisabled = (
+        textareaRef.value === $noteDialogData.content
+        && titleValue === $noteDialogData.title
+      );
+    }
+  }
+  
   function handleChange({ target }) {
-    if (target.name === 'title') {
-      query = genQuery(kebabCase(target.value));
+    switch (target.name) {
+      case 'content': {
+        diffCheck();
+        break;
+      }
+      
+      case 'title': {
+        titleValue = target.value;
+        query = genQuery(kebabCase(titleValue));
+        diffCheck();
+        break;
+      }
     }
   }
   
@@ -275,6 +296,8 @@
         //   break;
         // }
       }
+      
+      handleChange({ target: textareaRef });
     }
   }
 </script>
@@ -297,22 +320,25 @@
       <input type="hidden" name="action" value={$noteDialogData.action} />
       <input type="hidden" name="path" value={$noteDialogData.path} />
       <input type="hidden" name="type" value="note" />
+      {#if editingNote}
+        <input type="hidden" name="oldTitle" value={$noteDialogData.title} />
+      {/if}
       <LabeledInput label="Title" name="title" value={$noteDialogData.title} autoFocus required />
       <div class="note-form__query">{query}</div>
       <div class="note-form__content-area">
         <nav class="note-form__toolbar" on:click={handleToolClick}>
-          <button type="button" title="Heading" data-type="heading">#</button>
-          <button type="button" title="Bold" data-type="bold">B</button>
-          <button type="button" title="Italic" data-type="italic">I</button>
-          <button type="button" title="Strike Through" data-type="strikethrough">S</button>
-          <button type="button" title="Inline Code" data-type="inlineCode">`</button>
+          <button type="button" title="Heading" data-type="heading" tabindex="-1">#</button>
+          <button type="button" title="Bold" data-type="bold" tabindex="-1">B</button>
+          <button type="button" title="Italic" data-type="italic" tabindex="-1">I</button>
+          <button type="button" title="Strike Through" data-type="strikethrough" tabindex="-1">S</button>
+          <button type="button" title="Inline Code" data-type="inlineCode" tabindex="-1">`</button>
           <div class="note-form__sep"></div>
-          <button type="button" title="Code Block" data-type="codeBlock">```</button>
-          <button type="button" title="Block Quote" data-type="blockquote">"</button>
+          <button type="button" title="Code Block" data-type="codeBlock" tabindex="-1">```</button>
+          <button type="button" title="Block Quote" data-type="blockquote" tabindex="-1">"</button>
           <div class="note-form__sep"></div>
-          <button type="button" title="Table of Contents" data-type="toc">TOC</button>
+          <button type="button" title="Table of Contents" data-type="toc" tabindex="-1">TOC</button>
           <div class="note-form__sep"></div>
-          <button type="button" data-type="preview">Preview</button>
+          <button type="button" data-type="preview" tabindex="-1">Preview</button>
         </nav>
         <textarea
           bind:this={textareaRef}

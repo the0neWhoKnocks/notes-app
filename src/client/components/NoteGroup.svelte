@@ -1,5 +1,6 @@
 <script>
   import { currentGroupPath } from '../stores';
+  import ModifyNav from './ModifyNav.svelte';
   import NoteBlurb from './NoteBlurb.svelte';
   
   export let groupName = '';
@@ -8,6 +9,9 @@
   export let path = 'root';
   
   const isRoot = path === 'root';
+  const ladder = path.split('/');
+  const groupId = ladder.pop();
+  const _path = ladder.join('/');
   
   function handleNameClick() {
     currentGroupPath.update(() => path);
@@ -31,6 +35,9 @@
         data-path={path}
         data-type="addNoteBtn"
       >+ Note</button>
+      {#if !isRoot}
+        <ModifyNav id={groupId} path={_path} type="group" />
+      {/if}
     </nav>
   </header>
   
@@ -44,7 +51,7 @@
     {#if isRoot && ndx === 0}
       <hr class="root-separator" />
     {/if}
-    <NoteBlurb content={note.content} title={note.title}  />
+    <NoteBlurb content={note.content} id={noteId} {path} title={note.title}  />
   {/each}
 </section>
 

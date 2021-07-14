@@ -20,7 +20,8 @@
     return query;
   };
   
-  let saveBtnDisabled = $groupDialogData.action === 'rename';
+  const editingGroup = $groupDialogData.action === 'edit';
+  let saveBtnDisabled = editingGroup;
   let query = genQuery();
   
   function closeDialog() {
@@ -33,6 +34,7 @@
   
   function handleChange({ target }) {
     if (target.name === 'name') {
+      if (editingGroup) saveBtnDisabled = target.value === $groupDialogData.name;
       query = genQuery(kebabCase(target.value));
     }
   }
@@ -68,7 +70,10 @@
       <input type="hidden" name="action" value={$groupDialogData.action} />
       <input type="hidden" name="path" value={$groupDialogData.path} />
       <input type="hidden" name="type" value="group" />
-      <LabeledInput label="Name" name="name" value={$groupDialogData.title} autoFocus required />
+      {#if editingGroup}
+        <input type="hidden" name="oldName" value={$groupDialogData.name} />
+      {/if}
+      <LabeledInput label="Name" name="name" value={$groupDialogData.name} autoFocus required />
       <div class="group-form__query">{query}</div>
       <nav class="group-form__btm-nav">
         <button type="button" on:click={handleCloseClick}>Cancel</button>

@@ -10,12 +10,13 @@ export const currentNoteGroupNotes = derived(
 	([groups, path], set) => {
     if (groups) { // will be undefined until initial load of User data
       const { notes } = getPathNode(groups, path);
-      set(notes);
+      set({ notes, path });
     }
   }
 );
 
 export const userData = writable();
 
+export const deleteDialogData = writable();
 export const groupDialogData = writable();
 export const noteDialogData = writable();
