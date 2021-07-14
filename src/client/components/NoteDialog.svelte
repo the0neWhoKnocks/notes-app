@@ -105,6 +105,115 @@
     updateEditorValue(newSelStart, newSelEnd, newValue);
   }
   
+  function getCharIndex(startChar, endChar) {
+    const textVal = textareaRef.value;
+    let selStart = textareaRef.selectionStart;
+    let selEnd = textareaRef.selectionEnd;
+    let startIndex = 0;
+    let endIndex = textVal.length;
+    
+    if (startChar) {
+      for (let i=selStart; i>=0; i--) {
+        if (textVal[i] === startChar) {
+          startIndex = i;
+          break;
+        }
+      }
+    }
+    
+    if (endChar) {
+      for (let i=selEnd; i<textVal.length; i++) {
+        if (textVal[i] === endChar) {
+          endIndex = i;
+          break;
+        }
+      }
+    }
+    
+    return { start: startIndex, end: endIndex };
+  }
+  
+  function blockCheck(char) {
+    const textVal = textareaRef.value;
+    const selStart = textareaRef.selectionStart;
+    let block;
+    
+    // first check if there are any blocks
+    if (textVal.includes(char)) {
+      // gather all blocks
+      const lines = textVal.split('\n');
+      let currBlock = {};
+      let lineNdx = 0;
+      
+      for (let i=0; i<lines.length; i++) {
+        const line = lines[i];
+        const newline = 1;
+        
+        if (line.startsWith(char)) {
+          if (currBlock.start === undefined) {
+            currBlock.start = lineNdx;
+          }
+          else {
+            currBlock.end = lineNdx + char.length + newline;
+            
+            if (
+              selStart >= currBlock.start
+              && selStart <= currBlock.end
+            ) {
+              block = currBlock;
+              break;
+            }
+            
+            currBlock = {};
+          }
+        }
+        
+        lineNdx += line.length + newline;
+      }
+    }
+    
+    return block;
+  }
+  
+  function wrapSelectionWithBlock(char) {
+    const textVal = textareaRef.value;
+    const block = blockCheck(char);
+    
+    let startIndex, endIndex, wrapper, nl;
+    if (block) {
+      startIndex = block.start;
+      endIndex = block.end;
+      wrapper = '';
+      nl = '';
+    }
+    else {
+      const indexes = getCharIndex('\n', '\n');
+      startIndex = indexes.start;
+      endIndex = indexes.end;
+      wrapper = char;
+      nl = '\n';
+    }
+    
+    let newSelStart = startIndex;
+    let newSelEnd = endIndex;
+    let newValue;
+    const firstNL = startIndex === 0 ? '' : nl;
+    
+    const s = textVal.substring(0, startIndex);
+    let selection = textVal.substring(startIndex, endIndex);
+    const e = textVal.substring(endIndex, textVal.length);
+    
+    if (block) {
+      selection = selection
+        .replace(new RegExp(`^${char}\n`, 'm'), '')
+        .replace(new RegExp(`\n${char}\n$`, 'm'), '');
+    }
+    
+    newValue = `${s}${firstNL}${wrapper}${nl}${selection}${nl}${wrapper}${nl}${e}`;
+    
+    updateEditorValue(newSelStart, newSelEnd, newValue);
+  }
+  
   function handleToolClick({ target }) {
     if (target.dataset) {
       const textVal = textareaRef.value;
@@ -112,14 +221,14 @@
       
       switch (target.dataset.type) {
         case 'heading': {
-          const leadingText = textVal.substring(0, selStart);
-          const line = leadingText.match(/^\n?.*/gm).pop();
+          const { start, end } = getCharIndex('\n', '\n');
+          const line = textVal.substring(start, end);
           
           let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
           if (hashes > 6) hashes = 1;
           
-          const s = textVal.substring(0, selStart - line.length);
-          const e = textVal.substring(selStart, textVal.length);
+          const s = textVal.substring(0, start);
+          const e = textVal.substring(end, textVal.length);
           const updatedLine = line.replace(/^(\n?)([#]+\s)?(.)?/, `$1${Array(hashes).fill('#').join('')} $3`);
           const updatedText = `${s}${updatedLine}${e}`;
           const newCursorPos = selStart + (updatedLine.length - line.length);
@@ -148,6 +257,23 @@
           wrapSelectionWithChar('`');
           break;
         }
+        
+        case 'codeBlock': {
+          wrapSelectionWithBlock('```');
+          break;
+        }
+        
+        // case 'blockquote': {
+        //   break;
+        // }
+        // 
+        // case 'toc': {
+        //   break;
+        // }
+        // 
+        // case 'preview': {
+        //   break;
+        // }
       }
     }
   }
