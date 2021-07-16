@@ -306,7 +306,7 @@
           break;
         
         case 'italic':
-          wrapSelectionWithChar('__');
+          wrapSelectionWithChar('*');
           break;
         
         case 'strikethrough':
@@ -330,7 +330,7 @@
           });
           break;
         
-        case 'toc': {
+        case 'toc':
           toggleCharAtLineStart((line) => {
             const char = '::TOC::';
             return (line.startsWith(char))
@@ -338,7 +338,6 @@
               : `${char}${line}`;
           });
           break;
-        }
         
         // case 'preview': {
         //   break;

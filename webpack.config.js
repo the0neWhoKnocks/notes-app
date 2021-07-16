@@ -93,8 +93,9 @@ const conf = {
         // not be deleted. Examples of such files/folders are anything generated
         // at startup before the bundling has started. Note that you have to
         // exclude the folder and it's contents separately.
-        // '!imgs',
-        // '!imgs/**/*',
+        '!js',
+        '!js/vendor',
+        '!js/vendor/**/*',
       ],
     }),
     new webpack.DefinePlugin({

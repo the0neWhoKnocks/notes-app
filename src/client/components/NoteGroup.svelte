@@ -51,7 +51,7 @@
     {#if isRoot && ndx === 0}
       <hr class="root-separator" />
     {/if}
-    <NoteBlurb content={note.content} id={noteId} {path} title={note.title}  />
+    <NoteBlurb content={note.content} id={noteId} {path} title={note.title} truncated  />
   {/each}
 </section>
 

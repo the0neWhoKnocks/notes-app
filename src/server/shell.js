@@ -53,8 +53,22 @@ const shell = ({ props, view } = {}) => {
         a {
           color: inherit;
         }
+        
+        blockquote {
+          padding: 0.5em;
+          border-left: solid 4px;
+          margin: 0;
+          background: rgba(255, 255, 255, 0.15);
+        }
 
-        code {
+        pre {
+          font-family: menlo, inconsolata, monospace;
+          font-size: calc(1em - 2px);
+          color: #555;
+          background-color: #f0f0f0;
+          padding: 0.2em 0.4em;
+        }
+        :not(pre) > code {
           font-family: menlo, inconsolata, monospace;
           font-size: calc(1em - 2px);
           color: #555;
@@ -163,6 +177,8 @@ const shell = ({ props, view } = {}) => {
         </div>
         <div id="${DOM__SVELTE_MOUNT_POINT}"></div>
       </div>
+      <script src="/js/vendor/marked.min.js"></script>
+      <script src="/js/vendor/purify.min.js"></script>
       <script src="${manifest['vendor.js']}"></script>
       <script src="${manifest[`${view}.js`]}"></script>
     </body>

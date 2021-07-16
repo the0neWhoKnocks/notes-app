@@ -5,30 +5,22 @@
   export let id = undefined;
   export let path = undefined;
   export let title = undefined;
+  export let truncated = false;
+  
+  function parseContent(c) {
+    const markup = window.marked(c);
+    return truncated
+      ? window.DOMPurify.sanitize(markup.substring(0, 50))
+      : markup;
+  }
 </script>
 
 <article class="note-blurb">
   <header>
     {title}
     <ModifyNav {id} {path} type="note" />
-    <!-- <nav class="note-blurb__nav">
-      <button
-        type="button"
-        data-type="blurbBtn"
-        data-action="edit"
-        data-id={id}
-        data-path={path}
-      >E</button>
-      <button
-        type="button"
-        data-type="blurbBtn"
-        data-action="delete"
-        data-id={id}
-        data-path={path}
-      >X</button>
-    </nav> -->
   </header>
-  <section>{content}</section>
+  <section>{@html parseContent(content)}</section>
 </article>
 
 <style>
