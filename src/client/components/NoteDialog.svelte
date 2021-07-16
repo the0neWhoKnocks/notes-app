@@ -72,9 +72,12 @@
   }
   
   function updateEditorValue(newSelStart, newSelEnd, newValue) {
+    const scrollPos = textareaRef.scrollTop;
+    
     if (newValue && newValue !== textareaRef.value) textareaRef.value = newValue;
     textareaRef.focus();
     textareaRef.setSelectionRange(newSelStart, newSelEnd);
+    textareaRef.scrollTop = scrollPos;
   }
   
   function selectionIsSurroundedBy(char) {
