@@ -27,15 +27,17 @@
   .modify-nav {
     visibility: hidden;
     display: flex;
-    /* position: absolute;
-    top: 0.25em;
-    right: 0.25em; */
   }
   :global(
     .note-blurb header:hover .modify-nav,
     .note-group__header:hover .modify-nav
   ) {
     visibility: visible;
+  }
+  :global(.note-blurb header .modify-nav) {
+    position: absolute;
+    top: 0.25em;
+    right: 0.25em;
   }
   
   .modify-nav button {
