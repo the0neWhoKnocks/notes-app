@@ -133,6 +133,8 @@
   onMount(async () => {
     log.info('App starting');
     
+    window.marked.defaults.headerPrefix = 'header_';
+    
     setUserInfo();
     
     try {
