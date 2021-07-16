@@ -238,81 +238,75 @@
     updateEditorValue(newSelStart, newSelEnd, newValue);
   }
   
-  function toggleCharAtLineStart(char, replacement='') {
+  function toggleCharAtLineStart(transform) {
     const textVal = textareaRef.value;
     const selStart = textareaRef.selectionStart;
+    const selEnd = textareaRef.selectionEnd;
     const { start, end } = getCharIndex('\n', '\n');
-    const selLines = textVal.substring(start, end);
+    const selLines = textVal.substring(start, end).split('\n');
+    const updatedLengths = [];
     const updates = selLines
-      .split('\n')
       .map(line => {
         if (!line) return '';
-        return (line.startsWith(char))
-          ? line.replace(new RegExp(`^${char}`), replacement)
-          : `${char}${line}`;
+        const updated = transform(line);
+        updatedLengths.push(updated.length - line.length);
+        return updated;
       })
       .join('\n');
     const s = textVal.substring(0, start);
     const e = textVal.substring(end, textVal.length);
     const updatedText = `${s}${updates}${e}`;
-    const newCursorPos = selStart + (updates.length - selLines.length);
+    // These start/end values are slightly off, but they do the job of keeping
+    // the multiple lines selected
+    const updatedSelStart = selStart + updatedLengths[0];
+    const updatedSelEnd = selEnd + updatedLengths[updatedLengths.length - 1];
     
-    updateEditorValue(newCursorPos, newCursorPos, updatedText);
+    updateEditorValue(updatedSelStart, updatedSelEnd, updatedText);
   }
   
   function handleToolClick({ target }) {
     if (target.dataset) {
-      const textVal = textareaRef.value;
-      const selStart = textareaRef.selectionStart;
-      
       switch (target.dataset.type) {
-        case 'heading': {
-          const { start, end } = getCharIndex('\n', '\n');
-          const line = textVal.substring(start, end);
-          
-          let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
-          if (hashes > 6) hashes = 1;
-          
-          const s = textVal.substring(0, start);
-          const e = textVal.substring(end, textVal.length);
-          const updatedLine = line.replace(/^(\n?)([#]+\s)?(.)?/, `$1${Array(hashes).fill('#').join('')} $3`);
-          const updatedText = `${s}${updatedLine}${e}`;
-          const newCursorPos = selStart + (updatedLine.length - line.length);
-          
-          updateEditorValue(newCursorPos, newCursorPos, updatedText);
-          
+        case 'heading':
+          toggleCharAtLineStart((line) => {
+            let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
+            if (hashes > 6) hashes = 1;
+            
+            return line.replace(
+              /^(\n?)([#]+\s)?(.)?/,
+              `$1${Array(hashes).fill('#').join('')} $3`
+            );
+          });
           break;
-        }
         
-        case 'bold': {
+        case 'bold':
           wrapSelectionWithChar('**');
           break;
-        }
         
-        case 'italic': {
+        case 'italic':
           wrapSelectionWithChar('__');
           break;
-        }
         
-        case 'strikethrough': {
+        case 'strikethrough':
           wrapSelectionWithChar('~~');
           break;
-        }
         
-        case 'inlineCode': {
+        case 'inlineCode':
           wrapSelectionWithChar('`');
           break;
-        }
         
-        case 'codeBlock': {
+        case 'codeBlock':
           wrapSelectionWithBlock('```');
           break;
-        }
         
-        case 'blockquote': {
-          toggleCharAtLineStart('> ');
+        case 'blockquote':
+          toggleCharAtLineStart((line) => {
+            const char = '> ';
+            return (line.startsWith(char))
+              ? line.replace(new RegExp(`^${char}`), '')
+              : `${char}${line}`;
+          });
           break;
-        }
         
         // case 'toc': {
         //   break;
