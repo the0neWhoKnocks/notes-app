@@ -238,6 +238,28 @@
     updateEditorValue(newSelStart, newSelEnd, newValue);
   }
   
+  function toggleCharAtLineStart(char, replacement='') {
+    const textVal = textareaRef.value;
+    const selStart = textareaRef.selectionStart;
+    const { start, end } = getCharIndex('\n', '\n');
+    const selLines = textVal.substring(start, end);
+    const updates = selLines
+      .split('\n')
+      .map(line => {
+        if (!line) return '';
+        return (line.startsWith(char))
+          ? line.replace(new RegExp(`^${char}`), replacement)
+          : `${char}${line}`;
+      })
+      .join('\n');
+    const s = textVal.substring(0, start);
+    const e = textVal.substring(end, textVal.length);
+    const updatedText = `${s}${updates}${e}`;
+    const newCursorPos = selStart + (updates.length - selLines.length);
+    
+    updateEditorValue(newCursorPos, newCursorPos, updatedText);
+  }
+  
   function handleToolClick({ target }) {
     if (target.dataset) {
       const textVal = textareaRef.value;
@@ -287,10 +309,11 @@
           break;
         }
         
-        // case 'blockquote': {
-        //   break;
-        // }
-        // 
+        case 'blockquote': {
+          toggleCharAtLineStart('> ');
+          break;
+        }
+        
         // case 'toc': {
         //   break;
         // }
