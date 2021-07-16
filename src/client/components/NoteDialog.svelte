@@ -129,6 +129,24 @@
     updateEditorValue(newSelStart, newSelEnd, newValue);
   }
   
+  function getSelectedLines() {
+    const textVal = textareaRef.value;
+    let selStart = textareaRef.selectionStart;
+    let selEnd = textareaRef.selectionEnd;
+    
+    const s = textVal.substring(0, selStart).split('\n').pop();
+    const m = textVal.substring(selStart, selEnd);
+    const e = textVal.substring(selEnd, textVal.length).split('\n').shift();
+    
+    return {
+      indexes: {
+        start: selStart - s.length,
+        end: selEnd + e.length,
+      },
+      lines: `${s}${m}${e}`.split('\n'),
+    };
+  }
+  
   function getCharIndex(startChar, endChar) {
     const textVal = textareaRef.value;
     let selStart = textareaRef.selectionStart;
@@ -242,24 +260,28 @@
     const textVal = textareaRef.value;
     const selStart = textareaRef.selectionStart;
     const selEnd = textareaRef.selectionEnd;
-    const { start, end } = getCharIndex('\n', '\n');
-    const selLines = textVal.substring(start, end).split('\n');
+    const { indexes, lines: selLines } = getSelectedLines();
     const updatedLengths = [];
     const updates = selLines
       .map(line => {
-        if (!line) return '';
+        if (selLines.length > 1 && !line) return '';
         const updated = transform(line);
         updatedLengths.push(updated.length - line.length);
         return updated;
       })
       .join('\n');
-    const s = textVal.substring(0, start);
-    const e = textVal.substring(end, textVal.length);
+    const s = textVal.substring(0, indexes.start);
+    const e = textVal.substring(indexes.end, textVal.length);
     const updatedText = `${s}${updates}${e}`;
     // These start/end values are slightly off, but they do the job of keeping
     // the multiple lines selected
-    const updatedSelStart = selStart + updatedLengths[0];
-    const updatedSelEnd = selEnd + updatedLengths[updatedLengths.length - 1];
+    let updatedSelStart = selStart + updatedLengths[0];
+    let updatedSelEnd = selEnd + updatedLengths[updatedLengths.length - 1];
+    
+    // Ensures that a selection stays on the first selected line, even after an
+    // updated line has all it's content removed.
+    if (updatedSelStart < indexes.start) updatedSelStart = indexes.start;
+    if (updatedSelEnd < indexes.start) updatedSelEnd = indexes.start;
     
     updateEditorValue(updatedSelStart, updatedSelEnd, updatedText);
   }
@@ -308,10 +330,16 @@
           });
           break;
         
-        // case 'toc': {
-        //   break;
-        // }
-        // 
+        case 'toc': {
+          toggleCharAtLineStart((line) => {
+            const char = '::TOC::';
+            return (line.startsWith(char))
+              ? line.replace(new RegExp(`^${char.replace(/(\[|\])/g, '\\$1')}`), '')
+              : `${char}${line}`;
+          });
+          break;
+        }
+        
         // case 'preview': {
         //   break;
         // }
