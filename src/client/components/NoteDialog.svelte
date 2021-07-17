@@ -264,7 +264,6 @@
     const updatedLengths = [];
     const updates = selLines
       .map(line => {
-        if (selLines.length > 1 && !line) return '';
         const updated = transform(line);
         updatedLengths.push(updated.length - line.length);
         return updated;
@@ -273,10 +272,8 @@
     const s = textVal.substring(0, indexes.start);
     const e = textVal.substring(indexes.end, textVal.length);
     const updatedText = `${s}${updates}${e}`;
-    // These start/end values are slightly off, but they do the job of keeping
-    // the multiple lines selected
     let updatedSelStart = selStart + updatedLengths[0];
-    let updatedSelEnd = selEnd + updatedLengths[updatedLengths.length - 1];
+    let updatedSelEnd = selEnd + updatedLengths.reduce((num, val) => num + val, 0);
     
     // Ensures that a selection stays on the first selected line, even after an
     // updated line has all it's content removed.
