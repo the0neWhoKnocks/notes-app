@@ -15,6 +15,7 @@
   let formRef;
   let textareaRef;
   let titleValue = $noteDialogData.title;
+  let previewing = false;
   
   const genQuery = (title = '') => {
     let query = `?p=${encodeURIComponent($noteDialogData.path)}`;
@@ -336,9 +337,10 @@
           });
           break;
         
-        // case 'preview': {
-        //   break;
-        // }
+        case 'preview': {
+          previewing = !previewing;
+          break;
+        }
       }
       
       handleChange({ target: textareaRef });
@@ -384,12 +386,19 @@
           <div class="note-form__sep"></div>
           <button type="button" data-type="preview" tabindex="-1">Preview</button>
         </nav>
-        <textarea
-          bind:this={textareaRef}
-          class="note-form__content"
-          name="content"
-          value={$noteDialogData.content || ''}
-        ></textarea>
+        <div class="note-form__content-wrapper">
+          <textarea
+            bind:this={textareaRef}
+            class="note-form__content"
+            name="content"
+            value={$noteDialogData.content || ''}
+          ></textarea>
+          {#if previewing}
+            <div class="note-form__content-preview">
+              {@html window.marked(textareaRef.value)}
+            </div>
+          {/if}
+        </div>        
       </div>
       <nav class="note-form__btm-nav">
         <button type="button" on:click={handleCloseClick}>Cancel</button>
@@ -445,6 +454,11 @@
     background: var(--fg-color--app);
   }
   
+  .note-form__content-wrapper {
+    height: 100%;
+    position: relative;
+  }
+  
   .note-form__content {
     width: 100%;
     height: 100%;
@@ -454,6 +468,18 @@
   }
   .note-form__content:focus {
     outline: none;
+  }
+  
+  .note-form__content-preview {
+    overflow: auto;
+    padding: 1em;
+    border: solid 1px;
+    background: #fff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
   }
   
   .note-form__btm-nav {
