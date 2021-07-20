@@ -60,6 +60,14 @@ const shell = ({ props, view } = {}) => {
           margin: 0;
           background: rgba(255, 255, 255, 0.15);
         }
+        
+        ol, ul {
+          padding-left: 0;
+          margin-left: 1em;
+        }
+        li {
+          margin: 0.25em 0;
+        }
 
         pre {
           font-family: menlo, inconsolata, monospace;
