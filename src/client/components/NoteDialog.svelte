@@ -1,4 +1,5 @@
 <script>
+  import { tick } from 'svelte';
   import {
     ROUTE__API__USER_SET_DATA,
   } from '../../constants';
@@ -13,6 +14,7 @@
   import LabeledInput from './LabeledInput.svelte';  
   
   let formRef;
+  let previewRef;
   let textareaRef;
   let titleValue = $noteDialogData.title;
   let previewing = false;
@@ -284,7 +286,7 @@
     updateEditorValue(updatedSelStart, updatedSelEnd, updatedText);
   }
   
-  function handleToolClick({ target }) {
+  async function handleToolClick({ target }) {
     if (target.dataset) {
       switch (target.dataset.type) {
         case 'heading':
@@ -339,6 +341,12 @@
         
         case 'preview': {
           previewing = !previewing;
+          
+          // keep scroll positions in sync'ish
+          if (previewRef) textareaRef.scrollTop = previewRef.scrollTop;
+          await tick();
+          if (previewRef) previewRef.scrollTop = textareaRef.scrollTop;
+          
           break;
         }
       }
@@ -394,7 +402,10 @@
             value={$noteDialogData.content || ''}
           ></textarea>
           {#if previewing}
-            <div class="note-form__content-preview">
+            <div
+              bind:this={previewRef}
+              class="note-form__content-preview"
+            >
               {@html window.marked(textareaRef.value)}
             </div>
           {/if}
