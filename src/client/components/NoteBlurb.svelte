@@ -38,7 +38,6 @@
   }
   
   .note-blurb section {
-    white-space: pre;
-    padding: 0.5em;
+    padding: 1em;
   }
 </style>
