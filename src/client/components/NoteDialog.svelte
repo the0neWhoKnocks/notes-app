@@ -439,12 +439,16 @@
     background: var(--bg-color--app);
     display: flex;
   }
-  .note-form__toolbar button {
+  .note-form__toolbar button,
+  .note-form__toolbar button:focus {
     padding: 2px;
     border: solid 1px;
     border-radius: unset;
     margin: 2px;
     background: transparent;
+  }
+  .note-form__toolbar button:focus::after {
+    content: none;
   }
   
   .note-form__sep {
