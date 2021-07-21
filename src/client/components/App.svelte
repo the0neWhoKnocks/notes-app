@@ -13,6 +13,7 @@
     noteDialogData,
     noteGroups,
     userData,
+    userPreferences,
   } from '../stores.js';
   import postData from '../utils/postData';
   import {
@@ -121,8 +122,14 @@
     }
   }
   
+  function loadThemeCSS(theme) {
+    document.getElementById('prismTheme').href = `/css/vendor/prism${theme ? `-${theme}` : ''}.css`;
+  }
+  
   function handleThemeSelect({ currentTarget: { value } }) {
-    document.getElementById('prismTheme').href = `/css/vendor/prism${value ? `-${value}` : ''}.css`;
+    loadThemeCSS(value);
+    userPreferences.setPreference('theme', value);
+    
   }
   
   $: if (userProfileOpened) {
@@ -169,8 +176,13 @@
     setUserInfo();
     
     try {
-      const data = await postData(ROUTE__API__USER_GET_DATA, $userData);
-      noteGroups.set(data);
+      const {
+        notesData,
+        preferences,
+      } = await postData(ROUTE__API__USER_GET_DATA, $userData);
+      noteGroups.set(notesData);
+      userPreferences.set(preferences);
+      loadThemeCSS(preferences.theme);
     }
     catch ({ message }) { alert(message); }
     
@@ -187,7 +199,7 @@
         <div class="app__title">{appTitle}</div>
         <label class="app__theme-selector">
           Theme:
-          <select on:input={handleThemeSelect}>
+          <select on:input={handleThemeSelect} bind:value={$userPreferences.theme}>
             <option value="">default</option>
             <option value="coy">Coy</option>
             <option value="dark">Dark</option>
