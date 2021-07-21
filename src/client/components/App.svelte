@@ -138,16 +138,23 @@
     log.info('App starting');
     
     const renderer = new window.marked.Renderer();
-    // Custom `code` renderer is needed to apply the `language` class to the
-    // parent `pre` for `prism`.
-    const origCodeFn = renderer.code;
-    renderer.code = (code, language, escaped) => {
-      const langClass = language ? `class="language-${language}"` : '';
-      // https://github.com/markedjs/marked/blob/af14068b99618242c9dee6147ea3432f7903322e/src/Renderer.js
-      // Rendering with the original function since there's extra logic in there
-      // I don't want to duplicate. 
-      const rendered = origCodeFn.call(renderer, code, language, escaped);
-      return rendered.replace(/^<pre/, `<pre ${langClass}`);
+    // NOTE:
+    // - Custom `code` renderer is needed to apply the `language` class to the
+    //   parent `pre` for `prism`.
+    // - https://github.com/markedjs/marked/blob/af14068b99618242c9dee6147ea3432f7903322e/src/Renderer.js
+    //   Rendering with the original functions since there's extra logic in there
+    //   I don't want to duplicate.
+    // - Even if no `language` is specified, the class `language-` needs to be
+    //   add so that base Prism styles kick in.
+    const origCodeBlockFn = renderer.code;
+    const origInlineCodeFn = renderer.codespan;
+    renderer.code = (code, language='', escaped) => {
+      const rendered = origCodeBlockFn.call(renderer, code, language, escaped);
+      return rendered.replace(/^<pre/, `<pre class="language-${language}"`);
+    };
+    renderer.codespan = (code, language='', escaped) => {
+      const rendered = origInlineCodeFn.call(renderer, code, language, escaped);
+      return rendered.replace(/^<code/, `<code class="language-${language}"`);
     };
     window.marked.setOptions({
       headerPrefix: 'header_',
