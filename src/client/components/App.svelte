@@ -121,6 +121,10 @@
     }
   }
   
+  function handleThemeSelect({ currentTarget: { value } }) {
+    document.getElementById('prismTheme').href = `/css/vendor/prism${value ? `-${value}` : ''}.css`;
+  }
+  
   $: if (userProfileOpened) {
     userNavOpen = false;
   }
@@ -133,7 +137,27 @@
   onMount(async () => {
     log.info('App starting');
     
-    window.marked.defaults.headerPrefix = 'header_';
+    const renderer = new window.marked.Renderer();
+    // Custom `code` renderer is needed to apply the `language` class to the
+    // parent `pre` for `prism`.
+    const origCodeFn = renderer.code;
+    renderer.code = (code, language, escaped) => {
+      const langClass = language ? `class="language-${language}"` : '';
+      // https://github.com/markedjs/marked/blob/af14068b99618242c9dee6147ea3432f7903322e/src/Renderer.js
+      // Rendering with the original function since there's extra logic in there
+      // I don't want to duplicate. 
+      const rendered = origCodeFn.call(renderer, code, language, escaped);
+      return rendered.replace(/^<pre/, `<pre ${langClass}`);
+    };
+    window.marked.setOptions({
+      headerPrefix: 'header_',
+      highlight: (code, lang) => {
+        return (window.Prism.languages[lang])
+          ? window.Prism.highlight(code, window.Prism.languages[lang], lang)
+          : code;
+      },
+      renderer,
+    });
     
     setUserInfo();
     
@@ -153,7 +177,19 @@
   {#if mounted}
     {#if userIsLoggedIn}
       <nav class="top-nav">
-        <div class="app-title">{appTitle}</div>
+        <div class="app__title">{appTitle}</div>
+        <label class="app__theme-selector">
+          Theme:
+          <select on:input={handleThemeSelect}>
+            <option value="">default</option>
+            <option value="coy">Coy</option>
+            <option value="dark">Dark</option>
+            <option value="okaidia">Okaidia</option>
+            <option value="solarizedlight">Solarized Light</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="twilight">Twilight</option>
+          </select>
+        </label>
         <div class="user-menu">
           <button on:click={toggleUserNav}>
             <Icon type={ICON__USER} />
@@ -223,10 +259,19 @@
     flex-direction: column;
   }
   
-  .app-title {
+  .app__title {
     width: 100%;
     font-size: 1.25em;
     font-weight: bold;
+  }
+  
+  .app__theme-selector {
+    display: flex;
+    align-items: center;
+  }
+  .app__theme-selector select {
+    padding: 0.25em;
+    margin-left: 0.5em;
   }
   
   .top-nav {
