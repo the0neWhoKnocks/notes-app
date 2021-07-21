@@ -93,6 +93,9 @@ const conf = {
         // not be deleted. Examples of such files/folders are anything generated
         // at startup before the bundling has started. Note that you have to
         // exclude the folder and it's contents separately.
+        '!css',
+        '!css/vendor',
+        '!css/vendor/**/*',
         '!js',
         '!js/vendor',
         '!js/vendor/**/*',
