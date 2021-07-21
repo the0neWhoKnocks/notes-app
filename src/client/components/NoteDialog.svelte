@@ -64,8 +64,8 @@
   
   async function handleSubmit() {
     try {
-      const data = await postData(formRef.getAttribute('action'), formRef);
-      noteGroups.set(data);
+      const { notesData } = await postData(formRef.getAttribute('action'), formRef);
+      noteGroups.set(notesData);
       closeDialog();
     }
     catch (err) {

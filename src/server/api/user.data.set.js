@@ -18,7 +18,20 @@ const sanitizeContent = (txt) => {
 module.exports = async function setData(req, res) {
   const {
     appConfig,
-    body: { action, content, id, name, oldName, oldTitle, password, path, title, type, username },
+    body: {
+      action,
+      content,
+      id,
+      name,
+      oldName,
+      oldTitle,
+      password,
+      path,
+      prefs,
+      title,
+      type,
+      username,
+    },
   } = req;
   
   if (!action) return res.error(400, 'Missing `action`');
@@ -27,7 +40,7 @@ module.exports = async function setData(req, res) {
   else if (!username && !password) return res.error(400, 'Missing `username` and `password`');
   else if (!username) return res.error(400, 'Missing `username`');
   else if (!password) return res.error(400, 'Missing `password`');
-  else if (!['group', 'note'].includes(type)) return res.error(400, `The \`type\` "${type}" is unknown`);
+  else if (!['group', 'note', 'preferences'].includes(type)) return res.error(400, `The \`type\` "${type}" is unknown`);
   else if (type === 'note') {
     let required = ['path', 'title'];
     if (action === 'edit') required.push('oldTitle');
@@ -44,13 +57,19 @@ module.exports = async function setData(req, res) {
     const missingItems = required.filter(prop => !req.body[prop]).map(prop => `\`${prop}\``).join(' and ');
     if (missingItems.length) return res.error(400, `Missing ${missingItems}`);
   }
+  else if (type === 'preferences') {
+    const required = ['prefs'];
+    const missingItems = required.filter(prop => !req.body[prop]).map(prop => `\`${prop}\``).join(' and ');
+    if (missingItems.length) return res.error(400, `Missing ${missingItems}`);
+  }
   
   const data = await loadUserData(appConfig, username, password);
+  const notesData = data.notesData;
   let logMsg = 'Data set';
   
   if (action === 'add') {
     if (type === 'note') {
-      const { notes } = getPathNode(data, path);
+      const { notes } = getPathNode(notesData, path);
       const nodeId = kebabCase(title);
       
       if (!notes[nodeId]) {
@@ -65,7 +84,7 @@ module.exports = async function setData(req, res) {
       else return res.error(400, `Note with title "${title}" already exists in "${path}"`);
     }
     else if (type === 'group') {
-      const { groups } = getPathNode(data, path);
+      const { groups } = getPathNode(notesData, path);
       const nodeId = kebabCase(name);
       
       if (!groups[nodeId]) {
@@ -78,7 +97,7 @@ module.exports = async function setData(req, res) {
   }
   else if (action === 'edit') {
     if (type === 'note') {
-      const { notes } = getPathNode(data, path);
+      const { notes } = getPathNode(notesData, path);
       let nodeId = kebabCase(oldTitle);
       const oldNote = { ...notes[nodeId] };
       
@@ -102,7 +121,7 @@ module.exports = async function setData(req, res) {
       logMsg = `Updated note "${title}" in "${path}"`;
     }
     else if (type === 'group') {
-      const { groups } = getPathNode(data, path);
+      const { groups } = getPathNode(notesData, path);
       let nodeId = kebabCase(oldName);
       const groupCopy = { ...groups[nodeId] };
       
@@ -123,16 +142,22 @@ module.exports = async function setData(req, res) {
       
       logMsg = `Renamed group from "${oldName}" to "${name}" in "${path}"`;
     }
+    else if (type === 'preferences') {
+      data.preferences = {
+        ...data.preferences,
+        ...prefs,
+      };
+    }
   }
   else if (action === 'delete') {
     if (type === 'note') {
-      const { notes } = getPathNode(data, path);
+      const { notes } = getPathNode(notesData, path);
       delete notes[id];
       
       logMsg = `Removed note "${id}" from "${path}"`;
     }
     else if (type === 'group') {
-      const { groups } = getPathNode(data, path);
+      const { groups } = getPathNode(notesData, path);
       delete groups[id];
       
       logMsg = `Removed group "${id}" from "${path}"`;
