@@ -314,6 +314,7 @@
     margin: 0;
     background: var(--bg-color--app);
     position: absolute;
+    z-index: 1;
     top: calc(100% + var(--nav-padding));
     right: 0;
     opacity: 0;
