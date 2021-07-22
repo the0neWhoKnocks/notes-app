@@ -155,13 +155,16 @@
     //   add so that base Prism styles kick in.
     const origCodeBlockFn = renderer.code;
     const origInlineCodeFn = renderer.codespan;
-    renderer.code = (code, language='', escaped) => {
-      const rendered = origCodeBlockFn.call(renderer, code, language, escaped);
-      return rendered.replace(/^<pre/, `<pre class="language-${language}"`);
+    renderer.code = (code, language, escaped) => {
+      const lang = language || 'none';
+      const rendered = origCodeBlockFn.call(renderer, code, lang, escaped);
+      const dataAttr = language ? `data-lang="${lang}"` : '';
+      return rendered.replace(/^<pre/, `<pre class="language-${lang}" ${dataAttr}`);
     };
-    renderer.codespan = (code, language='', escaped) => {
-      const rendered = origInlineCodeFn.call(renderer, code, language, escaped);
-      return rendered.replace(/^<code/, `<code class="language-${language}"`);
+    renderer.codespan = (code, language, escaped) => {
+      const lang = language || 'none';
+      const rendered = origInlineCodeFn.call(renderer, code, lang, escaped);
+      return rendered.replace(/^<code/, `<code class="language-${lang}"`);
     };
     window.marked.setOptions({
       headerPrefix: 'header_',
@@ -183,6 +186,10 @@
       noteGroups.set(notesData);
       userPreferences.set(preferences);
       loadThemeCSS(preferences.theme);
+      setTimeout(() => {
+        // run highlight manually to make plugins kick in
+        window.Prism.highlightAll();
+      }, 0);
     }
     catch ({ message }) { alert(message); }
     

@@ -15,6 +15,8 @@ rsync -avh \
 
 # Sync Static module files
 rsync -avh \
+  ./node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css \
+  ./node_modules/prismjs/plugins/toolbar/prism-toolbar.css \
   ./node_modules/prismjs/themes/prism-coy.css \
   ./node_modules/prismjs/themes/prism-dark.css \
   ./node_modules/prismjs/themes/prism-funky.css \
@@ -61,4 +63,6 @@ rsync -avh \
   ./node_modules/prismjs/components/prism-wasm.min.js \
   ./node_modules/prismjs/components/prism-yaml.min.js \
   ./node_modules/prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js \
+  ./node_modules/prismjs/plugins/line-numbers/prism-line-numbers.min.js \
+  ./node_modules/prismjs/plugins/toolbar/prism-toolbar.min.js \
   ./dist/public/js/vendor
