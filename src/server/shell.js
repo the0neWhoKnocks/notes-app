@@ -72,8 +72,21 @@ const shell = ({ props, view } = {}) => {
         pre > code {
           display: block;
         }
+        pre[data-lang] {
+          position: relative;
+        }
+        pre[data-lang]::after {
+          content: '[' attr(data-lang) ']';
+          opacity: 0.5;
+          position: absolute;
+          top: 0.1em;
+          right: 0.5em;
+        }
         .app :not(pre) > code[class*="language-"] {          
           padding: 0.2em 0.4em;
+        }
+        .code-toolbar > .toolbar {
+          right: 4em !important;
         }
 
         button {
@@ -146,7 +159,7 @@ const shell = ({ props, view } = {}) => {
         };
       </script>
     </head>
-    <body class="no-js">
+    <body class="no-js line-numbers">
       <svg style="display:none; position:absolute" width="0" height="0">
         <symbol id="asterisk" viewBox="0 0 32.275391 30.46875" xmlns="http://www.w3.org/2000/svg">
           <path d="M0 14.355469l2.2460938-6.933594c5.1757707 1.8229802 8.9355322 3.401755 11.2792972 4.736328C12.906885 6.2663426 12.581365 2.2136123 12.548828 0h7.080078c-.09768 3.2227258-.472027 7.2591801-1.123047 12.109375 3.35284-1.692646 7.193982-3.2551444 11.523438-4.6875l2.246094 6.933594c-4.134146 1.367244-8.186877 2.278702-12.158204 2.734375 1.985652 1.725314 4.785129 4.801483 8.398438 9.228515L22.65625 30.46875c-1.888045-2.57157-4.11786-6.070915-6.689453-10.498047-2.408871 4.589892-4.524754 8.089238-6.3476564 10.498047l-5.7617187-4.150391c3.7760309-4.654896 6.4778511-7.731065 8.1054691-9.228515C7.763661 16.276098 3.7760348 15.364641 0 14.355469" font-family="arial" font-size="100"/>
@@ -178,10 +191,15 @@ const shell = ({ props, view } = {}) => {
       </div>
       
       <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism.css">
+      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism-line-numbers.css">
+      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism-toolbar.css">
       <script src="/js/vendor/marked.min.js"></script>
       <script src="/js/vendor/prism-core.min.js"></script>
       <script src="/js/vendor/prism-clike.min.js"></script>
       <script src="/js/vendor/prism-javascript.min.js"></script>
+      <script src="/js/vendor/prism-line-numbers.min.js"></script>
+      <script src="/js/vendor/prism-toolbar.min.js"></script>
+      <script src="/js/vendor/prism-copy-to-clipboard.min.js"></script>
       <script src="/js/vendor/purify.min.js"></script>
       <script src="${manifest['vendor.js']}"></script>
       <script src="${manifest[`${view}.js`]}"></script>
