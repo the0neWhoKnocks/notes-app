@@ -36,6 +36,34 @@
   export let appTitle = '';
   
   const log = logger('app');
+  // NOTE: When adding in support for a new lang, look in the source lang file for
+  // - (regex) `Prism\.languages\.[\w]+=` to find any `langAliases`.
+  // - `clone` and `extend`, to find any `langDeps`.
+  const langAliases = {
+    atom: 'markup',
+    html: 'markup',
+    js: 'javascript',
+    mathml: 'markup',
+    py: 'python',
+    rss: 'markup',
+    ssml: 'markup',
+    svg: 'markup',
+    xml: 'markup',
+  };
+  const langDeps = {
+    arduino: ['cpp'],
+    c: ['clike'],
+    cpp: ['c'],
+    groovy: ['clike'],
+    javascript: ['clike'],
+    jsdoc: ['javadoclike'],
+    json5: ['json'],
+    jsonp: ['json'],
+    jsx: ['javascript', 'markup'],
+    markdown: ['markup'],
+  };
+  const loadedLangs = [];
+  let langs = [];
   let userStorageType;
   let mounted = false;
   let userNavOpen = false;
@@ -123,13 +151,62 @@
   }
   
   function loadThemeCSS(theme) {
-    document.getElementById('prismTheme').href = `/css/vendor/prism${theme ? `-${theme}` : ''}.css`;
+    document.getElementById('prismTheme').href = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.css`;
   }
   
   function handleThemeSelect({ currentTarget: { value } }) {
     loadThemeCSS(value);
     userPreferences.setPreference('theme', value);
-    
+  }
+  
+  function deDupeArray(arr) {
+    return arr.reduce((_arr, item) => {
+      if (!_arr.includes(item)) _arr.push(item);
+      return _arr;
+    }, []);
+  }
+  
+  function mapLangAliases(arr) {
+    return arr.map(lang => langAliases[lang] || lang);
+  }
+  
+  function addLangDeps(arr) {
+    return arr.reduce((_arr, lang) => {
+      if (langDeps[lang]) _arr.push(...addLangDeps(langDeps[lang]));
+      _arr.push(lang);
+      return _arr;
+    }, []);
+  }
+  
+  function loadLangs() {
+    if (window.langsTO) clearTimeout(window.langsTO);
+    window.langsTO = setTimeout(() => {
+      langs = deDupeArray(langs);
+      langs = mapLangAliases(langs);
+      langs = addLangDeps(langs);
+      
+      const langPromises = langs.reduce((arr, lang) => {
+        if (!loadedLangs.includes(lang)) {
+          arr.push(new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = `/js/vendor/prism/langs/prism-${lang}.min.js`;
+            script.onload = () => {
+              loadedLangs.push(lang);
+              resolve();
+            };
+            document.head.appendChild(script);
+          }));
+        }
+        
+        return arr;
+      }, []);
+      
+      if (langPromises.length) {
+        Promise.all(langPromises).then(() => {
+          window.Prism.highlightAll();
+        });
+      }
+    }, 100);
   }
   
   $: if (userProfileOpened) {
@@ -159,6 +236,10 @@
       const lang = language || 'none';
       const rendered = origCodeBlockFn.call(renderer, code, lang, escaped);
       const dataAttr = language ? `data-lang="${lang}"` : '';
+      
+      if (lang !== 'none') langs.push(lang);
+      loadLangs();
+      
       return rendered.replace(/^<pre/, `<pre class="language-${lang}" ${dataAttr}`);
     };
     renderer.codespan = (code, language, escaped) => {
