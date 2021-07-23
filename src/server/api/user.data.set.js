@@ -147,6 +147,8 @@ module.exports = async function setData(req, res) {
         ...data.preferences,
         ...prefs,
       };
+      
+      logMsg = `Updated preferences for ${Object.keys(prefs).map(pref => `"${pref}"`).join(', ')}`;
     }
   }
   else if (action === 'delete') {
