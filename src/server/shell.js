@@ -211,16 +211,14 @@ const shell = ({ props, view } = {}) => {
         <div id="${DOM__SVELTE_MOUNT_POINT}"></div>
       </div>
       
-      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism.css">
-      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism-line-numbers.css">
-      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism-toolbar.css">
+      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism/themes/prism.css">
+      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism/plugins/prism-line-numbers.css">
+      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism/plugins/prism-toolbar.css">
       <script src="/js/vendor/marked.min.js"></script>
-      <script src="/js/vendor/prism-core.min.js"></script>
-      <script src="/js/vendor/prism-clike.min.js"></script>
-      <script src="/js/vendor/prism-javascript.min.js"></script>
-      <script src="/js/vendor/prism-line-numbers.min.js"></script>
-      <script src="/js/vendor/prism-toolbar.min.js"></script>
-      <script src="/js/vendor/prism-copy-to-clipboard.min.js"></script>
+      <script src="/js/vendor/prism/prism-core.min.js"></script>
+      <script src="/js/vendor/prism/plugins/prism-line-numbers.min.js"></script>
+      <script src="/js/vendor/prism/plugins/prism-toolbar.min.js"></script>
+      <script src="/js/vendor/prism/plugins/prism-copy-to-clipboard.min.js"></script>
       <script src="/js/vendor/purify.min.js"></script>
       <script src="${manifest['vendor.js']}"></script>
       <script src="${manifest[`${view}.js`]}"></script>
