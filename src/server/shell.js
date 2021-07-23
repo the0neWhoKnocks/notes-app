@@ -85,8 +85,29 @@ const shell = ({ props, view } = {}) => {
         .app :not(pre) > code[class*="language-"] {          
           padding: 0.2em 0.4em;
         }
-        .code-toolbar > .toolbar {
-          right: 4em !important;
+        .app .code-toolbar {
+          margin: .5em 0;
+          display: flex;
+          flex-direction: column-reverse;
+        }
+        .app .code-toolbar > pre {
+          margin: 0;
+        }
+        .app .code-toolbar > .toolbar {
+          background: #0000004a;
+          display: flex;
+          justify-content: flex-end;
+          opacity: 1;
+          position: relative;
+          top: 0;
+          right: 0;
+        }
+        .app .code-toolbar > .toolbar > .toolbar-item > button {
+          font-family: revert;
+          padding: 0.35em 0.75em;
+          border-radius: unset;
+          box-shadow: none;
+          background: transparent;
         }
 
         button {
