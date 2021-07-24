@@ -6,6 +6,7 @@
   } from '../../constants';
   import getPathNode from '../../utils/getPathNode';
   import logger from '../../utils/logger';
+  import tableOfContents from '../marked/extensions/tableOfContents';
   import {
     currentNoteGroupNotes,
     deleteDialogData,
@@ -255,6 +256,9 @@
           : code;
       },
       renderer,
+    });
+    window.marked.use({
+      extensions: [tableOfContents],
     });
     
     setUserInfo();
