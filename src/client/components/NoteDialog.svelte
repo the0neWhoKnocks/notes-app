@@ -46,6 +46,19 @@
     }
   }
   
+  function handleContentKeyDown({ keyCode }) {
+    if (keyCode === 13) {
+      // Prevent the textarea from randomly scrolling to the top after a newline
+      // is added. There's still a flicker during the adjustment, but it's
+      // better than all the content suddenly shifting to the top.
+      // Only reference of the issue I could find: https://stackoverflow.com/questions/56329625/preventing-textarea-scroll-behaviour-in-chrome-after-newline-added
+      const scrollPos = textareaRef.scrollTop;
+      setTimeout(() => {
+        if (textareaRef.scrollTop !== scrollPos) textareaRef.scrollTop = scrollPos;
+      }, 0);
+    }
+  }
+  
   function handleChange({ target }) {
     switch (target.name) {
       case 'content': {
@@ -259,7 +272,15 @@
     updateEditorValue(newSelStart, newSelEnd, newValue);
   }
   
-  function toggleCharAtLineStart(transform) {
+  function toggleCharAtLineStart(transformOrChar) {
+    const _transform = (typeof transformOrChar === 'function')
+      ? transformOrChar
+      : (line) => {
+        const char = transformOrChar;
+        return (line.startsWith(char))
+          ? line.replace(new RegExp(`^${char}`), '')
+          : `${char}${line}`;
+      };
     const textVal = textareaRef.value;
     const selStart = textareaRef.selectionStart;
     const selEnd = textareaRef.selectionEnd;
@@ -267,7 +288,7 @@
     const updatedLengths = [];
     const updates = selLines
       .map(line => {
-        const updated = transform(line);
+        const updated = _transform(line);
         updatedLengths.push(updated.length - line.length);
         return updated;
       })
@@ -286,8 +307,23 @@
     updateEditorValue(updatedSelStart, updatedSelEnd, updatedText);
   }
   
+  function addLink() {
+    const textVal = textareaRef.value;
+    const selStart = textareaRef.selectionStart;
+    const selEnd = textareaRef.selectionEnd;
+    const selText = textVal.substring(selStart, selEnd);
+    
+    const s = textVal.substring(0, selStart);
+    const e = textVal.substring(selEnd, textVal.length);
+    const updatedText = `${s}[${selText}](LINK_HERE)${e}`;
+    
+    updateEditorValue(selStart, selEnd, updatedText);
+  }
+  
   async function handleToolClick({ target }) {
     if (target.dataset) {
+      const INDENT = '  ';
+      
       switch (target.dataset.type) {
         case 'heading':
           toggleCharAtLineStart((line) => {
@@ -317,26 +353,40 @@
           wrapSelectionWithChar('`');
           break;
         
+        case 'anchor':
+          addLink();
+          break;
+        
+        case 'ul':
+          toggleCharAtLineStart('- ');
+          break;
+        
+        case 'ol':
+          toggleCharAtLineStart('1. ');
+          break;
+        
+        case 'indent':
+          toggleCharAtLineStart(line => `${INDENT}${line}`);
+          break;
+        
+        case 'outdent':
+          toggleCharAtLineStart(line => {
+            return (line.startsWith(INDENT))
+              ? line.replace(new RegExp(`^${INDENT}`), '')
+              : line;
+          });
+          break;
+        
         case 'codeBlock':
           wrapSelectionWithBlock('```');
           break;
         
         case 'blockquote':
-          toggleCharAtLineStart((line) => {
-            const char = '> ';
-            return (line.startsWith(char))
-              ? line.replace(new RegExp(`^${char}`), '')
-              : `${char}${line}`;
-          });
+          toggleCharAtLineStart('> ');
           break;
         
         case 'toc':
-          toggleCharAtLineStart((line) => {
-            const char = '::TOC::';
-            return (line.startsWith(char))
-              ? line.replace(new RegExp(`^${char.replace(/(\[|\])/g, '\\$1')}`), '')
-              : `${char}${line}`;
-          });
+          toggleCharAtLineStart('::TOC::');
           break;
         
         case 'preview': {
@@ -386,6 +436,11 @@
           <button type="button" title="Italic" data-type="italic" tabindex="-1">I</button>
           <button type="button" title="Strike Through" data-type="strikethrough" tabindex="-1">S</button>
           <button type="button" title="Inline Code" data-type="inlineCode" tabindex="-1">`</button>
+          <button type="button" title="Link" data-type="anchor" tabindex="-1">A</button>
+          <button type="button" title="Unordered List" data-type="ul" tabindex="-1">ul</button>
+          <button type="button" title="Ordered List" data-type="ol" tabindex="-1">ol</button>
+          <button type="button" title="Indent" data-type="indent" tabindex="-1">_&gt;</button>
+          <button type="button" title="Outdent" data-type="outdent" tabindex="-1">&lt;_</button>
           <div class="note-form__sep"></div>
           <button type="button" title="Code Block" data-type="codeBlock" tabindex="-1">```</button>
           <button type="button" title="Block Quote" data-type="blockquote" tabindex="-1">"</button>
@@ -399,6 +454,7 @@
             bind:this={textareaRef}
             class="note-form__content"
             name="content"
+            on:keydown={handleContentKeyDown}
             value={$noteDialogData.content || ''}
           ></textarea>
           {#if previewing}
