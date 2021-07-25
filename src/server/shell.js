@@ -222,6 +222,8 @@ const shell = ({ props, view } = {}) => {
       <script src="/js/vendor/purify.min.js"></script>
       <script src="${manifest['vendor.js']}"></script>
       <script src="${manifest[`${view}.js`]}"></script>
+      
+      <script src="${manifest['sw.register.js']}"></script>
     </body>
     </html>
   `;

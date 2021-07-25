@@ -4,12 +4,16 @@ mkdir -p \
   ./dist \
   ./dist/public/js/vendor
 
-# Sync Server files, delete anything that doesn't exist anymore
+# Sync Server files, delete anything that doesn't exist anymore.
+# These paths may need to be echoed in `watcher.js > watchedServerFiles`.
 rsync -avh \
-  ./src/constants.js \
   ./src/server \
   ./src/utils \
+  ./src/constants.js \
   ./dist --delete
+rsync -avh \
+  ./src/client/sw.js \
+  ./dist/public --delete
 
 # Sync Static module files
 rsync -avh \
