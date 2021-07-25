@@ -31,6 +31,7 @@ const conf = {
   devtool: dev && 'source-map',
   entry: {
     'js/app': resolve(__dirname, './src/client/index.js'),
+    'js/sw.register': resolve(__dirname, './src/client/sw.register.js'),
   },
   mode,
   module: {
@@ -99,6 +100,7 @@ const conf = {
         '!js',
         '!js/vendor',
         '!js/vendor/**/*',
+        '!sw.js',
       ],
     }),
     new webpack.DefinePlugin({
