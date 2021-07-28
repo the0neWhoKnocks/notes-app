@@ -267,13 +267,16 @@
     setUserInfo();
     
     try {
-      const {
-        notesData,
-        preferences,
-      } = await postData(ROUTE__API__USER_GET_DATA, $userData);
-      noteGroups.set(notesData);
-      userPreferences.set(preferences);
-      loadThemeCSS(preferences.theme);
+      if ($userData) {
+        const {
+          notesData,
+          preferences,
+        } = await postData(ROUTE__API__USER_GET_DATA, $userData);
+        noteGroups.set(notesData);
+        userPreferences.set(preferences);
+        loadThemeCSS(preferences.theme);
+      }
+    
       setTimeout(() => {
         // run highlight manually to make plugins kick in
         window.Prism.highlightAll();
