@@ -1,6 +1,7 @@
 const { STATUS_CODES } = require('http');
 const { readFileSync, existsSync } = require('fs');
 const compression = require('compression');
+const glob = require('fast-glob');
 const sirv = require('sirv');
 const bodyParser = require('body-parser');
 const mkdirp = require('mkdirp');
@@ -34,6 +35,12 @@ const middleware = [
   compression({ threshold: 0 }),
   sirv(PATH__PUBLIC, { dev, etag: true }),
 ];
+
+const PUBLIC_CSS_VENDOR = 'css/vendor';
+const PUBLIC_JS_VENDOR = 'js/vendor';
+const CLIENT_LANGS_PATH = `${PUBLIC_JS_VENDOR}/prism/langs`;
+const ABS_LANGS_PATH = `${__dirname}/../public/${CLIENT_LANGS_PATH}`;
+const langFiles = (glob.sync('*.js', { cwd: ABS_LANGS_PATH })).map(lang => `/${CLIENT_LANGS_PATH}/${lang}`);
 
 function app(req, res) {
   const [url] = req.url.split('?');
@@ -127,13 +134,47 @@ app
   .post(ROUTE__API__USER_LOGIN, jsonParser, userLogin)
   .post(ROUTE__API__USER_SET_DATA, jsonParser, setUserData)
   .post(ROUTE__API__USER_SET_PROFILE, jsonParser, setUserProfile)
-  .get('/', (req, res) => {
+  .get('/', async (req, res) => {
+    const MANIFEST_PATH = '../public/manifest.json';
+    const VIEW = 'app'; // usually tied to the `entry` name in your bundler
+    if (process.env.NODE_ENV !== 'production') delete require.cache[require.resolve(MANIFEST_PATH)];
+    const manifest = require(MANIFEST_PATH);
+    
+    const body = {
+      asyncScripts: [ // only needed for SW
+        ...langFiles,
+      ],
+      scripts: [
+        `/${PUBLIC_JS_VENDOR}/marked.min.js`,
+        `/${PUBLIC_JS_VENDOR}/prism/prism-core.min.js`,
+        `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-line-numbers.min.js`,
+        `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-toolbar.min.js`,
+        `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-copy-to-clipboard.min.js`,
+        `/${PUBLIC_JS_VENDOR}/purify.min.js`,
+        manifest['vendor.js'],
+        manifest[`${VIEW}.js`],
+        manifest['sw.register.js'],
+      ],
+      styles: [
+        { attrs: { id: 'prismTheme' }, url: `/${PUBLIC_CSS_VENDOR}/prism/themes/prism.css` },
+        `/${PUBLIC_CSS_VENDOR}/prism/plugins/prism-line-numbers.css`,
+        `/${PUBLIC_CSS_VENDOR}/prism/plugins/prism-toolbar.css`,
+      ],
+    };
+    const head = {
+      scripts: [],
+      styles: [
+        manifest[`${VIEW}.css`],
+      ],
+    };
+    
     res.end(shell({
+      body,
+      head,
       props: {
         appTitle: APP__TITLE,
         configExists: !!req.appConfig,
       },
-      view: 'app', // usually tied to the `entry` name in your bundler
     }));
   });
 

@@ -1,32 +1,53 @@
 const CACHE_KEY = 'notes-app';
+const LOG_PREFIX = '[SW]';
 
-async function sendClientMsg(ev, msg) {
-  const { source } = ev;
-  
-  if (source) {
-    source.postMessage(msg);
-    return;
-  }
-  else {
-    console.warn('No event `source` found, not sending message');
-    return;
-  }
-}
+// async function sendClientMsg(ev, msg) {
+//   const { source } = ev;
+// 
+//   if (source) {
+//     source.postMessage(msg);
+//   }
+//   else {
+//     console.warn(`${LOG_PREFIX} No event 'source' found, not sending message`);
+//   }
+// }
 
 self.addEventListener('install', async () => {
   await self.skipWaiting();
+  console.log(`${LOG_PREFIX} Installed`);
+});
+
+self.addEventListener('activate', async () => {
+  await self.clients.claim();
+  console.log(`${LOG_PREFIX} Actived`);
+});
+
+self.addEventListener('fetch', async (ev) => {
+  const { request } = ev;
+  
+  ev.respondWith(
+    caches.match(request).then((resp) => {
+      if (resp) {
+        console.log(`${LOG_PREFIX} From Cache: "${request.url}"`);
+        return resp;
+      }
+      
+      console.log(`${LOG_PREFIX} Fetching: "${request.url}"`);
+      return fetch(request);
+    })
+  );
 });
 
 self.addEventListener('message', async (ev) => {
   const { data: { step, type, urls } } = ev;
   
   if (type === 'CACHE_URLS') {
-    if (step === 'install') await caches.delete(CACHE_KEY);
+    if (step === 'installing') await caches.delete(CACHE_KEY);
     
     const cache = await caches.open(CACHE_KEY);
     cache.addAll(urls);
     
-    sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+    console.log(`${LOG_PREFIX} Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+    // sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
   }
 });
-
