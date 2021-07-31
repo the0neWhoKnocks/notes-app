@@ -203,10 +203,8 @@
       }, []);
       
       if (langPromises.length) {
-        Promise.all(langPromises).then((urls) => {
+        Promise.all(langPromises).then(() => {
           window.Prism.highlightAll();
-          
-          window.sw.postMessage({ type: 'CACHE_URLS', urls });
         });
       }
     }, 100);
