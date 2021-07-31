@@ -71,6 +71,28 @@
   let userProfileOpened = false;
   let userIsLoggedIn = false;
   
+  async function loadNotes() {
+    try {
+      if ($userData) {
+        const {
+          notesData,
+          preferences,
+        } = await postData(ROUTE__API__USER_GET_DATA, $userData);
+        noteGroups.set(notesData);
+        userPreferences.set(preferences);
+        loadThemeCSS(preferences.theme);
+      }
+    
+      setTimeout(() => {
+        // run highlight manually to make plugins kick in
+        window.Prism.highlightAll();
+        
+        log.info('Notes loaded and formatted');
+      }, 0);
+    }
+    catch ({ message }) { alert(message); }
+  }
+  
   function setUserInfo() {
     userStorageType = getStorageType(NAMESPACE__STORAGE__USER);
     
@@ -79,6 +101,8 @@
       userIsLoggedIn = true;
       
       userData.set(_userData);
+      
+      loadNotes();
     }
   }
   
@@ -262,24 +286,6 @@
     });
     
     setUserInfo();
-    
-    try {
-      if ($userData) {
-        const {
-          notesData,
-          preferences,
-        } = await postData(ROUTE__API__USER_GET_DATA, $userData);
-        noteGroups.set(notesData);
-        userPreferences.set(preferences);
-        loadThemeCSS(preferences.theme);
-      }
-    
-      setTimeout(() => {
-        // run highlight manually to make plugins kick in
-        window.Prism.highlightAll();
-      }, 0);
-    }
-    catch ({ message }) { alert(message); }
     
     mounted = true;
   });
