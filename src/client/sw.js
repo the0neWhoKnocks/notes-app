@@ -1,25 +1,15 @@
 const CACHE_KEY = 'notes-app';
 const LOG_PREFIX = '[SW]';
+const channel = new BroadcastChannel('sw-messages');
 
-// async function sendClientMsg(ev, msg) {
-//   const { source } = ev;
-// 
-//   if (source) {
-//     source.postMessage(msg);
-//   }
-//   else {
-//     console.warn(`${LOG_PREFIX} No event 'source' found, not sending message`);
-//   }
-// }
-
-self.addEventListener('install', async () => {
-  await self.skipWaiting();
-  console.log(`${LOG_PREFIX} Installed`);
+self.addEventListener('install', () => {
+  self.skipWaiting();
+  channel.postMessage({ status: 'installing' });
 });
 
 self.addEventListener('activate', async () => {
   await self.clients.claim();
-  console.log(`${LOG_PREFIX} Actived`);
+  channel.postMessage({ status: 'activated' });
 });
 
 self.addEventListener('fetch', (ev) => {
@@ -38,18 +28,21 @@ self.addEventListener('fetch', (ev) => {
   );
 });
 
-self.addEventListener('message', async (ev) => {
+channel.addEventListener('message', async (ev) => {
   const { data: { step, type, urls } } = ev;
+  const online = navigator.onLine;
   
   switch (type) {
     case 'CACHE_URLS': {
-      if (step === 'installing') await caches.delete(CACHE_KEY);
-      
-      const cache = await caches.open(CACHE_KEY);
-      cache.addAll(urls);
-      
-      console.log(`${LOG_PREFIX} Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
-      // sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+      if (online) {
+        if (step === 'installing') await caches.delete(CACHE_KEY);
+        
+        const cache = await caches.open(CACHE_KEY);
+        cache.addAll(urls);
+        
+        console.log(`${LOG_PREFIX} Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+        // sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+      }
       break;
     }
   }

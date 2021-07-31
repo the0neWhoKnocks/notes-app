@@ -1,6 +1,8 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
   import {
+    EVENT__SERVICE_WORKER__ACTIVATED,
+    EVENT__SERVICE_WORKER__INSTALLING,
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
   } from '../../constants';
@@ -70,6 +72,9 @@
   let userNavOpen = false;
   let userProfileOpened = false;
   let userIsLoggedIn = false;
+  let offline = false;
+  let swActivated = false;
+  let swInstalling = false;
   
   async function loadNotes() {
     try {
@@ -112,7 +117,7 @@
   function handleLogin() {
     setUserInfo();
     closeLogin();
-    log.info('USER', 'logged in');
+    log.info('[USER] logged in');
   }
   
   function logoutUser() {
@@ -120,7 +125,7 @@
     userStorageType = undefined;
     userNavOpen = false;
     userIsLoggedIn = false;
-    log.info('USER', 'logged out');
+    log.info('[USER] logged out');
   }
   
   function toggleUserNav() {
@@ -145,7 +150,7 @@
     
     closeUserProfile();
     
-    log.info('USER', `profile updated: ${JSON.stringify(data)}`);
+    log.info(`[USER] profile updated: ${JSON.stringify(data)}`);
   }
   
   function delegateClick({ target }) {
@@ -234,6 +239,10 @@
     }, 100);
   }
   
+  function updateOnlineStatus() {
+    offline = !navigator.onLine;
+  }
+  
   $: if (userProfileOpened) {
     userNavOpen = false;
   }
@@ -286,6 +295,22 @@
     });
     
     setUserInfo();
+    
+    window.addEventListener('online',  updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener(EVENT__SERVICE_WORKER__ACTIVATED, () => {
+      swInstalling = false;
+      swActivated = true;
+      setTimeout(() => {
+        swActivated = false;
+      }, 1000);
+    });
+    window.addEventListener(EVENT__SERVICE_WORKER__INSTALLING, () => {
+      swInstalling = true;
+    });
+    window.addEventListener('load', () => {
+      updateOnlineStatus();
+    });
     
     mounted = true;
   });
@@ -363,12 +388,47 @@
       <DeleteDialog />
     {/if}
   {/if}
+  
+  <div
+    class="status-msg"
+    class:offline={offline}
+    class:sw-actived={swActivated}
+    class:sw-installing={swInstalling}
+  >
+    {#if swInstalling}
+      [SW] Installing
+    {:else if swActivated}
+      [SW] Activated
+    {:else if offline}
+      Offline
+    {:else}
+      &nbsp;
+    {/if}
+  </div>
 </div>
 
 <style>
   :root {
     --bg-color--app: #333;
     --fg-color--app: #eee;
+  }
+  
+  .status-msg {
+    padding: 0.25em 0.5em;
+    border: dashed 1px #9a4900;
+    border-radius: 0.5em;
+    background: #ffc800;
+    position: fixed;
+    bottom: 0.5em;
+    right: 0.5em;
+    z-index: 50;
+    transition: transform 300ms;
+    transform: translateY(150%);
+  }
+  .status-msg.offline,
+  .status-msg.sw-actived,
+  .status-msg.sw-installing {
+    transform: translateY(0%);
   }
 
   .app {
