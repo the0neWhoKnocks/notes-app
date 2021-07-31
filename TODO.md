@@ -60,6 +60,7 @@ Features:
   - https://stackoverflow.com/a/46098981/5156659
 - [ ] Cache POST requests
   - https://stackoverflow.com/a/52223285/5156659
+- [ ] Diff the URLs in the cache, and only cache new items. So remove `await caches.delete(CACHE_KEY);`
 
 - https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope
 - https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
