@@ -3,14 +3,42 @@ const {
   DOM__SVELTE_MOUNT_POINT,
 } = require('../constants');
 
-const shell = ({ props, view } = {}) => {
-  const MANIFEST_PATH = '../public/manifest.json';
-  if (process.env.NODE_ENV !== 'production') delete require.cache[require.resolve(MANIFEST_PATH)];
-  const manifest = require(MANIFEST_PATH);
-  const viewCSS = (manifest[`${view}.css`])
-    ? `<link rel="stylesheet" href="${manifest[`${view}.css`]}">`
-    : '';
+const buildNodes = (arr, template) => {
+  return arr.map(asset => {
+    let url = asset;
+    let attrs = '';
+    if (typeof asset === 'object') {
+      url = asset.url;
+      attrs = Object.keys(asset.attrs).map(attr => `${attr}="${asset.attrs[attr]}"`).join(' ');
+    }
+    return template
+      .replace('[url]', url)
+      .replace('[attrs]', attrs);
+  });
+};
 
+const addNodes = (type, arr) => {
+  let _arr = [];
+  
+  switch (type) {
+    case 'link': {
+      _arr = buildNodes(arr, '<link rel="stylesheet" href="[url]" [attrs]>');
+      break;
+    }
+    case 'script': {
+      _arr = buildNodes(arr, '<script src="[url]" [attrs]></script>');
+      break;
+    }
+  }
+  
+  return _arr.join('\n');
+};
+
+const shell = ({
+  body,
+  head,
+  props,
+} = {}) => {
   return `
     <!doctype html>
     <html lang="en">
@@ -172,13 +200,31 @@ const shell = ({ props, view } = {}) => {
           height: 100%;
         }
       </style>
-      ${viewCSS}
+      ${addNodes('link', head.styles)}
 
       <script>
         window.app = {
           props: ${JSON.stringify(props || {})},
         };
+        window.sw = {
+          assetsToCache: ${
+            JSON.stringify(
+              [
+                '/',
+                ...head.styles,
+                ...head.scripts,
+                ...body.styles,
+                ...body.scripts,
+                ...body.asyncScripts,
+              ]
+              .map(asset => {
+                return (typeof asset === 'object') ? asset.url : asset;
+              })
+            )
+          },
+        };
       </script>
+      ${addNodes('script', head.scripts)}
     </head>
     <body class="no-js line-numbers">
       <svg style="display:none; position:absolute" width="0" height="0">
@@ -211,19 +257,8 @@ const shell = ({ props, view } = {}) => {
         <div id="${DOM__SVELTE_MOUNT_POINT}"></div>
       </div>
       
-      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism/themes/prism.css">
-      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism/plugins/prism-line-numbers.css">
-      <link id="prismTheme" rel="stylesheet" href="/css/vendor/prism/plugins/prism-toolbar.css">
-      <script src="/js/vendor/marked.min.js"></script>
-      <script src="/js/vendor/prism/prism-core.min.js"></script>
-      <script src="/js/vendor/prism/plugins/prism-line-numbers.min.js"></script>
-      <script src="/js/vendor/prism/plugins/prism-toolbar.min.js"></script>
-      <script src="/js/vendor/prism/plugins/prism-copy-to-clipboard.min.js"></script>
-      <script src="/js/vendor/purify.min.js"></script>
-      <script src="${manifest['vendor.js']}"></script>
-      <script src="${manifest[`${view}.js`]}"></script>
-      
-      <script src="${manifest['sw.register.js']}"></script>
+      ${addNodes('link', body.styles)}
+      ${addNodes('script', body.scripts)}
     </body>
     </html>
   `;

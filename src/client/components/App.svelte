@@ -1,7 +1,6 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
   import {
-    EVENT__SERVICE_WORKER__REGISTER,
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
   } from '../../constants';
@@ -280,8 +279,6 @@
       setTimeout(() => {
         // run highlight manually to make plugins kick in
         window.Prism.highlightAll();
-        // initial load and setup complete, install Service Worker
-        window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__REGISTER));
       }, 0);
     }
     catch ({ message }) { alert(message); }

@@ -1,4 +1,6 @@
+window.sw = window.sw || {};
 window.sw = {
+  ...window.sw,
   messageQueue: [],
   postMessage: (opts) => {
     window.sw.messageQueue.push(opts);
@@ -6,39 +8,27 @@ window.sw = {
 };
 
 if ('serviceWorker' in navigator) {
-  const { EVENT__SERVICE_WORKER__REGISTER } = require('../constants');
-  
-  // Bandwidth and CPU time must be shared while the cache is being filled
-  // during the ServiceWorker's installation phase, so wait for the App has
-  // loaded.
-  window.addEventListener(EVENT__SERVICE_WORKER__REGISTER, () => {
-    const LOG_PREFIX = '[SW]';
-    const IGNORED = ['browser-sync', '/api/'];
-    const ignoredRegEx = new RegExp(`(?:${IGNORED.join('|')})`);
+  window.addEventListener('load', () => {
+    const LOG_PREFIX = '[SW.REGISTER]';
     
     navigator.serviceWorker.register('/sw.js')
       .then((reg) => {
         if (reg.installing) { // only available during install
-          const cacheURLs = [
-            location.href,
-            ...performance.getEntriesByType('resource').map(({ name }) => name),
-          ].filter(url => !ignoredRegEx.test(url));
-          
-          console.log(`${LOG_PREFIX} Install`);
-          
+          console.log(`${LOG_PREFIX} Installing`);
+    
           reg.installing.postMessage({
-            step: 'install',
+            step: 'installing',
             type: 'CACHE_URLS',
-            urls: cacheURLs,
+            urls: window.sw.assetsToCache,
           });
         }
-        
+    
         console.log(`${LOG_PREFIX} Registered`);
       })
       .catch(err => console.log(`${LOG_PREFIX} Registration failed:\n${err.stack}`));
     
     navigator.serviceWorker.addEventListener('message', ({ data }) => {
-      console.log(`${LOG_PREFIX} ${data}`);
+      console.log(`${LOG_PREFIX} Message recieved from SW\n`, data);
     });
     
     navigator.serviceWorker.ready.then(reg => {
