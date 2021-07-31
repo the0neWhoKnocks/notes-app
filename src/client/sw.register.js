@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator) {
       .then((reg) => {
         if (reg.installing) { // only available during install
           console.log(`${LOG_PREFIX} Installing`);
-    
+          
           reg.installing.postMessage({
             step: 'installing',
             type: 'CACHE_URLS',

@@ -22,12 +22,12 @@ self.addEventListener('activate', async () => {
   console.log(`${LOG_PREFIX} Actived`);
 });
 
-self.addEventListener('fetch', async (ev) => {
+self.addEventListener('fetch', (ev) => {
   const { request } = ev;
   
   ev.respondWith(
     caches.match(request).then((resp) => {
-      if (resp) {
+      if (!navigator.onLine && resp) {
         console.log(`${LOG_PREFIX} From Cache: "${request.url}"`);
         return resp;
       }
@@ -41,13 +41,16 @@ self.addEventListener('fetch', async (ev) => {
 self.addEventListener('message', async (ev) => {
   const { data: { step, type, urls } } = ev;
   
-  if (type === 'CACHE_URLS') {
-    if (step === 'installing') await caches.delete(CACHE_KEY);
-    
-    const cache = await caches.open(CACHE_KEY);
-    cache.addAll(urls);
-    
-    console.log(`${LOG_PREFIX} Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
-    // sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+  switch (type) {
+    case 'CACHE_URLS': {
+      if (step === 'installing') await caches.delete(CACHE_KEY);
+      
+      const cache = await caches.open(CACHE_KEY);
+      cache.addAll(urls);
+      
+      console.log(`${LOG_PREFIX} Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+      // sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+      break;
+    }
   }
 });

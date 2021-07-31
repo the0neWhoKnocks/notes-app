@@ -199,6 +199,22 @@ const shell = ({
           width: 100%;
           height: 100%;
         }
+        
+        .offline-msg {
+          padding: 0.25em 0.5em;
+          border: dashed 1px #9a4900;
+          border-radius: 0.5em;
+          background: #ffc800;
+          position: fixed;
+          bottom: 0.5em;
+          right: 0.5em;
+          z-index: 50;
+          transition: transform 300ms;
+          transform: translateY(150%);
+        }
+        body.offline .offline-msg {
+          transform: translateY(0%);
+        }
       </style>
       ${addNodes('link', head.styles)}
 
@@ -223,6 +239,16 @@ const shell = ({
             )
           },
         };
+        
+        function updateOnlineStatus() {
+          if (navigator.onLine) document.body.classList.remove('offline');
+          else document.body.classList.add('offline');
+        }
+        window.addEventListener('online',  updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        window.addEventListener('load', () => {
+          updateOnlineStatus();
+        });
       </script>
       ${addNodes('script', head.scripts)}
     </head>
@@ -256,6 +282,8 @@ const shell = ({
         </div>
         <div id="${DOM__SVELTE_MOUNT_POINT}"></div>
       </div>
+      
+      <div class="offline-msg">Offline</div>
       
       ${addNodes('link', body.styles)}
       ${addNodes('script', body.scripts)}
