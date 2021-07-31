@@ -102,6 +102,7 @@ const conf = {
         '!js/vendor/**/*',
         '!sw.js',
       ],
+      cleanStaleWebpackAssets: false, // Cleaning after rebuilds doesn't play nice with `mini-css-extract-plugin`
     }),
     new webpack.DefinePlugin({
       'process.env.FOR_CLIENT_BUNDLE': JSON.stringify(true),
