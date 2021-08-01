@@ -61,8 +61,33 @@ Features:
 - [ ] Cache POST requests
   - https://stackoverflow.com/a/52223285/5156659
 - [ ] Diff the URLs in the cache, and only cache new items. So remove `await caches.delete(CACHE_KEY);`
+- [ ] Serve all SW files from a nested public folder (instead of root)
+  - https://medium.com/dev-channel/two-http-headers-related-to-service-workers-you-never-may-have-heard-of-c8862f76cc60
+  - https://stackoverflow.com/a/35415127/5156659
+    - May have to have a specific route for the `sw.js` file, that has the
+      `static` middleware applied to it.
+    - Will have to re-point WP asset for `register`
+    - Will have to update prep-dist
+- [ ] Disable `Create Account` when offline
+
+---
+
+## Notes
+
+- All module imports within a SW are based on the root of your public static
+  folder. So if you have files in a nested directory that access one another, you
+  can't have `./file.js`, instead you have to have something like `/js/nested_path/file.js`.
 
 - https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerGlobalScope
 - https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
 - https://developers.google.com/web/fundamentals/codelabs/offline
 - https://developers.google.com/web/ilt/pwa/live-data-in-the-service-worker#using_indexeddb_and_the_cache_interface
+- https://dev.to/halan/4-ways-of-symmetric-cryptography-and-javascript-how-to-aes-with-javascript-3o1b
+encryption:
+- https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto#methods
+- https://github.com/bradyjoslin/webcrypto-example/blob/master/script.js
+  - https://bradyjoslin.com/blog/encryption-webcrypto/
+
+indexedDB
+- https://github.com/jakearchibald/svgomg/blob/master/src/js/utils/storage.js#L5
+- https://medium.com/jspoint/indexeddb-your-second-step-towards-progressive-web-apps-pwa-dcbcd6cc2076
