@@ -8,8 +8,14 @@ self.addEventListener('install', () => {
 });
 
 self.addEventListener('activate', async () => {
-  await self.clients.claim();
-  channel.postMessage({ status: 'activated' });
+  try {
+    await self.clients.claim();
+    channel.postMessage({ status: 'activated' });
+  }
+  catch (err) {
+    console.error(`${LOG_PREFIX} Error activating Service Worker:\n${err}`);
+    channel.postMessage({ status: 'error' });
+  }
 });
 
 self.addEventListener('fetch', (ev) => {

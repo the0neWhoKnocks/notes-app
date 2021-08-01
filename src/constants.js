@@ -6,6 +6,7 @@ const constants = {
   APP__TITLE: 'Notes',
   DOM__SVELTE_MOUNT_POINT: 'view',
   EVENT__SERVICE_WORKER__ACTIVATED: 'activatedSW',
+  EVENT__SERVICE_WORKER__ERROR: 'swError',
   EVENT__SERVICE_WORKER__INSTALLING: 'installingSW',
   NAMESPACE__LOGGER: 'notes',
   NAMESPACE__STORAGE,
