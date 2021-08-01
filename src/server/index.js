@@ -127,6 +127,7 @@ app
     if (existsSync(PATH__CONFIG)) req.appConfig = JSON.parse(readFileSync(PATH__CONFIG, 'utf8'));
     next();
   })
+  // NOTE: There's mirror logic for API routes in the SW
   .post(ROUTE__API__CONFIG_CREATE, jsonParser, createConfig)
   .post(ROUTE__API__USER_GET_DATA, jsonParser, getUserData)
   .post(ROUTE__API__USER_GET_PROFILE, jsonParser, getUserProfile)

@@ -12,6 +12,7 @@ rsync -avh \
   ./src/constants.js \
   ./dist --delete
 rsync -avh \
+  ./src/client/serviceWorker \
   ./src/client/sw.js \
   ./dist/public --delete
 

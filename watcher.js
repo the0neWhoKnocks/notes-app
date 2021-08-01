@@ -94,6 +94,7 @@ const fileGate = (waitForFileBeforeStart)
   ? fileCheck(waitForFileBeforeStart)
   : Promise.resolve();
 const watchedServerFiles = [
+  './src/client/serviceWorker/**/*.js',
   './src/client/sw.js',
   './src/server/**/*.js',
   './src/utils/**/*.js',

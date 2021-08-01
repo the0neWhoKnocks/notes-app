@@ -100,6 +100,8 @@ const conf = {
         '!js',
         '!js/vendor',
         '!js/vendor/**/*',
+        '!serviceWorker',
+        '!serviceWorker/**/*',
         '!sw.js',
       ],
       cleanStaleWebpackAssets: false, // Cleaning after rebuilds doesn't play nice with `mini-css-extract-plugin`
