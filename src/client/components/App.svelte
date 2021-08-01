@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import {
     EVENT__SERVICE_WORKER__ACTIVATED,
+    EVENT__SERVICE_WORKER__ERROR,
     EVENT__SERVICE_WORKER__INSTALLING,
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
@@ -74,6 +75,7 @@
   let userIsLoggedIn = false;
   let offline = false;
   let swActivated = false;
+  let swError = false;
   let swInstalling = false;
   
   async function loadNotes() {
@@ -305,6 +307,9 @@
         swActivated = false;
       }, 1000);
     });
+    window.addEventListener(EVENT__SERVICE_WORKER__ERROR, () => {
+      swError = true;
+    });
     window.addEventListener(EVENT__SERVICE_WORKER__INSTALLING, () => {
       swInstalling = true;
     });
@@ -391,11 +396,14 @@
   
   <div
     class="status-msg"
+    class:error={swError}
     class:offline={offline}
     class:sw-actived={swActivated}
     class:sw-installing={swInstalling}
   >
-    {#if swInstalling}
+    {#if swError}
+      [SW] Error
+    {:else if swInstalling}
       [SW] Installing
     {:else if swActivated}
       [SW] Activated
@@ -429,6 +437,15 @@
   .status-msg.sw-actived,
   .status-msg.sw-installing {
     transform: translateY(0%);
+  }
+  .status-msg.error {
+    color: yellow;
+    font-weight: bold;
+    text-shadow: 0px 2px 5px black;
+    border-color: yellow;
+    border-width: 2px;
+    border-style: double;
+    background: #ff4545;
   }
 
   .app {

@@ -10,6 +10,7 @@ window.sw = {
 if ('serviceWorker' in navigator) {
   const {
     EVENT__SERVICE_WORKER__ACTIVATED,
+    EVENT__SERVICE_WORKER__ERROR,
     EVENT__SERVICE_WORKER__INSTALLING,
   } = require('../constants');
   
@@ -21,6 +22,14 @@ if ('serviceWorker' in navigator) {
       console.log(`${LOG_PREFIX} Status: ${data.status}`);
       
       switch (data.status) {
+        case 'activated': {
+          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__ACTIVATED));
+          break;
+        }
+        case 'error': {
+          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__ERROR));
+          break;
+        }
         case 'installing': {
           channel.postMessage({
             step: 'installing',
@@ -28,10 +37,6 @@ if ('serviceWorker' in navigator) {
             urls: window.sw.assetsToCache,
           });
           window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__INSTALLING));
-          break;
-        }
-        case 'activated': {
-          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__ACTIVATED));
           break;
         }
       }
