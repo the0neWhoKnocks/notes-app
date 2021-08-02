@@ -69,6 +69,10 @@ Features:
     - Will have to re-point WP asset for `register`
     - Will have to update prep-dist
 - [ ] Disable `Create Account` when offline
+- [ ] While offline, use the cached user data as a base. Then if a user modifies
+  that data while offline, store the changes in something like `updatedData`.
+  Then when back online, those changes can be added in, and `updatedData` can
+  be cleared out.
 
 ---
 
