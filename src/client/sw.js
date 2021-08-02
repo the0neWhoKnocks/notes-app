@@ -82,9 +82,11 @@ self.addEventListener('fetch', (ev) => {
             return genResponse(200, reqBody);
             // console.log(await decrypt(cryptData, encryptedUsername, password));
           }
+          
+          return genResponse(404, { message: "Looks like you haven't logged in while on this device.\nNo offline data available." });
         }
         
-        return genResponse(404);
+        return genResponse(404, { message: `No offline data found for "${request.url}"` });
       }());
     }
     else {
