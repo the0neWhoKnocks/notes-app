@@ -38,7 +38,9 @@ const dbAPI = {
       const store = await dbAPI.store;
       
       return new Promise((resolve, reject) => {
-        const req = store.add(data);
+        // NOTE: `put` will overwrite/add data, unlike `add` which will fail if
+        // a value already exists with the same `keyPath`.
+        const req = store.put(data);
         req.onsuccess = () => { resolve(req.result); };
         req.onerror = () => { reject(`${LOG_PREFIX}[set] ${req.error}`); };
       });
@@ -62,9 +64,8 @@ export function getDB() {
         const usersStore = db.result.createObjectStore('users', { keyPath: 'username' });
         usersStore.createIndex('username', 'username', { unique: true });
       
-        const userDataStore = db.result.createObjectStore('userData');
-        userDataStore.createIndex('notes', 'notes', { unique: false });
-        userDataStore.createIndex('preferences', 'preferences', { unique: false });
+        const userDataStore = db.result.createObjectStore('userData', { keyPath: 'username' });
+        userDataStore.createIndex('username', 'username', { unique: true });
         
         console.log(`${LOG_PREFIX} Added base data`);
       };

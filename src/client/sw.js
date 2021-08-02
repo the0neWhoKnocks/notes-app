@@ -1,6 +1,7 @@
 import { DB_VERSION } from '/serviceWorker/constants.js';
 import {
   base64ToBuffer,
+  decrypt,
   encrypt,
 } from '/serviceWorker/crypt.js';
 import { getDB } from '/serviceWorker/db.js';
@@ -63,46 +64,86 @@ self.addEventListener('activate', async () => {
 
 // TODO - may have to send a message with the API routes to keep things in sync
 
-self.addEventListener('fetch', (ev) => {
+self.addEventListener('fetch', async (ev) => {
   const { request } = ev;
   const offline = !navigator.onLine;
+  const reqURL = request.url;
   
-  if (request.url.includes('/api')) {
+  if (reqURL.includes('/api')) {
     if (offline) {
+      const OFFLINE_PREFIX = '[OFFLINE]';
+      
       ev.respondWith(async function() {
         const reqBody = await request.json();
         
-        if (request.url.includes('user/login')) {
-          const { password, username } = reqBody;
-          const encryptedUsername = await encrypt(cryptData, username, password);
-          
-          await dbAPI.selectStore('users');
-          const userExists = await dbAPI.get(encryptedUsername);
-          if (userExists) {
-            return genResponse(200, reqBody);
-            // console.log(await decrypt(cryptData, encryptedUsername, password));
-          }
-          
-          return genResponse(404, { message: "Looks like you haven't logged in while on this device.\nNo offline data available." });
-        }
-        
-        return genResponse(404, { message: `No offline data found for "${request.url}"` });
-      }());
-    }
-    else {
-      return _fetch(request, async (data) => {
-        if (request.url.includes('user/login')) {
-          const { password, username } = await data.json();
-          
+        if (reqURL.includes('user/login')) {
           try {
+            const { password, username } = reqBody;
             const encryptedUsername = await encrypt(cryptData, username, password);
             
             await dbAPI.selectStore('users');
-            const userExists = await dbAPI.get(encryptedUsername);
-            if (!userExists) await dbAPI.set({ username: encryptedUsername });
+            await dbAPI.get(encryptedUsername);
+            return genResponse(200, reqBody);
+          }
+          catch (err) {
+            return genResponse(404, { message: `${OFFLINE_PREFIX} Error for login:\n${err}` });
+          }
+        }
+        else if (reqURL.includes('user/data')) {
+          try {
+            const { password, username } = reqBody;
+            const encryptedUsername = await encrypt(cryptData, username, password);
+            const { data: userData } = await dbAPI.selectStore('userData').get(encryptedUsername);
+            const decryptedData = JSON.parse(await decrypt(cryptData, userData, password));
+            return genResponse(200, decryptedData);
+          }
+          catch (err) {
+            return genResponse(404, { message: `${OFFLINE_PREFIX} Error for User data:\n${err}` });
+          }
+        }
+        
+        return genResponse(404, { message: `${OFFLINE_PREFIX} No data found for "${reqURL}"` });
+      }());
+    }
+    else {
+      const reqBody = await request.clone().json();
+      
+      return _fetch(request, async (data) => {
+        if (reqURL.includes('user/login')) {
+          try {
+            const { password, username } = await data.json();
+            const encryptedUsername = await encrypt(cryptData, username, password);
+            
+            await dbAPI.selectStore('users').get(encryptedUsername);
+            await dbAPI.set({ username: encryptedUsername });
+            console.log(`${LOG_PREFIX} Saved login info`);
           }
           catch (err) {
             console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
+          }
+        }
+        else if (reqURL.includes('user/data')) {
+          try {
+            const { password, username } = reqBody;
+            const encryptedUsername = await encrypt(cryptData, username, password);
+            const userData = await data.json();
+            
+            if (userData) {
+              const jsonData = JSON.stringify(userData);
+              const encryptedData = await encrypt(cryptData, jsonData, password);
+              
+              await dbAPI.selectStore('userData').set({
+                data: encryptedData,
+                username: encryptedUsername,
+              });
+              console.log(`${LOG_PREFIX} Saved User data`);
+            }
+            else {
+              console.warn(`${LOG_PREFIX} No User data returned`);
+            }
+          }
+          catch (err) {
+            console.error(`${LOG_PREFIX} Error saving User data\n${err}`);
           }
         }
       });
@@ -112,11 +153,11 @@ self.addEventListener('fetch', (ev) => {
     ev.respondWith(
       caches.match(request).then((resp) => {
         if (offline && resp) {
-          console.log(`${LOG_PREFIX} From Cache: "${request.url}"`);
+          console.log(`${LOG_PREFIX} From Cache: "${reqURL}"`);
           return resp;
         }
         
-        console.log(`${LOG_PREFIX} Fetching: "${request.url}"`);
+        console.log(`${LOG_PREFIX} Fetching: "${reqURL}"`);
         return _fetch(request);
       })
     );
@@ -133,10 +174,13 @@ channel.addEventListener('message', async (ev) => {
         if (step === 'installing') await caches.delete(CACHE_KEY);
         
         const cache = await caches.open(CACHE_KEY);
-        cache.addAll(urls);
+        const deDupedURLs = urls.reduce((arr, url) => {
+          if (!arr.includes(url)) arr.push(url);
+          return arr;
+        }, []);
+        cache.addAll(deDupedURLs);
         
-        console.log(`${LOG_PREFIX} Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
-        // sendClientMsg(ev, `Cached URLs:\n${urls.map(url => `  ${url}`).join('\n')}`);
+        console.log(`${LOG_PREFIX} Cached URLs:\n${deDupedURLs.map(url => `  ${url}`).join('\n')}`);
       }
       break;
     }
