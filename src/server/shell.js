@@ -212,8 +212,9 @@ const shell = ({
               [
                 '/',
                 ...head.styles,
-                ...head.scripts,
                 ...body.styles,
+                ...body.asyncStyles,
+                ...head.scripts,
                 ...body.scripts,
                 ...body.asyncScripts,
               ]

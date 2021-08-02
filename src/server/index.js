@@ -39,8 +39,11 @@ const middleware = [
 const PUBLIC_CSS_VENDOR = 'css/vendor';
 const PUBLIC_JS_VENDOR = 'js/vendor';
 const CLIENT_LANGS_PATH = `${PUBLIC_JS_VENDOR}/prism/langs`;
+const CLIENT_THEMES_PATH = `${PUBLIC_CSS_VENDOR}/prism/themes`;
 const ABS_LANGS_PATH = `${__dirname}/../public/${CLIENT_LANGS_PATH}`;
+const ABS_THEMES_PATH = `${__dirname}/../public/${CLIENT_THEMES_PATH}`;
 const langFiles = (glob.sync('*.js', { cwd: ABS_LANGS_PATH })).map(lang => `/${CLIENT_LANGS_PATH}/${lang}`);
+const themeFiles = (glob.sync('*.css', { cwd: ABS_THEMES_PATH })).map(theme => `/${CLIENT_THEMES_PATH}/${theme}`);
 
 function app(req, res) {
   const [url] = req.url.split('?');
@@ -144,6 +147,9 @@ app
     const body = {
       asyncScripts: [ // only needed for SW
         ...langFiles,
+      ],
+      asyncStyles: [ // only needed for SW
+        ...themeFiles,
       ],
       scripts: [
         `/${PUBLIC_JS_VENDOR}/marked.min.js`,
