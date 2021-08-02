@@ -22,6 +22,23 @@ function genResponse(status, data = {}) {
   return new Response(blob, init);
 }
 
+// NOTE: Wrapping `fetch` for a couple reasons.
+// 1. Default `catch` logic for all failed requests.
+// 2. Handle odd Chromium bug that only happens when DevTools are open
+//    - https://stackoverflow.com/a/49719964/5156659
+//    - https://bugs.chromium.org/p/chromium/issues/detail?id=1098389
+function _fetch(req, cb) {
+  if (req.cache === 'only-if-cached' && req.mode !== 'same-origin') return;
+  
+  let f = fetch(req);
+  
+  if (cb) f = f.then(cb);
+  
+  return f.catch(err => {
+    console.error(`${LOG_PREFIX} Error fetching "${req.url}"\n${err}`);
+  });
+}
+
 self.addEventListener('install', () => {
   self.skipWaiting();
   channel.postMessage({ status: 'installing' });
@@ -71,26 +88,22 @@ self.addEventListener('fetch', (ev) => {
       }());
     }
     else {
-      return fetch(request)
-        .then(async (data) => {
-          if (request.url.includes('user/login')) {
-            const { password, username } = await data.json();
+      return _fetch(request, async (data) => {
+        if (request.url.includes('user/login')) {
+          const { password, username } = await data.json();
+          
+          try {
+            const encryptedUsername = await encrypt(cryptData, username, password);
             
-            try {
-              const encryptedUsername = await encrypt(cryptData, username, password);
-              
-              await dbAPI.selectStore('users');
-              const userExists = await dbAPI.get(encryptedUsername);
-              if (!userExists) await dbAPI.set({ username: encryptedUsername });
-            }
-            catch (err) {
-              console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
-            }
+            await dbAPI.selectStore('users');
+            const userExists = await dbAPI.get(encryptedUsername);
+            if (!userExists) await dbAPI.set({ username: encryptedUsername });
           }
-        })
-        .catch(err => {
-          console.error(`${LOG_PREFIX} Error fetching "${request.url}"\n${err}`);
-        });
+          catch (err) {
+            console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
+          }
+        }
+      });
     }
   }
   else {
@@ -102,10 +115,7 @@ self.addEventListener('fetch', (ev) => {
         }
         
         console.log(`${LOG_PREFIX} Fetching: "${request.url}"`);
-        return fetch(request)
-          .catch(err => {
-            console.error(`${LOG_PREFIX} Error fetching "${request.url}"\n${err}`);
-          });
+        return _fetch(request);
       })
     );
   }
