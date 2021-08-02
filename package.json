@@ -20,7 +20,7 @@
     "ulog": "2.0.0-beta.18"
   },
   "devDependencies": {
-    "browser-sync": "2.26.14",
+    "browser-sync": "2.27.5",
     "chokidar": "3.5.1",
     "clean-webpack-plugin": "3.0.0",
     "css-loader": "5.2.0",
