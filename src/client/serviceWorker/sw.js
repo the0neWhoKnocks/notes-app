@@ -146,9 +146,12 @@ self.addEventListener('fetch', async (ev) => {
   else {
     ev.respondWith(
       caches.match(request).then((resp) => {
-        if (offline && resp) {
-          console.log(`${LOG_PREFIX} From Cache: "${reqURL}"`);
-          return resp;
+        if (offline) {
+          if (resp) {
+            console.log(`${LOG_PREFIX} From Cache: "${reqURL}"`);
+            return resp;
+          }
+          else if (reqURL.includes('browser-sync')) return;
         }
         
         console.log(`${LOG_PREFIX} Fetching: "${reqURL}"`);
