@@ -77,6 +77,7 @@
   let swActivated = false;
   let swError = false;
   let swInstalling = false;
+  let currNotes;
   
   async function loadNotes() {
     try {
@@ -127,6 +128,12 @@
     userStorageType = undefined;
     userNavOpen = false;
     userIsLoggedIn = false;
+    
+    noteGroups.set(undefined);
+    userData.set(undefined);
+    userPreferences.clear();
+    currNotes = undefined;
+    
     log.info('[USER] logged out');
   }
   
@@ -249,7 +256,6 @@
     userNavOpen = false;
   }
   
-  let currNotes;
 	const unsubCurrNotes = currentNoteGroupNotes.subscribe(async data => {
 		currNotes = await data;
 	});

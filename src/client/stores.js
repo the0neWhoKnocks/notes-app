@@ -24,6 +24,9 @@ export const userPreferences = (function createPrefsStore() {
 	const { subscribe, set, update } = writable({});
 
 	return {
+		clear: () => {
+			update(() => ({}));
+		},
 		set,
 		setPreference: async (prop, value) => {
 			try {
