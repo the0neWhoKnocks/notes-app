@@ -48,12 +48,6 @@ self.addEventListener('install', () => {
 self.addEventListener('activate', async () => {
   try {
     await self.clients.claim();
-    dbAPI = await getDB();
-    const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
-    cryptData = {
-      iv: base64ToBuffer(iv),
-      salt: base64ToBuffer(salt),
-    };
     channel.postMessage({ status: 'activated' });
   }
   catch (err) {
@@ -181,6 +175,23 @@ channel.addEventListener('message', async (ev) => {
         cache.addAll(deDupedURLs);
         
         console.log(`${LOG_PREFIX} Cached URLs:\n${deDupedURLs.map(url => `  ${url}`).join('\n')}`);
+      }
+      break;
+    }
+    case 'INIT_API_DATA': {
+      try {
+        if (!dbAPI) dbAPI = await getDB();
+        if (!cryptData) {
+          const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
+          cryptData = {
+            iv: base64ToBuffer(iv),
+            salt: base64ToBuffer(salt),
+          };
+        }
+      }
+      catch (err) {
+        console.error(`${LOG_PREFIX} Error initializing API data:\n${err}`);
+        channel.postMessage({ status: 'error' });
       }
       break;
     }
