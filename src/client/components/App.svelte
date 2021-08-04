@@ -12,9 +12,9 @@
   import tableOfContents from '../marked/extensions/tableOfContents';
   import {
     currentNoteGroupNotes,
-    deleteDialogData,
-    groupDialogData,
-    noteDialogData,
+    dialogDataForDelete,
+    dialogDataForGroup,
+    dialogDataForNote,
     noteGroups,
     userData,
     userPreferences,
@@ -164,16 +164,16 @@
         
         switch (action) {
           case 'delete': {
-            deleteDialogData.set({ groupName, id, path, title, type });
+            dialogDataForDelete.set({ groupName, id, path, title, type });
             break;
           }
           
           case 'edit': {
             if (type === 'note') {
-              noteDialogData.set({ action: 'edit', content, path, title });
+              dialogDataForNote.set({ action: 'edit', content, path, title });
             }
             else if (type === 'group') {
-              groupDialogData.set({ action: 'edit', content, name: groupName, path });
+              dialogDataForGroup.set({ action: 'edit', content, name: groupName, path });
             }
             break;
           }
@@ -383,13 +383,13 @@
         onSuccess={handleProfileUpdate}
       />
     {/if}
-    {#if $noteDialogData}
+    {#if $dialogDataForNote}
       <NoteDialog />
     {/if}
-    {#if $groupDialogData}
+    {#if $dialogDataForGroup}
       <GroupDialog />
     {/if}
-    {#if $deleteDialogData}
+    {#if $dialogDataForDelete}
       <DeleteDialog />
     {/if}
   {/if}

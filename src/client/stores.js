@@ -43,6 +43,6 @@ export const userPreferences = (function createPrefsStore() {
 	};
 })();
 
-export const deleteDialogData = writable();
-export const groupDialogData = writable();
-export const noteDialogData = writable();
+export const dialogDataForDelete = writable();
+export const dialogDataForGroup = writable();
+export const dialogDataForNote = writable();

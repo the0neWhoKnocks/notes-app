@@ -3,7 +3,7 @@
     ROUTE__API__USER_SET_DATA,
   } from '../../constants';
   import {
-    deleteDialogData,
+    dialogDataForDelete,
     noteGroups,
     userData,
   } from '../stores';
@@ -13,7 +13,7 @@
   let formRef;
   
   function closeDialog() {
-    deleteDialogData.set();
+    dialogDataForDelete.set();
   }
   
   function handleCloseClick() {
@@ -33,7 +33,7 @@
   }
 </script>
 
-{#if $deleteDialogData}
+{#if $dialogDataForDelete}
   <Dialog
     onCloseClick={handleCloseClick}
   >
@@ -48,17 +48,17 @@
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />
       <input type="hidden" name="action" value="delete" />
-      <input type="hidden" name="id" value={$deleteDialogData.id} />
-      <input type="hidden" name="path" value={$deleteDialogData.path} />
-      <input type="hidden" name="type" value={$deleteDialogData.type} />
+      <input type="hidden" name="id" value={$dialogDataForDelete.id} />
+      <input type="hidden" name="path" value={$dialogDataForDelete.path} />
+      <input type="hidden" name="type" value={$dialogDataForDelete.type} />
       
-      {#if $deleteDialogData.type === 'note'}
+      {#if $dialogDataForDelete.type === 'note'}
         <div class="delete-form__msg">
-          Delete note "{$deleteDialogData.title}" from "{$deleteDialogData.path}"?
+          Delete note "{$dialogDataForDelete.title}" from "{$dialogDataForDelete.path}"?
         </div>
       {:else}
         <div class="delete-form__msg">
-          Delete group "{$deleteDialogData.groupName}" and all the notes in "{$deleteDialogData.path}/{$deleteDialogData.id}"?
+          Delete group "{$dialogDataForDelete.groupName}" and all the notes in "{$dialogDataForDelete.path}/{$dialogDataForDelete.id}"?
         </div>
       {/if}
       <nav class="delete-form__btm-nav">
