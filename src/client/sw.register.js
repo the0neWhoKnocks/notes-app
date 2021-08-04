@@ -43,7 +43,10 @@ if ('serviceWorker' in navigator) {
     });
     
     navigator.serviceWorker.register('/sw.js', { type: 'module' })
-      .then(() => { console.log(`${LOG_PREFIX} Registered`); })
+      .then(() => {
+        channel.postMessage({ type: 'INIT_API_DATA' });
+        console.log(`${LOG_PREFIX} Registered`);
+      })
       .catch(err => console.log(`${LOG_PREFIX} Registration failed:\n${err.stack}`));
     
     navigator.serviceWorker.ready.then(() => {
