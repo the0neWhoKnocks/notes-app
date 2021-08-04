@@ -2,8 +2,8 @@
   import { onDestroy } from 'svelte';
   import logger from '../../utils/logger';
   import {
-    groupDialogData,
-    noteDialogData,
+    dialogDataForGroup,
+    dialogDataForNote,
     noteGroups,
   } from '../stores.js';
   import NoteGroup from './NoteGroup.svelte';
@@ -12,12 +12,12 @@
   
   function handleAddGroupClick({ path }) {
     log.info(`ADD: Group in "${path}"`);
-    groupDialogData.set({ action: 'add', path });
+    dialogDataForGroup.set({ action: 'add', path });
   }
   
   function handleAddNoteClick({ path }) {
     log.info(`ADD: Note in "${path}"`);
-    noteDialogData.set({ action: 'add', path });
+    dialogDataForNote.set({ action: 'add', path });
   }
   
   function delegateGroupsClick({ target: { dataset } }) {

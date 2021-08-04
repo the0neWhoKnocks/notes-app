@@ -4,7 +4,7 @@
   } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
   import {
-    groupDialogData,
+    dialogDataForGroup,
     noteGroups,
     userData,
   } from '../stores';
@@ -15,17 +15,17 @@
   let formRef;
   
   const genQuery = (name = '') => {
-    let query = `?p=${encodeURIComponent($groupDialogData.path)}`;
+    let query = `?p=${encodeURIComponent($dialogDataForGroup.path)}`;
     if (name) query += `/${encodeURIComponent(name)}`;
     return query;
   };
   
-  const editingGroup = $groupDialogData.action === 'edit';
+  const editingGroup = $dialogDataForGroup.action === 'edit';
   let saveBtnDisabled = editingGroup;
   let query = genQuery();
   
   function closeDialog() {
-    groupDialogData.set();
+    dialogDataForGroup.set();
   }
   
   function handleCloseClick() {
@@ -34,7 +34,7 @@
   
   function handleChange({ target }) {
     if (target.name === 'name') {
-      if (editingGroup) saveBtnDisabled = target.value === $groupDialogData.name;
+      if (editingGroup) saveBtnDisabled = target.value === $dialogDataForGroup.name;
       query = genQuery(kebabCase(target.value));
     }
   }
@@ -52,7 +52,7 @@
   }
 </script>
 
-{#if $groupDialogData}
+{#if $dialogDataForGroup}
   <Dialog
     onCloseClick={handleCloseClick}
   >
@@ -67,13 +67,13 @@
     >
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value={$groupDialogData.action} />
-      <input type="hidden" name="path" value={$groupDialogData.path} />
+      <input type="hidden" name="action" value={$dialogDataForGroup.action} />
+      <input type="hidden" name="path" value={$dialogDataForGroup.path} />
       <input type="hidden" name="type" value="group" />
       {#if editingGroup}
-        <input type="hidden" name="oldName" value={$groupDialogData.name} />
+        <input type="hidden" name="oldName" value={$dialogDataForGroup.name} />
       {/if}
-      <LabeledInput label="Name" name="name" value={$groupDialogData.name} autoFocus required />
+      <LabeledInput label="Name" name="name" value={$dialogDataForGroup.name} autoFocus required />
       <div class="group-form__query">{query}</div>
       <nav class="group-form__btm-nav">
         <button type="button" on:click={handleCloseClick}>Cancel</button>

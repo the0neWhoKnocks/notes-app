@@ -5,7 +5,7 @@
   } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
   import {
-    noteDialogData,
+    dialogDataForNote,
     noteGroups,
     userData,
   } from '../stores';
@@ -16,21 +16,21 @@
   let formRef;
   let previewRef;
   let textareaRef;
-  let titleValue = $noteDialogData.title;
+  let titleValue = $dialogDataForNote.title;
   let previewing = false;
   
   const genQuery = (title = '') => {
-    let query = `?p=${encodeURIComponent($noteDialogData.path)}`;
+    let query = `?p=${encodeURIComponent($dialogDataForNote.path)}`;
     if (title) query += `&t=${encodeURIComponent(title)}`;
     return query;
   };
   
-  const editingNote = $noteDialogData.action === 'edit';
+  const editingNote = $dialogDataForNote.action === 'edit';
   let saveBtnDisabled = editingNote;
   let query = genQuery();
   
   function closeDialog() {
-    noteDialogData.set();
+    dialogDataForNote.set();
   }
   
   function handleCloseClick() {
@@ -40,8 +40,8 @@
   function diffCheck() {
     if (editingNote) {
       saveBtnDisabled = (
-        textareaRef.value === $noteDialogData.content
-        && titleValue === $noteDialogData.title
+        textareaRef.value === $dialogDataForNote.content
+        && titleValue === $dialogDataForNote.title
       );
     }
   }
@@ -406,7 +406,7 @@
   }
 </script>
 
-{#if $noteDialogData}
+{#if $dialogDataForNote}
   <Dialog
     onCloseClick={handleCloseClick}
   >
@@ -421,13 +421,13 @@
     >
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value={$noteDialogData.action} />
-      <input type="hidden" name="path" value={$noteDialogData.path} />
+      <input type="hidden" name="action" value={$dialogDataForNote.action} />
+      <input type="hidden" name="path" value={$dialogDataForNote.path} />
       <input type="hidden" name="type" value="note" />
       {#if editingNote}
-        <input type="hidden" name="oldTitle" value={$noteDialogData.title} />
+        <input type="hidden" name="oldTitle" value={$dialogDataForNote.title} />
       {/if}
-      <LabeledInput label="Title" name="title" value={$noteDialogData.title} autoFocus required />
+      <LabeledInput label="Title" name="title" value={$dialogDataForNote.title} autoFocus required />
       <div class="note-form__query">{query}</div>
       <div class="note-form__content-area">
         <nav class="note-form__toolbar" on:click={handleToolClick}>
@@ -455,7 +455,7 @@
             class="note-form__content"
             name="content"
             on:keydown={handleContentKeyDown}
-            value={$noteDialogData.content || ''}
+            value={$dialogDataForNote.content || ''}
           ></textarea>
           {#if previewing}
             <div
