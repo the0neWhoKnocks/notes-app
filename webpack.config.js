@@ -31,7 +31,7 @@ const conf = {
   devtool: dev && 'source-map',
   entry: {
     'js/app': resolve(__dirname, './src/client/index.js'),
-    'js/sw.register': resolve(__dirname, './src/client/sw.register.js'),
+    'js/sw.register': resolve(__dirname, './src/client/serviceWorker/register.js'),
   },
   mode,
   module: {

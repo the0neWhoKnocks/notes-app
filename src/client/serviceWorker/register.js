@@ -12,7 +12,7 @@ if ('serviceWorker' in navigator) {
     EVENT__SERVICE_WORKER__ACTIVATED,
     EVENT__SERVICE_WORKER__ERROR,
     EVENT__SERVICE_WORKER__INSTALLING,
-  } = require('../constants');
+  } = require('../../constants');
   
   window.addEventListener('load', () => {
     const LOG_PREFIX = '[SW_REGISTER]';
@@ -42,12 +42,15 @@ if ('serviceWorker' in navigator) {
       }
     });
     
-    navigator.serviceWorker.register('/sw.js', { type: 'module' })
+    navigator.serviceWorker.register('/serviceWorker/sw.js', {
+      scope: '/',
+      type: 'module',
+    })
       .then(() => {
         channel.postMessage({ type: 'INIT_API_DATA' });
         console.log(`${LOG_PREFIX} Registered`);
       })
-      .catch(err => console.log(`${LOG_PREFIX} Registration failed:\n${err.stack}`));
+      .catch(err => console.log(`${LOG_PREFIX} Registration failed:\n${err}`));
     
     navigator.serviceWorker.ready.then(() => {
       window.sw.postMessage = channel.postMessage.bind(channel);
