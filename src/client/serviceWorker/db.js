@@ -6,7 +6,7 @@ import {
 } from '/serviceWorker/constants.js';
 import { bufferToBase64 } from '/serviceWorker/crypt.js';
 
-const LOG_PREFIX = '[DB]';
+const LOG_PREFIX = '[SW_DB]';
 let dbRef;
 
 const dbAPI = {
