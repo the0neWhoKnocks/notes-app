@@ -47,11 +47,19 @@ const themeFiles = (glob.sync('*.css', { cwd: ABS_THEMES_PATH })).map(theme => `
 
 function app(req, res) {
   const [url] = req.url.split('?');
-  const handlers = [...app.reqHandlers.middleware];
-  const pathHandlers = app.reqHandlers.methods[req.method][url];
+  const handlers = app.reqHandlers.reduce((arr, { handlers, path, type }) => {
+    switch (type) {
+      case 'GET':
+      case 'POST': {
+        if (req.method === type && url === path) arr.push(...handlers);
+        break;
+      }
+      default: arr.push(...handlers);
+    }
+    return arr;
+  }, []);
   let funcNdx = 0;
   
-  if (pathHandlers) handlers.push(...pathHandlers);
   handlers.push(app.notFoundHandler);
   
   const next = () => {
@@ -63,15 +71,9 @@ function app(req, res) {
   
   next();
 }
-app.reqHandlers = {
-  methods: {
-    GET: {},
-    POST: {},
-  },
-  middleware: [],
-};
+app.reqHandlers = [];
 app.pathHandler = (method) => function pathHandler(path, ...handlers) {
-  app.reqHandlers.methods[method][path] = handlers;
+  app.reqHandlers.push({ handlers, path, type: method });
   return app;
 };
 app.notFoundHandler = function notFound(req, res) {
@@ -89,8 +91,8 @@ app.notFoundHandler = function notFound(req, res) {
 };
 app.get = app.pathHandler('GET');
 app.post = app.pathHandler('POST');
-app.use = function use(...middleware) {
-  if (middleware.length) app.reqHandlers.middleware.push(...middleware);
+app.use = function use(...handlers) {
+  if (handlers.length) app.reqHandlers.push({ handlers, type: 'use' });
   return app;
 };
 const jsonParser = bodyParser.json();
