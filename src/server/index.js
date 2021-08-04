@@ -127,6 +127,11 @@ app
   
     next();
   })
+  .get('/serviceWorker/sw.js', (req, res, next) => {
+    // Allow for having a SW file in a nested directory, but with a higher scope.
+    res.setHeader('service-worker-allowed', '/');
+    next();
+  })
   .use(...middleware)
   .use((req, res, next) => {
     if (existsSync(PATH__CONFIG)) req.appConfig = JSON.parse(readFileSync(PATH__CONFIG, 'utf8'));
