@@ -14,7 +14,11 @@ const dbAPI = {
     if (dbAPI.store) {
       return new Promise((resolve, reject) => {
         const req = dbAPI.store.get(storeKey);
-        req.onsuccess = () => { resolve(req.result); };
+        
+        req.onsuccess = () => {
+          if (!req.result) reject(`${LOG_PREFIX}[get] No 'keyPath' matching "${storeKey}" found in "${dbAPI.store.name}"`);
+          else resolve(req.result);
+        };
         req.onerror = () => { reject(`${LOG_PREFIX}[get] ${req.error}`); };
       });
     }
