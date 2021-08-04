@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator) {
   } = require('../constants');
   
   window.addEventListener('load', () => {
-    const LOG_PREFIX = '[SW.REGISTER]';
+    const LOG_PREFIX = '[SW_REGISTER]';
     
     const channel = new BroadcastChannel('sw-messages');
     channel.addEventListener('message', ({ data }) => {
