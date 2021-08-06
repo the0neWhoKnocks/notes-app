@@ -4,6 +4,7 @@
     EVENT__SERVICE_WORKER__ACTIVATED,
     EVENT__SERVICE_WORKER__ERROR,
     EVENT__SERVICE_WORKER__INSTALLING,
+    EVENT__SERVICE_WORKER__OFFLINE_DATA,
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
   } from '../../constants';
@@ -249,7 +250,13 @@
   }
   
   function updateOnlineStatus() {
+    const wasOffline = $offline;
+    
     offline.set(!navigator.onLine);
+    
+    if (wasOffline && navigator.onLine) {
+      window.sw.postMessage({ creds: $userData, type: 'GET_OFFLINE_CHANGES' });
+    }
   }
   
   $: if (userProfileOpened) {
@@ -319,9 +326,20 @@
     window.addEventListener(EVENT__SERVICE_WORKER__INSTALLING, () => {
       swInstalling = true;
     });
+    window.addEventListener(EVENT__SERVICE_WORKER__OFFLINE_DATA, (offlineData) => {
+      console.log(offlineData);
+    });
     window.addEventListener('load', () => {
       updateOnlineStatus();
     });
+    
+    // TODO
+    // - replace `INIT_API_DATA` message logic with a dispatched event, so that
+    //   user data can be passed to the SW.
+    //   - init DB
+    //     - if User logged in:
+    //       - add creds to DB (pass creds with message)
+    //       - add userData to DB (pass creds and data with message)
     
     mounted = true;
   });

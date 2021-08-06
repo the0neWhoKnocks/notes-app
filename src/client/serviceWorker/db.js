@@ -88,6 +88,9 @@ export function initDB() {
     
       const userDataStore = db.result.createObjectStore('userData', { keyPath: 'username' });
       userDataStore.createIndex('username', 'username', { unique: true });
+    
+      const offlineUserDataStore = db.result.createObjectStore('offlineUserData', { keyPath: 'username' });
+      offlineUserDataStore.createIndex('username', 'username', { unique: true });
       
       console.log(`${LOG_PREFIX} Added base data`);
     };

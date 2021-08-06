@@ -70,7 +70,7 @@ self.addEventListener('fetch', async (ev) => {
       ev.respondWith(async function() {
         const reqBody = await request.json();
         
-        if (reqURL.includes('user/login')) {
+        if (reqURL.endsWith('user/login')) {
           try {
             const { password, username } = reqBody;
             const encryptedUsername = await encrypt(cryptData, username, password);
@@ -82,7 +82,120 @@ self.addEventListener('fetch', async (ev) => {
             return genResponse(404, { message: `${OFFLINE_PREFIX} Error for login:\n${err}` });
           }
         }
-        else if (reqURL.includes('user/data')) {
+        else if (reqURL.endsWith('user/data/set')) {
+          // TODO: keep track of all operations
+          // - Added/Edited/Deleted groups
+          // - Added/Edited/Deleted notes
+          // 
+          // ---------------------------------------
+          // Group
+          // ---------------------------------------
+          // [New]
+          // http://localhost:3001/api/user/data/set
+          // action: "add"
+          // name: "newgroup"
+          // password: "<PASSWORD>"
+          // path: "root"
+          // type: "group"
+          // username: "<USERNAME>"
+          // 
+          // [Edit]
+          // http://localhost:3001/api/user/data/set
+          // action: "edit"
+          // name: "newgroupz"
+          // oldName: "newgroup"
+          // password: "<PASSWORD>"
+          // path: "root"
+          // type: "group"
+          // username: "<USERNAME>"
+          // 
+          // [Delete]
+          // http://localhost:3001/api/user/data/set
+          // action: "delete"
+          // id: "newgroupz"
+          // password: "<PASSWORD>"
+          // path: "root"
+          // type: "group"
+          // username: "<USERNAME>"
+          // 
+          // ---------------------------------------
+          // Note
+          // ---------------------------------------
+          // [New]
+          // http://localhost:3001/api/user/data/set
+          // action: "add"
+          // content: ""
+          // password: "<PASSWORD>"
+          // path: "root"
+          // title: "blah"
+          // type: "note"
+          // username: "<USERNAME>"
+          // 
+          // [Edit]
+          // http://localhost:3001/api/user/data/set
+          // action: "edit"
+          // content: "aasdfsd"
+          // oldTitle: "blah"
+          // password: "<PASSWORD>"
+          // path: "root"
+          // title: "blah"
+          // type: "note"
+          // username: "<USERNAME>"
+          // 
+          // [Delete]
+          // http://localhost:3001/api/user/data/set
+          // action: "delete"
+          // id: "blah"
+          // password: "<PASSWORD>"
+          // path: "root"
+          // type: "note"
+          // username: "<USERNAME>"
+          
+          try {
+            const { password, username } = reqBody;
+            const encryptedUsername = await encrypt(cryptData, username, password);
+            const encryptedOfflineUserData = await dbAPI.selectStore('offlineUserData').get(encryptedUsername, false);
+            let rawData = {};
+            
+            if (encryptedOfflineUserData) {
+              rawData = JSON.parse(await decrypt(cryptData, encryptedOfflineUserData.data, password));
+            }
+            else {
+              const encryptedUserData = await dbAPI.selectStore('userData').get(encryptedUsername, false);
+              if (encryptedUserData) {
+                rawData = JSON.parse(await decrypt(cryptData, encryptedUserData.data, password));
+              }
+            }
+            
+            // TODO
+            // - duplicate all the Server logic? Think I may have to instead
+            //   create a WP entry for a SW
+            //   - then just import/require items like I normally would
+            //   - stop loading the SW as a module
+            //   - move the serviceWorker folder to the root of `src` for easy
+            //     access to client, server, and utils folders
+            //   - remove watcher and prep-dist logic for SW files
+            // - create shareable utils for the Server and SW to deal with
+            //   adding, editing, and deleting groups/notes.
+            // - benefit of a WP bundle, is that the SW will update when it's
+            //   dependencies are changed
+            
+            // const jsonData = JSON.stringify(userData);
+            // const encryptedData = await encrypt(cryptData, jsonData, password);
+            // 
+            // await dbAPI.selectStore('userData').set({
+            //   data: encryptedData,
+            //   username: encryptedUsername,
+            // });
+            
+            
+            return genResponse(200, rawData);
+          }
+          catch (err) {
+            return genResponse(404, { message: `${OFFLINE_PREFIX} Error for Offline User data:\n${err}` });
+          }
+        }
+        else if (reqURL.endsWith('user/data')) {
           try {
             const { password, username } = reqBody;
             const encryptedUsername = await encrypt(cryptData, username, password);
@@ -102,7 +215,7 @@ self.addEventListener('fetch', async (ev) => {
       const reqBody = await request.clone().json();
       
       return _fetch(request, async (data) => {
-        if (reqURL.includes('user/login')) {
+        if (reqURL.endsWith('user/login')) {
           try {
             const { password, username } = await data.json();
             const encryptedUsername = await encrypt(cryptData, username, password);
@@ -114,7 +227,10 @@ self.addEventListener('fetch', async (ev) => {
             console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
           }
         }
-        else if (reqURL.includes('user/data')) {
+        else if (
+          reqURL.endsWith('user/data')
+          || reqURL.endsWith('user/data/set')
+        ) {
           try {
             const { password, username } = reqBody;
             const encryptedUsername = await encrypt(cryptData, username, password);
@@ -160,7 +276,7 @@ self.addEventListener('fetch', async (ev) => {
 });
 
 channel.addEventListener('message', async (ev) => {
-  const { data: { step, type, urls } } = ev;
+  const { data: { creds, step, type, urls } } = ev;
   const online = navigator.onLine;
   
   switch (type) {
@@ -177,6 +293,22 @@ channel.addEventListener('message', async (ev) => {
         
         console.log(`${LOG_PREFIX} Cached URLs:\n${deDupedURLs.map(url => `  ${url}`).join('\n')}`);
       }
+      break;
+    }
+    case 'GET_OFFLINE_CHANGES': {
+      const { password, username } = creds;
+      const encryptedUsername = await encrypt(cryptData, username, password);
+      const offlineData = await dbAPI.selectStore('offlineUserData').get(encryptedUsername, true);
+      let decryptedData;
+      
+      if (offlineData) {
+        decryptedData = JSON.parse(await decrypt(cryptData, offlineData.data, password));
+      }
+      
+      channel.postMessage({
+        data: decryptedData,
+        type: 'offlineData',
+      });
       break;
     }
     case 'INIT_API_DATA': {
