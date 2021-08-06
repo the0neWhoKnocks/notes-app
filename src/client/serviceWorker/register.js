@@ -12,12 +12,13 @@ if ('serviceWorker' in navigator) {
     EVENT__SERVICE_WORKER__ACTIVATED,
     EVENT__SERVICE_WORKER__ERROR,
     EVENT__SERVICE_WORKER__INSTALLING,
+    EVENT__SERVICE_WORKER__OFFLINE_DATA,
   } = require('../../constants');
+  const channel = new BroadcastChannel('sw-messages');
   
   window.addEventListener('load', () => {
     const LOG_PREFIX = '[SW_REGISTER]';
     
-    const channel = new BroadcastChannel('sw-messages');
     channel.addEventListener('message', ({ data }) => {
       console.log(`${LOG_PREFIX} Status: ${data.status}`);
       
@@ -38,6 +39,13 @@ if ('serviceWorker' in navigator) {
             urls: window.sw.assetsToCache,
           });
           window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__INSTALLING));
+          break;
+        }  
+      }
+      
+      switch (data.type) {
+        case 'offlineData': {
+          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__OFFLINE_DATA, data));
           break;
         }
       }
