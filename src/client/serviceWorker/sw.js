@@ -4,7 +4,7 @@ import {
   decrypt,
   encrypt,
 } from '/serviceWorker/crypt.js';
-import { getDB } from '/serviceWorker/db.js';
+import { initDB } from '/serviceWorker/db.js';
 
 const CACHE_KEY = 'notes-app';
 const LOG_PREFIX = '[SW]';
@@ -75,8 +75,7 @@ self.addEventListener('fetch', async (ev) => {
             const { password, username } = reqBody;
             const encryptedUsername = await encrypt(cryptData, username, password);
             
-            await dbAPI.selectStore('users');
-            await dbAPI.get(encryptedUsername);
+            await dbAPI.selectStore('users').get(encryptedUsername);
             return genResponse(200, reqBody);
           }
           catch (err) {
@@ -108,8 +107,7 @@ self.addEventListener('fetch', async (ev) => {
             const { password, username } = await data.json();
             const encryptedUsername = await encrypt(cryptData, username, password);
             
-            await dbAPI.selectStore('users').get(encryptedUsername);
-            await dbAPI.set({ username: encryptedUsername });
+            await dbAPI.selectStore('users').set({ username: encryptedUsername });
             console.log(`${LOG_PREFIX} Saved login info`);
           }
           catch (err) {
@@ -183,7 +181,7 @@ channel.addEventListener('message', async (ev) => {
     }
     case 'INIT_API_DATA': {
       try {
-        if (!dbAPI) dbAPI = await getDB();
+        dbAPI = await initDB();
         if (!cryptData) {
           const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
           cryptData = {
