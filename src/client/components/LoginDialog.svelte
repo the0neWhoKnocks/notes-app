@@ -6,6 +6,7 @@
     ROUTE__API__USER_LOGIN,
   } from '../../constants';
   import postData from '../utils/postData';
+  import { offline } from '../stores.js';
   import {
     getStorageType,
     setStorage,
@@ -125,12 +126,14 @@
         Remember Me
       </label>
       <button value="login">Log In</button>
-      <HRWithText label="or" />
-      <button
-        type="button"
-        value="create"
-        on:click={handleCreateAccountClick}
-      >Create Account</button>
+      {#if !$offline}
+        <HRWithText label="or" />
+        <button
+          type="button"
+          value="create"
+          on:click={handleCreateAccountClick}
+        >Create Account</button>
+      {/if}
     </form>
   </Dialog>
 {/if}

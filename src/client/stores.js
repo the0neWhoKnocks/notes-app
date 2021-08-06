@@ -7,6 +7,8 @@ import postData from './utils/postData';
 
 export const noteGroups = writable();
 
+export const offline = writable(false);
+
 export const currentGroupPath = writable('root');
 
 export const currentNoteGroupNotes = derived(

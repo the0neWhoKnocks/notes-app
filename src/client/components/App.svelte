@@ -16,6 +16,7 @@
     dialogDataForGroup,
     dialogDataForNote,
     noteGroups,
+    offline,
     userData,
     userPreferences,
   } from '../stores.js';
@@ -73,7 +74,6 @@
   let userNavOpen = false;
   let userProfileOpened = false;
   let userIsLoggedIn = false;
-  let offline = false;
   let swActivated = false;
   let swError = false;
   let swInstalling = false;
@@ -249,7 +249,7 @@
   }
   
   function updateOnlineStatus() {
-    offline = !navigator.onLine;
+    offline.set(!navigator.onLine);
   }
   
   $: if (userProfileOpened) {
@@ -357,7 +357,9 @@
             {/if}
           </button>
           <nav class:open={userNavOpen}>
-            <button on:click={openUserProfile}>Profile</button>
+            {#if !$offline}
+              <button on:click={openUserProfile}>Profile</button>
+            {/if}
             <button on:click={logoutUser}>Logout</button>
           </nav>
         </div>
@@ -403,7 +405,7 @@
   <div
     class="status-msg"
     class:error={swError}
-    class:offline={offline}
+    class:offline={$offline}
     class:sw-actived={swActivated}
     class:sw-installing={swInstalling}
   >
@@ -413,7 +415,7 @@
       [SW] Installing
     {:else if swActivated}
       [SW] Activated
-    {:else if offline}
+    {:else if $offline}
       Offline
     {:else}
       &nbsp;
