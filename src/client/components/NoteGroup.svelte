@@ -8,10 +8,13 @@
   export let notes = undefined;
   export let path = 'root';
   
-  const isRoot = path === 'root';
-  const ladder = path.split('/');
-  const groupId = ladder.pop();
-  const _path = ladder.join('/');
+  let isRoot, ladder, groupId, _path;
+  $: {
+    isRoot = path === 'root';
+    ladder = path.split('/');
+    groupId = ladder.pop();
+    _path = ladder.join('/');
+  }
   
   function handleNameClick() {
     currentGroupPath.update(() => path);
