@@ -23,6 +23,7 @@ if ('serviceWorker' in navigator) {
       
       switch (data.status) {
         case 'activated': {
+          channel.postMessage({ type: 'INIT_API_DATA' });
           window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__ACTIVATED));
           break;
         }
