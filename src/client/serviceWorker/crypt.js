@@ -1,6 +1,6 @@
 import {
   CRYPT__IV_LENGTH,
-} from './constants.js';
+} from './constants';
 const LOG_PREFIX = '[CRYPT]';
 const PASSWORD_BASED_KEY_VERSION = 'PBKDF2';
 const enc = new TextEncoder();

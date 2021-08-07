@@ -33,10 +33,6 @@ if (!process.env.FOR_CLIENT_BUNDLE) {
   constants.CRYPT__LENGTH__KEY = 32;
   constants.CRYPT__ENCODING = 'hex';
   constants.DISCONNECT_TIMEOUT = 5000;
-  constants.GROUP_NODE_SHAPE = {
-    groups: {},
-    notes: {},
-  };
   constants.PATH__CONFIG = `${DATA_PATH}/config.json`;
   constants.PATH__DATA = DATA_PATH;
   constants.PATH__PUBLIC = `${ROOT_PATH}/public`;
