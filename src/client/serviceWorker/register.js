@@ -51,10 +51,7 @@ if ('serviceWorker' in navigator) {
       }
     });
     
-    navigator.serviceWorker.register('/serviceWorker/sw.js', {
-      scope: '/',
-      type: 'module',
-    })
+    navigator.serviceWorker.register('/js/sw.js', { scope: '/' })
       .then(() => {
         channel.postMessage({ type: 'INIT_API_DATA' });
         console.log(`${LOG_PREFIX} Registered`);

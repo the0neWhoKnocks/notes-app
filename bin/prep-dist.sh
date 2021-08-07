@@ -11,11 +11,6 @@ rsync -avh \
   ./src/utils \
   ./src/constants.js \
   ./dist --delete
-# NOTE: Excluded files are handled by WP
-rsync -avh \
-  --exclude "register.js" \
-  ./src/client/serviceWorker \
-  ./dist/public --delete
 
 # Sync Static module files
 rsync -avh \

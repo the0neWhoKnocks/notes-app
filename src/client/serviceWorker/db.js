@@ -3,8 +3,8 @@ import {
   CRYPT__IV_LENGTH,
   DB_NAME,
   DB_VERSION,
-} from '/serviceWorker/constants.js';
-import { bufferToBase64 } from '/serviceWorker/crypt.js';
+} from './constants.js';
+import { bufferToBase64 } from './crypt.js';
 
 const LOG_PREFIX = '[SW_DB]';
 let dbRef;
