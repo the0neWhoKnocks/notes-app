@@ -92,6 +92,9 @@ encryption:
 - https://github.com/bradyjoslin/webcrypto-example/blob/master/script.js
   - https://bradyjoslin.com/blog/encryption-webcrypto/
 
+sw
+- Stuff I wish I'd known sooner about service workers https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9
+
 indexedDB
 - https://github.com/jakearchibald/svgomg/blob/master/src/js/utils/storage.js#L5
 - https://medium.com/jspoint/indexeddb-your-second-step-towards-progressive-web-apps-pwa-dcbcd6cc2076
