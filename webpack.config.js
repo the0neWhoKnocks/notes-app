@@ -31,6 +31,7 @@ const conf = {
   devtool: dev && 'source-map',
   entry: {
     'js/app': resolve(__dirname, './src/client/index.js'),
+    'js/sw': resolve(__dirname, './src/client/serviceWorker/sw.js'),
     'js/sw.register': resolve(__dirname, './src/client/serviceWorker/register.js'),
   },
   mode,
@@ -81,7 +82,12 @@ const conf = {
     // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info => resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     // assigns the hashed name to the file
-    filename: `[name]_[chunkhash:${HASH_LENGTH}].js`,
+    filename: (pathData) => {
+      // No need to hash SW file, since the Browser does the diffing on file contents
+      return pathData.chunk.name.endsWith('sw')
+        ? '[name].js'
+        : `[name]_[chunkhash:${HASH_LENGTH}].js`;
+    },
     path: resolve(__dirname, './dist/public'),
     publicPath: '/',
   },

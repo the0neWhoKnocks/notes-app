@@ -127,7 +127,7 @@ app
   
     next();
   })
-  .get('/serviceWorker/sw.js', (req, res, next) => {
+  .get('/js/sw.js', (req, res, next) => {
     // Allow for having a SW file in a nested directory, but with a higher scope.
     res.setHeader('service-worker-allowed', '/');
     next();

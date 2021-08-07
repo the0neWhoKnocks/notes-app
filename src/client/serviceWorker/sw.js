@@ -1,10 +1,10 @@
-import { DB_VERSION } from '/serviceWorker/constants.js';
+import { DB_VERSION } from './constants.js';
 import {
   base64ToBuffer,
   decrypt,
   encrypt,
-} from '/serviceWorker/crypt.js';
-import { initDB } from '/serviceWorker/db.js';
+} from './crypt.js';
+import { initDB } from './db.js';
 
 const CACHE_KEY = 'notes-app';
 const LOG_PREFIX = '[SW]';

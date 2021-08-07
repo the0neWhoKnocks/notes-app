@@ -94,8 +94,6 @@ const fileGate = (waitForFileBeforeStart)
   ? fileCheck(waitForFileBeforeStart)
   : Promise.resolve();
 const watchedServerFiles = [
-  './src/client/serviceWorker/**/*.js',
-  '!./src/client/serviceWorker/register.js', // handled by WP
   './src/client/sw.js',
   './src/server/**/*.js',
   './src/utils/**/*.js',
