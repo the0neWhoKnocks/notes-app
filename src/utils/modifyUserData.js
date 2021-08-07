@@ -1,4 +1,4 @@
-const { GROUP_NODE_SHAPE } = require('../constants');
+const groupNodeShape = require('../utils/groupNodeShape');
 const getPathNode = require('./getPathNode');
 const kebabCase = require('./kebabCase');
 
@@ -90,7 +90,7 @@ module.exports = async function modifyUserData({
       const nodeId = kebabCase(name);
       
       if (!groups[nodeId]) {
-        groups[nodeId] = { ...GROUP_NODE_SHAPE, groupName: name };
+        groups[nodeId] = { ...groupNodeShape(), groupName: name };
         
         logMsg = `Created group "${name}" in "${path}"`;
       }

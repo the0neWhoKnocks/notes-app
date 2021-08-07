@@ -1,10 +1,11 @@
-import { DB_VERSION } from './constants.js';
+import modifyUserData from '../../utils/modifyUserData';
+import { DB_VERSION } from './constants';
 import {
   base64ToBuffer,
   decrypt,
   encrypt,
-} from './crypt.js';
-import { initDB } from './db.js';
+} from './crypt';
+import { initDB } from './db';
 
 const CACHE_KEY = 'notes-app';
 const LOG_PREFIX = '[SW]';
@@ -92,116 +93,37 @@ self.addEventListener('fetch', (ev) => {
           }
         }
         else if (reqURL.endsWith('user/data/set')) {
-          // TODO: keep track of all operations
-          // - Added/Edited/Deleted groups
-          // - Added/Edited/Deleted notes
-          // 
-          // ---------------------------------------
-          // Group
-          // ---------------------------------------
-          // [New]
-          // http://localhost:3001/api/user/data/set
-          // action: "add"
-          // name: "newgroup"
-          // password: "<PASSWORD>"
-          // path: "root"
-          // type: "group"
-          // username: "<USERNAME>"
-          // 
-          // [Edit]
-          // http://localhost:3001/api/user/data/set
-          // action: "edit"
-          // name: "newgroupz"
-          // oldName: "newgroup"
-          // password: "<PASSWORD>"
-          // path: "root"
-          // type: "group"
-          // username: "<USERNAME>"
-          // 
-          // [Delete]
-          // http://localhost:3001/api/user/data/set
-          // action: "delete"
-          // id: "newgroupz"
-          // password: "<PASSWORD>"
-          // path: "root"
-          // type: "group"
-          // username: "<USERNAME>"
-          // 
-          // ---------------------------------------
-          // Note
-          // ---------------------------------------
-          // [New]
-          // http://localhost:3001/api/user/data/set
-          // action: "add"
-          // content: ""
-          // password: "<PASSWORD>"
-          // path: "root"
-          // title: "blah"
-          // type: "note"
-          // username: "<USERNAME>"
-          // 
-          // [Edit]
-          // http://localhost:3001/api/user/data/set
-          // action: "edit"
-          // content: "aasdfsd"
-          // oldTitle: "blah"
-          // password: "<PASSWORD>"
-          // path: "root"
-          // title: "blah"
-          // type: "note"
-          // username: "<USERNAME>"
-          // 
-          // [Delete]
-          // http://localhost:3001/api/user/data/set
-          // action: "delete"
-          // id: "blah"
-          // password: "<PASSWORD>"
-          // path: "root"
-          // type: "note"
-          // username: "<USERNAME>"
-          
           try {
             const { password, username } = reqBody;
             const encryptedUsername = await encrypt(cryptData, username, password);
-            const encryptedOfflineUserData = await dbAPI.selectStore('offlineUserData').get(encryptedUsername, false);
-            let rawData = {};
+            const { data, error, logMsg } = await modifyUserData({
+              loadCurrentData: async () => {
+                const encryptedUserData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
+                return (encryptedUserData)
+                  ? JSON.parse(await decrypt(cryptData, encryptedUserData.data, password))
+                  : {};
+              },
+              logMsg: `${LOG_PREFIX}${OFFLINE_PREFIX} User data modified`,
+              reqBody,
+            });
             
-            if (encryptedOfflineUserData) {
-              rawData = JSON.parse(await decrypt(cryptData, encryptedOfflineUserData.data, password));
+            if (error) {
+              const { code, msg } = error;
+              return genResponse(code, msg);
             }
-            else {
-              const encryptedUserData = await dbAPI.selectStore('userData').get(encryptedUsername, false);
-              if (encryptedUserData) {
-                rawData = JSON.parse(await decrypt(cryptData, encryptedUserData.data, password));
-              }
-            }
             
-            // TODO
-            // - duplicate all the Server logic? Think I may have to instead
-            //   create a WP entry for a SW
-            //   - then just import/require items like I normally would
-            //   - stop loading the SW as a module
-            //   - move the serviceWorker folder to the root of `src` for easy
-            //     access to client, server, and utils folders
-            //   - remove watcher and prep-dist logic for SW files
-            // - create shareable utils for the Server and SW to deal with
-            //   adding, editing, and deleting groups/notes.
-            // - benefit of a WP bundle, is that the SW will update when it's
-            //   dependencies are changed
+            const jsonData = JSON.stringify(data);
+            const encryptedData = await encrypt(cryptData, jsonData, password);
+            await dbAPI.selectStore('userData').set({
+              data: encryptedData,
+              username: encryptedUsername,
+            });
             
-            // const jsonData = JSON.stringify(userData);
-            // const encryptedData = await encrypt(cryptData, jsonData, password);
-            // 
-            // await dbAPI.selectStore('userData').set({
-            //   data: encryptedData,
-            //   username: encryptedUsername,
-            // });
-            
-            
-            return genResponse(200, rawData);
+            console.log(`${LOG_PREFIX}${OFFLINE_PREFIX} ${logMsg}`);
+            return genResponse(200, data);
           }
           catch (err) {
-            return genResponse(404, { message: `${OFFLINE_PREFIX} Error for Offline User data:\n${err}` });
+            return genResponse(404, { message: `${LOG_PREFIX}${OFFLINE_PREFIX} Error modifying User data:\n${err}` });
           }
         }
         else if (reqURL.endsWith('user/data')) {
@@ -309,7 +231,7 @@ channel.addEventListener('message', async (ev) => {
     case 'GET_OFFLINE_CHANGES': {
       const { password, username } = creds;
       const encryptedUsername = await encrypt(cryptData, username, password);
-      const offlineData = await dbAPI.selectStore('offlineUserData').get(encryptedUsername, true);
+      const offlineData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
       let decryptedData;
       
       if (offlineData) {

@@ -3,8 +3,8 @@ import {
   CRYPT__IV_LENGTH,
   DB_NAME,
   DB_VERSION,
-} from './constants.js';
-import { bufferToBase64 } from './crypt.js';
+} from './constants';
+import { bufferToBase64 } from './crypt';
 
 const LOG_PREFIX = '[SW_DB]';
 let dbRef;
@@ -88,9 +88,6 @@ export function initDB() {
     
       const userDataStore = db.result.createObjectStore('userData', { keyPath: 'username' });
       userDataStore.createIndex('username', 'username', { unique: true });
-    
-      const offlineUserDataStore = db.result.createObjectStore('offlineUserData', { keyPath: 'username' });
-      offlineUserDataStore.createIndex('username', 'username', { unique: true });
       
       console.log(`${LOG_PREFIX} Added base data`);
     };
