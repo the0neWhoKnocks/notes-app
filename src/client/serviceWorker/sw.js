@@ -28,16 +28,25 @@ function genResponse(status, data = {}) {
 // 2. Handle odd Chromium bug that only happens when DevTools are open
 //    - https://stackoverflow.com/a/49719964/5156659
 //    - https://bugs.chromium.org/p/chromium/issues/detail?id=1098389
-function _fetch(req, cb) {
-  if (req.cache === 'only-if-cached' && req.mode !== 'same-origin') return;
-  
-  let f = fetch(req);
-  
-  if (cb) f = f.then(cb);
-  
-  return f.catch(err => {
-    console.error(`${LOG_PREFIX} Error fetching "${req.url}"\n${err}`);
+function _fetch(req, ev, cb) {
+  const fp = new Promise((resolve, reject) => {
+    if (req.cache === 'only-if-cached' && req.mode !== 'same-origin') return;
+    
+    const f = fetch(req);
+    
+    if (cb) f.then(resp => {
+      return cb(resp.clone());
+    });
+    
+    f.then(resolve).catch(err => {
+      console.error(`${LOG_PREFIX} Error fetching "${req.url}"\n${err}`);
+      reject(err);
+    });
   });
+  
+  ev.waitUntil(fp);
+  
+  return fp;
 }
 
 self.addEventListener('install', () => {
@@ -58,7 +67,7 @@ self.addEventListener('activate', async () => {
 
 // TODO - may have to send a message with the API routes to keep things in sync
 
-self.addEventListener('fetch', async (ev) => {
+self.addEventListener('fetch', (ev) => {
   const { request } = ev;
   const offline = !navigator.onLine;
   const reqURL = request.url;
@@ -212,49 +221,51 @@ self.addEventListener('fetch', async (ev) => {
       }());
     }
     else {
-      const reqBody = await request.clone().json();
+      const reqBody = request.clone().json();
       
-      return _fetch(request, async (data) => {
-        if (reqURL.endsWith('user/login')) {
-          try {
-            const { password, username } = await data.json();
-            const encryptedUsername = await encrypt(cryptData, username, password);
-            
-            await dbAPI.selectStore('users').set({ username: encryptedUsername });
-            console.log(`${LOG_PREFIX} Saved login info`);
-          }
-          catch (err) {
-            console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
-          }
-        }
-        else if (
-          reqURL.endsWith('user/data')
-          || reqURL.endsWith('user/data/set')
-        ) {
-          try {
-            const { password, username } = reqBody;
-            const encryptedUsername = await encrypt(cryptData, username, password);
-            const userData = await data.json();
-            
-            if (userData) {
-              const jsonData = JSON.stringify(userData);
-              const encryptedData = await encrypt(cryptData, jsonData, password);
+      return ev.respondWith(
+        _fetch(request, ev, async (data) => {
+          if (reqURL.endsWith('user/login')) {
+            try {
+              const { password, username } = await data.json();
+              const encryptedUsername = await encrypt(cryptData, username, password);
               
-              await dbAPI.selectStore('userData').set({
-                data: encryptedData,
-                username: encryptedUsername,
-              });
-              console.log(`${LOG_PREFIX} Saved User data`);
+              await dbAPI.selectStore('users').set({ username: encryptedUsername });
+              console.log(`${LOG_PREFIX} Saved login info`);
             }
-            else {
-              console.warn(`${LOG_PREFIX} No User data returned`);
+            catch (err) {
+              console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
             }
           }
-          catch (err) {
-            console.error(`${LOG_PREFIX} Error saving User data\n${err}`);
+          else if (
+            reqURL.endsWith('user/data')
+            || reqURL.endsWith('user/data/set')
+          ) {
+            try {
+              const { password, username } = await reqBody;
+              const encryptedUsername = await encrypt(cryptData, username, password);
+              const userData = await data.json();
+              
+              if (userData) {
+                const jsonData = JSON.stringify(userData);
+                const encryptedData = await encrypt(cryptData, jsonData, password);
+                
+                await dbAPI.selectStore('userData').set({
+                  data: encryptedData,
+                  username: encryptedUsername,
+                });
+                console.log(`${LOG_PREFIX} Saved User data`);
+              }
+              else {
+                console.warn(`${LOG_PREFIX} No User data returned`);
+              }
+            }
+            catch (err) {
+              console.error(`${LOG_PREFIX} Error saving User data\n${err}`);
+            }
           }
-        }
-      });
+        })
+      );
     }
   }
   else {
@@ -269,7 +280,7 @@ self.addEventListener('fetch', async (ev) => {
         }
         
         console.log(`${LOG_PREFIX} Fetching: "${reqURL}"`);
-        return _fetch(request);
+        return _fetch(request, ev);
       })
     );
   }
