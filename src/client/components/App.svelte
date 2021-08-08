@@ -76,12 +76,97 @@
   let swInstalling = false;
   let currNotes;
   
+  function diff(objA, objB, { diffs, parentObjB, parentProp = '' } = {}) {
+    let _objB = objB;
+    if (!_objB) {
+      const objBKeys = Object.keys(parentObjB);
+      for (let i=0; i<objBKeys.length; i++) {
+        const prop = objBKeys[i];
+        const obj = parentObjB[prop];
+        if (obj.created === objA.created) {
+          _objB = obj;
+          break;
+        }
+      }
+    }
+    
+    const objAKeys = Object.keys(objA);
+    const _diffs = diffs || {
+      added: [],
+      modified: [],
+      removed: [],
+    };
+    
+    if (!_objB) {
+      _diffs.added.push({ obj: objA, path: parentProp });
+    }
+    else {
+      objAKeys.forEach(prop => {
+        const valA = objA[prop];
+        const valB = _objB[prop];
+        
+        if (
+          typeof valA === 'boolean'
+          || typeof valA === 'number'
+          || typeof valA === 'string'
+        ) {
+          const _prop = parentProp ? `${parentProp}.${prop}` : prop;
+          
+          if (
+            prop !== 'modified' // already know that it's changed, don't need to track this
+            && valA !== valB
+          ) {
+            console.log(`"${_prop}" has changed`);
+            _diffs.modified.push({
+              from: valB,
+              prop: _prop,
+              to: valA,
+            });
+          }
+        }
+        else {
+          const objBKeys = Object.keys(_objB);
+          if (objBKeys.length > objAKeys.length) {
+            objBKeys.forEach((prop) => {
+              if (!objA[prop]) _diffs.removed.push({ obj: _objB[prop], path: parentProp });
+            });
+          }
+          
+          const _prop = parentProp ? `${parentProp}.${prop}` : prop;
+          diff(valA, valB, { diffs: _diffs, parentObjB: _objB, parentProp: _prop });
+        }
+      });
+    }
+    
+    return _diffs;
+  }
+  
   function diffData(serverData, offlineData) {
     const serverJSON = JSON.stringify(serverData);
     const offlineJSON = JSON.stringify(offlineData);
     
     if (serverJSON !== offlineJSON) {
-      console.log('-- walk data, find diffs', serverData, offlineData);
+      const {
+        notesData: serverNotesData,
+        preferences: serverPreferences,
+      } = serverData;
+      const {
+        notesData: offlineNotesData,
+        preferences: offlinePreferences,
+      } = offlineData;
+      
+      try {
+        const prefsDiff = diff(offlinePreferences, serverPreferences);
+        const notesDiff = diff(offlineNotesData, serverNotesData);
+        
+        console.log(prefsDiff);
+        // TODO: `modifyUserData` will have to start accepting `created` and `modified`
+        // so that synced data behaves like it was added while online.
+        console.log(notesDiff);
+      }
+      catch (err) {
+        console.error(err);
+      }
     }
   }
   

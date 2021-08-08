@@ -70,6 +70,8 @@ module.exports = async function modifyUserData({
   let logMsg = 'Data set';
   
   if (action === 'add') {
+    const creationDate = Date.now();
+    
     if (type === 'note') {
       const { notes } = getPathNode(notesData, path);
       const nodeId = kebabCase(title);
@@ -77,7 +79,7 @@ module.exports = async function modifyUserData({
       if (!notes[nodeId]) {
         notes[nodeId] = {
           content: sanitizeContent(content) || '',
-          created: Date.now(),
+          created: creationDate,
           title,
         };
         
@@ -90,7 +92,11 @@ module.exports = async function modifyUserData({
       const nodeId = kebabCase(name);
       
       if (!groups[nodeId]) {
-        groups[nodeId] = { ...groupNodeShape(), groupName: name };
+        groups[nodeId] = { 
+          ...groupNodeShape(),
+          created: creationDate,
+          groupName: name,
+        };
         
         logMsg = `Created group "${name}" in "${path}"`;
       }
