@@ -5,10 +5,6 @@ const NAMESPACE__STORAGE = 'notes';
 const constants = {
   APP__TITLE: 'Notes',
   DOM__SVELTE_MOUNT_POINT: 'view',
-  EVENT__SERVICE_WORKER__ACTIVATED: 'sw_activated',
-  EVENT__SERVICE_WORKER__ERROR: 'sw_error',
-  EVENT__SERVICE_WORKER__INSTALLING: 'sw_installing',
-  EVENT__SERVICE_WORKER__OFFLINE_DATA: 'sw_offlineData',
   NAMESPACE__LOGGER: 'notes',
   NAMESPACE__STORAGE,
   NAMESPACE__STORAGE__USER: `${NAMESPACE__STORAGE}.user`,
@@ -19,6 +15,7 @@ const constants = {
   ROUTE__API__USER_LOGIN: `${API_PREFIX}/user/login`,
   ROUTE__API__USER_SET_DATA: `${API_PREFIX}/user/data/set`,
   ROUTE__API__USER_SET_PROFILE: `${API_PREFIX}/user/profile/set`,
+  SW__CHANNEL__MESSAGES: 'sw_messages',
 };
 
 if (!process.env.FOR_CLIENT_BUNDLE) {

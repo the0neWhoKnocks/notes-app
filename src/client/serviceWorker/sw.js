@@ -1,3 +1,6 @@
+import {
+  SW__CHANNEL__MESSAGES,
+} from '../../constants';
 import modifyUserData from '../../utils/modifyUserData';
 import { DB_VERSION } from './constants';
 import {
@@ -9,7 +12,9 @@ import { initDB } from './db';
 
 const CACHE_KEY = 'notes-app';
 const LOG_PREFIX = '[SW]';
-const channel = new BroadcastChannel('sw-messages');
+const channel = {
+  msgs: new BroadcastChannel(SW__CHANNEL__MESSAGES),
+};
 let dbAPI;
 let cryptData;
 
@@ -50,19 +55,33 @@ function _fetch(req, ev, cb) {
   return fp;
 }
 
+async function setUserInfo(creds) {
+  try {
+    const _creds = Promise.resolve(creds); // allow for a Promise or an Object to be passed in
+    const { password, username } = await _creds;
+    const encryptedUsername = await encrypt(cryptData, username, password);
+    
+    await dbAPI.selectStore('users').set({ username: encryptedUsername });
+    console.log(`${LOG_PREFIX} Saved login info`);
+  }
+  catch (err) {
+    console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
+  }
+}
+
 self.addEventListener('install', () => {
   self.skipWaiting();
-  channel.postMessage({ status: 'installing' });
+  channel.msgs.postMessage({ status: 'installing' });
 });
 
 self.addEventListener('activate', async () => {
   try {
     await self.clients.claim();
-    channel.postMessage({ status: 'activated' });
+    channel.msgs.postMessage({ status: 'activated' });
   }
   catch (err) {
     console.error(`${LOG_PREFIX} Error activating Service Worker:\n${err}`);
-    channel.postMessage({ status: 'error' });
+    channel.msgs.postMessage({ status: 'error' });
   }
 });
 
@@ -148,16 +167,7 @@ self.addEventListener('fetch', (ev) => {
       return ev.respondWith(
         _fetch(request, ev, async (data) => {
           if (reqURL.endsWith('user/login')) {
-            try {
-              const { password, username } = await data.json();
-              const encryptedUsername = await encrypt(cryptData, username, password);
-              
-              await dbAPI.selectStore('users').set({ username: encryptedUsername });
-              console.log(`${LOG_PREFIX} Saved login info`);
-            }
-            catch (err) {
-              console.error(`${LOG_PREFIX} Error saving login info\n${err}`);
-            }
+            await setUserInfo(data.json());
           }
           else if (
             reqURL.endsWith('user/data')
@@ -208,7 +218,7 @@ self.addEventListener('fetch', (ev) => {
   }
 });
 
-channel.addEventListener('message', async (ev) => {
+channel.msgs.addEventListener('message', async (ev) => {
   const { data: { creds, step, type, urls } } = ev;
   const online = navigator.onLine;
   
@@ -247,6 +257,7 @@ channel.addEventListener('message', async (ev) => {
     case 'INIT_API_DATA': {
       try {
         dbAPI = await initDB();
+        
         if (!cryptData) {
           const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
           cryptData = {
@@ -254,10 +265,12 @@ channel.addEventListener('message', async (ev) => {
             salt: base64ToBuffer(salt),
           };
         }
+        
+        if (creds) await setUserInfo(creds);
       }
       catch (err) {
         console.error(`${LOG_PREFIX} Error initializing API data:\n${err}`);
-        channel.postMessage({ status: 'error' });
+        channel.msgs.postMessage({ status: 'error' });
       }
       break;
     }

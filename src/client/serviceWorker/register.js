@@ -1,68 +1,78 @@
+const {
+  SW__CHANNEL__MESSAGES,
+} = require('../../constants');
+
 window.sw = window.sw || {};
 window.sw = {
   ...window.sw,
+  initAPIData(creds) {
+    window.sw.channel.postMessage({ creds, type: 'INIT_API_DATA' });
+  },
   messageQueue: [],
-  postMessage: (opts) => {
+  onActivated(handler) {
+    window.sw.onActivatedHandlers.push(handler);
+  },
+  onActivatedHandlers: [],
+  onError(handler) {
+    window.sw.onErrorHandlers.push(handler);
+  },
+  onErrorHandlers: [],
+  onInstall(handler) {
+    window.sw.onInstallHandlers.push(handler);
+  },
+  onInstallHandlers: [],
+  onRegistered(handler) {
+    window.sw.onRegisteredHandlers.push(handler);
+  },
+  onRegisteredHandlers: [],
+  postMessage(opts) {
     window.sw.messageQueue.push(opts);
   },
+  register() {
+    if ('serviceWorker' in navigator) {
+      window.sw.channel = new BroadcastChannel(SW__CHANNEL__MESSAGES);
+      
+      window.addEventListener('load', () => {
+        const LOG_PREFIX = '[SW_REGISTER]';
+        
+        window.sw.channel.addEventListener('message', ({ data }) => {
+          console.log(`${LOG_PREFIX} Status: ${data.status}`);
+          
+          switch (data.status) {
+            case 'activated': {
+              window.sw.onActivatedHandlers.forEach(handler => { handler(); });
+              break;
+            }
+            case 'error': {
+              window.sw.onErrorHandlers.forEach(handler => { handler(); });
+              break;
+            }
+            case 'installing': {
+              window.sw.channel.postMessage({
+                step: 'installing',
+                type: 'CACHE_URLS',
+                urls: window.sw.assetsToCache,
+              });
+              window.sw.onInstallHandlers.forEach(handler => { handler(); });
+              break;
+            }  
+          }
+        });
+        
+        navigator.serviceWorker.register('/js/sw.js', { scope: '/' })
+          .then(() => {
+            console.log(`${LOG_PREFIX} Registered`);
+            window.sw.onRegisteredHandlers.forEach(handler => { handler(); });
+          })
+          .catch(err => console.log(`${LOG_PREFIX} Registration failed:\n${err}`));
+        
+        navigator.serviceWorker.ready.then(() => {
+          window.sw.postMessage = window.sw.channel.postMessage.bind(window.sw.channel);
+          if (window.sw.messageQueue.length) {
+            window.sw.messageQueue.forEach(msg => window.sw.postMessage(msg));
+          }
+        });
+      });
+    }
+  },
 };
-
-if ('serviceWorker' in navigator) {
-  const {
-    EVENT__SERVICE_WORKER__ACTIVATED,
-    EVENT__SERVICE_WORKER__ERROR,
-    EVENT__SERVICE_WORKER__INSTALLING,
-    EVENT__SERVICE_WORKER__OFFLINE_DATA,
-  } = require('../../constants');
-  const channel = new BroadcastChannel('sw-messages');
-  
-  window.addEventListener('load', () => {
-    const LOG_PREFIX = '[SW_REGISTER]';
-    
-    channel.addEventListener('message', ({ data }) => {
-      console.log(`${LOG_PREFIX} Status: ${data.status}`);
-      
-      switch (data.status) {
-        case 'activated': {
-          channel.postMessage({ type: 'INIT_API_DATA' });
-          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__ACTIVATED));
-          break;
-        }
-        case 'error': {
-          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__ERROR));
-          break;
-        }
-        case 'installing': {
-          channel.postMessage({
-            step: 'installing',
-            type: 'CACHE_URLS',
-            urls: window.sw.assetsToCache,
-          });
-          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__INSTALLING));
-          break;
-        }  
-      }
-      
-      switch (data.type) {
-        case 'offlineData': {
-          window.dispatchEvent(new Event(EVENT__SERVICE_WORKER__OFFLINE_DATA, data));
-          break;
-        }
-      }
-    });
-    
-    navigator.serviceWorker.register('/js/sw.js', { scope: '/' })
-      .then(() => {
-        channel.postMessage({ type: 'INIT_API_DATA' });
-        console.log(`${LOG_PREFIX} Registered`);
-      })
-      .catch(err => console.log(`${LOG_PREFIX} Registration failed:\n${err}`));
-    
-    navigator.serviceWorker.ready.then(() => {
-      window.sw.postMessage = channel.postMessage.bind(channel);
-      if (window.sw.messageQueue.length) {
-        window.sw.messageQueue.forEach(msg => window.sw.postMessage(msg));
-      }
-    });
-  });
-}

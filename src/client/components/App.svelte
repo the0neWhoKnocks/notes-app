@@ -1,10 +1,6 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
   import {
-    EVENT__SERVICE_WORKER__ACTIVATED,
-    EVENT__SERVICE_WORKER__ERROR,
-    EVENT__SERVICE_WORKER__INSTALLING,
-    EVENT__SERVICE_WORKER__OFFLINE_DATA,
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
   } from '../../constants';
@@ -110,8 +106,6 @@
       userIsLoggedIn = true;
       
       userData.set(_userData);
-      
-      loadNotes();
     }
   }
   
@@ -121,6 +115,7 @@
   function handleLogin() {
     setUserInfo();
     closeLogin();
+    loadNotes();
     log.info('[USER] logged in');
   }
   
@@ -309,37 +304,36 @@
       extensions: [tableOfContents],
     });
     
-    setUserInfo();
-    
     window.addEventListener('online',  updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
-    window.addEventListener(EVENT__SERVICE_WORKER__ACTIVATED, () => {
+    window.addEventListener('load', updateOnlineStatus);
+    
+    function ensureDB() {
+      return window.sw.initAPIData($userData);
+    }
+    window.sw.onActivated(async () => {
       swInstalling = false;
       swActivated = true;
+      
+      await ensureDB();
+      
       setTimeout(() => {
         swActivated = false;
       }, 1000);
     });
-    window.addEventListener(EVENT__SERVICE_WORKER__ERROR, () => {
+    window.sw.onError(() => {
       swError = true;
     });
-    window.addEventListener(EVENT__SERVICE_WORKER__INSTALLING, () => {
+    window.sw.onInstall(() => {
       swInstalling = true;
     });
-    window.addEventListener(EVENT__SERVICE_WORKER__OFFLINE_DATA, (offlineData) => {
-      console.log(offlineData);
+    window.sw.onRegistered(async () => {
+      await ensureDB();
+      loadNotes();
     });
-    window.addEventListener('load', () => {
-      updateOnlineStatus();
-    });
+    window.sw.register();
     
-    // TODO
-    // - replace `INIT_API_DATA` message logic with a dispatched event, so that
-    //   user data can be passed to the SW.
-    //   - init DB
-    //     - if User logged in:
-    //       - add creds to DB (pass creds with message)
-    //       - add userData to DB (pass creds and data with message)
+    setUserInfo();
     
     mounted = true;
   });
