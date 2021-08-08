@@ -76,17 +76,40 @@
   let swInstalling = false;
   let currNotes;
   
-  async function loadNotes() {
-    try {
-      if ($userData) {
+  function diffData(serverData, offlineData) {
+    const serverJSON = JSON.stringify(serverData);
+    const offlineJSON = JSON.stringify(offlineData);
+    
+    if (serverJSON !== offlineJSON) {
+      console.log('-- walk data, find diffs', serverData, offlineData);
+    }
+  }
+  
+  async function syncOfflineData(creds) {
+    if (creds) {
+      try {
+        const offlineData = await window.sw.getOfflineData(creds);
+        const serverData = await postData(ROUTE__API__USER_GET_DATA, $userData);
+        
+        if (offlineData && offlineData.data) {
+          diffData(serverData, offlineData.data);
+        }
+        
         const {
           notesData,
           preferences,
-        } = await postData(ROUTE__API__USER_GET_DATA, $userData);
+        } = serverData;
         noteGroups.set(notesData);
         userPreferences.set(preferences);
         loadThemeCSS(preferences.theme);
       }
+      catch ({ message }) { alert(message); }
+    } 
+  }
+  
+  async function loadNotes() {
+    try {
+      await syncOfflineData($userData);
     
       setTimeout(() => {
         // run highlight manually to make plugins kick in
@@ -244,13 +267,13 @@
     }, 100);
   }
   
-  function updateOnlineStatus() {
+  async function updateOnlineStatus() {
     const wasOffline = $offline;
     
     offline.set(!navigator.onLine);
     
     if (wasOffline && navigator.onLine) {
-      window.sw.postMessage({ creds: $userData, type: 'GET_OFFLINE_CHANGES' });
+      await syncOfflineData($userData);
     }
   }
   
