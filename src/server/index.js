@@ -166,8 +166,8 @@ app
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-copy-to-clipboard.min.js`,
         `/${PUBLIC_JS_VENDOR}/purify.min.js`,
         manifest['vendor.js'],
-        manifest[`${VIEW}.js`],
         manifest['sw.register.js'],
+        manifest[`${VIEW}.js`],
       ],
       styles: [
         { attrs: { id: 'prismTheme' }, url: `/${PUBLIC_CSS_VENDOR}/prism/themes/prism.css` },
