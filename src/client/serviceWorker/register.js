@@ -1,12 +1,49 @@
 const {
+  SW__CHANNEL__INIT_API_DATA,
   SW__CHANNEL__MESSAGES,
+  SW__CHANNEL__OFFLINE_DATA,
 } = require('../../constants');
 
 window.sw = window.sw || {};
 window.sw = {
   ...window.sw,
+  getOfflineData(creds) {
+    return new Promise((resolve) => {
+      const channel = new BroadcastChannel(SW__CHANNEL__OFFLINE_DATA);
+      const handler = ({ data }) => {
+        channel.removeEventListener('message', handler);
+        channel.close();
+        resolve(data);
+      };
+      
+      channel.addEventListener('message', handler);
+      channel.postMessage({ creds });
+    });
+  },
   initAPIData(creds) {
-    window.sw.channel.postMessage({ creds, type: 'INIT_API_DATA' });
+    if (window.sw.initAPIData.promise) return window.sw.initAPIData.promise;
+    
+    const p = new Promise((resolve, reject) => {
+      const channel = new BroadcastChannel(SW__CHANNEL__INIT_API_DATA);
+      const handler = ({ data }) => {
+        channel.removeEventListener('message', handler);
+        channel.close();
+        
+        if (data.error) {
+          window.sw.onErrorHandlers.forEach(handler => { handler(data.error); });
+          reject(data.error);
+        }
+        else resolve();
+        
+        delete window.sw.initAPIData.promise;
+      };
+      
+      channel.addEventListener('message', handler);
+      channel.postMessage({ creds });
+    });
+    window.sw.initAPIData.promise = p;
+    
+    return p;
   },
   messageQueue: [],
   onActivated(handler) {

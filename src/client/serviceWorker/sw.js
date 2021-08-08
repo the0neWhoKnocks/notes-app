@@ -1,5 +1,7 @@
 import {
+  SW__CHANNEL__INIT_API_DATA,
   SW__CHANNEL__MESSAGES,
+  SW__CHANNEL__OFFLINE_DATA,
 } from '../../constants';
 import modifyUserData from '../../utils/modifyUserData';
 import { DB_VERSION } from './constants';
@@ -12,8 +14,10 @@ import { initDB } from './db';
 
 const CACHE_KEY = 'notes-app';
 const LOG_PREFIX = '[SW]';
-const channel = {
+const channel = { 
+  apiData: new BroadcastChannel(SW__CHANNEL__INIT_API_DATA),
   msgs: new BroadcastChannel(SW__CHANNEL__MESSAGES),
+  offlineData: new BroadcastChannel(SW__CHANNEL__OFFLINE_DATA),
 };
 let dbAPI;
 let cryptData;
@@ -135,6 +139,7 @@ self.addEventListener('fetch', (ev) => {
             const encryptedData = await encrypt(cryptData, jsonData, password);
             await dbAPI.selectStore('userData').set({
               data: encryptedData,
+              offlineUpdates: true,
               username: encryptedUsername,
             });
             
@@ -219,7 +224,7 @@ self.addEventListener('fetch', (ev) => {
 });
 
 channel.msgs.addEventListener('message', async (ev) => {
-  const { data: { creds, step, type, urls } } = ev;
+  const { data: { step, type, urls } } = ev;
   const online = navigator.onLine;
   
   switch (type) {
@@ -238,41 +243,44 @@ channel.msgs.addEventListener('message', async (ev) => {
       }
       break;
     }
-    case 'GET_OFFLINE_CHANGES': {
-      const { password, username } = creds;
-      const encryptedUsername = await encrypt(cryptData, username, password);
-      const offlineData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
-      let decryptedData;
-      
-      if (offlineData) {
-        decryptedData = JSON.parse(await decrypt(cryptData, offlineData.data, password));
-      }
-      
-      channel.postMessage({
-        data: decryptedData,
-        type: 'offlineData',
-      });
-      break;
-    }
-    case 'INIT_API_DATA': {
-      try {
-        dbAPI = await initDB();
-        
-        if (!cryptData) {
-          const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
-          cryptData = {
-            iv: base64ToBuffer(iv),
-            salt: base64ToBuffer(salt),
-          };
-        }
-        
-        if (creds) await setUserInfo(creds);
-      }
-      catch (err) {
-        console.error(`${LOG_PREFIX} Error initializing API data:\n${err}`);
-        channel.msgs.postMessage({ status: 'error' });
-      }
-      break;
-    }
   }
+});
+
+channel.apiData.addEventListener('message', async (ev) => {
+  const { data: { creds } } = ev;
+  
+  try {
+    dbAPI = await initDB();
+    
+    if (!cryptData) {
+      const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
+      cryptData = {
+        iv: base64ToBuffer(iv),
+        salt: base64ToBuffer(salt),
+      };
+    }
+    
+    if (creds) await setUserInfo(creds);
+    
+    channel.apiData.postMessage({ status: 'initialized' });
+  }
+  catch (err) {
+    const errMsg = `${LOG_PREFIX} Error initializing API data:\n${err}`;
+    console.error(errMsg);
+    channel.apiData.postMessage({ error: { message: errMsg } });
+  }
+});
+
+channel.offlineData.addEventListener('message', async (ev) => {
+  const { password, username } = ev.data.creds;
+  const encryptedUsername = await encrypt(cryptData, username, password);
+  const userData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
+  let data;
+  
+  if (userData) {
+    const decryptedData = JSON.parse(await decrypt(cryptData, userData.data, password));
+    if (decryptedData.offlineUpdates) data = decryptedData;
+  }
+  
+  channel.offlineData.postMessage({ data });
 });

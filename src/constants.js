@@ -15,7 +15,9 @@ const constants = {
   ROUTE__API__USER_LOGIN: `${API_PREFIX}/user/login`,
   ROUTE__API__USER_SET_DATA: `${API_PREFIX}/user/data/set`,
   ROUTE__API__USER_SET_PROFILE: `${API_PREFIX}/user/profile/set`,
+  SW__CHANNEL__INIT_API_DATA: 'sw_initAPIData',
   SW__CHANNEL__MESSAGES: 'sw_messages',
+  SW__CHANNEL__OFFLINE_DATA: 'sw_offlineData',
 };
 
 if (!process.env.FOR_CLIENT_BUNDLE) {
