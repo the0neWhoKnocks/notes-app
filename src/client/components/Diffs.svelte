@@ -1,0 +1,86 @@
+<script>
+  export let diffs = undefined;
+  export let type = undefined;
+  
+  const objKeys = Object.keys(diffs);
+</script>
+
+{#each objKeys as typeProp}
+  {#if diffs[typeProp].length}
+    <div class={`diff-group for--${typeProp}`}>
+      <header>{typeProp}</header>
+      {#each diffs[typeProp] as diff, ndx}
+        <div class="diff">
+          <label class="path">
+            <input type="checkbox" name={`changes[${type}][${typeProp}][]`} value={ndx} checked />
+            <div>{diff.path}</div>
+          </label>
+          {#if typeProp === 'modified'}
+            <div class="from">{diff.from}</div>
+            <div class="to">{diff.to}</div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/if}
+{/each}
+
+<style>
+  .diff-group {
+    border: solid 1px var(--bg-color--app);
+    margin: 0.5em;
+  }
+  .diff-group header {
+    color: var(--fg-color--app);
+    text-transform: capitalize;
+    padding: 0.25em 0.5em;
+    background: var(--bg-color--app);
+  }
+
+  .diff {
+    font-family: monospace;
+    border: solid 2px;
+    border-radius: 0.25em;
+    margin: 0.5em;
+    display: grid;
+    grid-template-areas:
+      "path path"
+      "old  new";
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .diff .path {
+    grid-area: path;
+    color: var(--fg-color--app);
+    background: var(--bg-color--app);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  .diff .path input {
+    width: 1.75em;
+    height: 1em;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .diff .path div {
+    width: 100%;
+    line-height: 1em;
+    padding: 6px;
+    text-shadow: 1px 1px 6px #001d5a, -1px 2px 6px #001d5a;
+    background: linear-gradient(180deg, #1c2e4a, #90afde);
+  }
+  .diff .from,
+  .diff .to {
+    padding: 0.5em;
+    border-top: solid 2px var(--bg-color--app);
+  }
+  .diff .from {
+    grid-area: old;
+    border-right: dashed 1px;
+    background: rgba(255, 0, 0, 0.1);
+  }
+  .diff .to {
+    grid-area: new;
+    background: rgba(0, 128, 0, 0.1);
+  }
+</style>

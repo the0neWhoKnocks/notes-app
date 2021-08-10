@@ -10,6 +10,7 @@
   import {
     currentNoteGroupNotes,
     dialogDataForDelete,
+    dialogDataForDiff,
     dialogDataForGroup,
     dialogDataForNote,
     noteGroups,
@@ -23,6 +24,7 @@
     setStorage,
   } from '../utils/storage';
   import DeleteDialog from './DeleteDialog.svelte';
+  import DiffDialog from './DiffDialog.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import Icon, {
     ICON__ANGLE_DOWN,
@@ -75,6 +77,7 @@
   let swError = false;
   let swInstalling = false;
   let currNotes;
+  let ignoreOfflineChanges = false;
   
   function diff(objA, objB, { diffs, parentObjB, parentProp = '' } = {}) {
     let _objB = objB;
@@ -119,7 +122,7 @@
             console.log(`"${_prop}" has changed`);
             _diffs.modified.push({
               from: valB,
-              prop: _prop,
+              path: _prop,
               to: valA,
             });
           }
@@ -156,13 +159,10 @@
       } = offlineData;
       
       try {
-        const prefsDiff = diff(offlinePreferences, serverPreferences);
-        const notesDiff = diff(offlineNotesData, serverNotesData);
-        
-        console.log(prefsDiff);
-        // TODO: `modifyUserData` will have to start accepting `created` and `modified`
-        // so that synced data behaves like it was added while online.
-        console.log(notesDiff);
+        return {
+          notesDiff: diff(offlineNotesData, serverNotesData),
+          prefsDiff: diff(offlinePreferences, serverPreferences),
+        };
       }
       catch (err) {
         console.error(err);
@@ -173,20 +173,28 @@
   async function syncOfflineData(creds) {
     if (creds) {
       try {
-        const offlineData = await window.sw.getOfflineData(creds);
-        const serverData = await postData(ROUTE__API__USER_GET_DATA, $userData);
+        const offlineData = (ignoreOfflineChanges)
+          ? undefined
+          : await window.sw.getOfflineData(creds);
+        const offlineChangesExist = offlineData && offlineData.data;
+        const serverData = await postData(ROUTE__API__USER_GET_DATA, {
+          ...$userData,
+          offlineChangesExist,
+        });
         
-        if (offlineData && offlineData.data) {
-          diffData(serverData, offlineData.data);
+        if (offlineChangesExist) {
+          const diffs = diffData(serverData, offlineData.data);
+          dialogDataForDiff.set(diffs);
         }
-        
-        const {
-          notesData,
-          preferences,
-        } = serverData;
-        noteGroups.set(notesData);
-        userPreferences.set(preferences);
-        loadThemeCSS(preferences.theme);
+        else {
+          const {
+            notesData,
+            preferences,
+          } = serverData;
+          noteGroups.set(notesData);
+          userPreferences.set(preferences);
+          loadThemeCSS(preferences.theme);
+        }
       }
       catch ({ message }) { alert(message); }
     } 
@@ -204,6 +212,12 @@
       }, 0);
     }
     catch ({ message }) { alert(message); }
+  }
+  
+  async function discardOfflineChanges() {
+    ignoreOfflineChanges = true;
+    await loadNotes();
+    ignoreOfflineChanges = false;
   }
   
   function setUserInfo() {
@@ -519,6 +533,11 @@
     {/if}
     {#if $dialogDataForDelete}
       <DeleteDialog />
+    {/if}
+    {#if $dialogDataForDiff}
+      <DiffDialog
+        onDiscard={discardOfflineChanges}
+      />
     {/if}
   {/if}
   

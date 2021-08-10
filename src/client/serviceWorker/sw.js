@@ -179,19 +179,24 @@ self.addEventListener('fetch', (ev) => {
             || reqURL.endsWith('user/data/set')
           ) {
             try {
-              const { password, username } = await reqBody;
+              const { offlineChangesExist, password, username } = await reqBody;
               const encryptedUsername = await encrypt(cryptData, username, password);
               const userData = await data.json();
               
               if (userData) {
-                const jsonData = JSON.stringify(userData);
-                const encryptedData = await encrypt(cryptData, jsonData, password);
-                
-                await dbAPI.selectStore('userData').set({
-                  data: encryptedData,
-                  username: encryptedUsername,
-                });
-                console.log(`${LOG_PREFIX} Saved User data`);
+                if (offlineChangesExist) {
+                  console.log(`${LOG_PREFIX} Offline changes exist, skipping save of User data`);
+                }
+                else {
+                  const jsonData = JSON.stringify(userData);
+                  const encryptedData = await encrypt(cryptData, jsonData, password);
+                  
+                  await dbAPI.selectStore('userData').set({
+                    data: encryptedData,
+                    username: encryptedUsername,
+                  });
+                  console.log(`${LOG_PREFIX} Saved User data`);
+                }
               }
               else {
                 console.warn(`${LOG_PREFIX} No User data returned`);
