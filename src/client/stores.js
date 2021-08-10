@@ -49,5 +49,6 @@ export const userPreferences = (function createPrefsStore() {
 })();
 
 export const dialogDataForDelete = writable();
+export const dialogDataForDiff = writable();
 export const dialogDataForGroup = writable();
 export const dialogDataForNote = writable();
