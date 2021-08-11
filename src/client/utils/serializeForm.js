@@ -35,8 +35,7 @@
  * ```
  */
 module.exports = function serializeForm(formEl) {
-  const formData = Object.fromEntries(new FormData(formEl));
-  const inputData = Object.keys(formData).map(name => ({ name, value: formData[name] }));
+  const inputData = [...formEl.querySelectorAll('[name]:not([disabled])')].map(({ name, value }) => ({ name, value }));
   const serialized = {};
   
   inputData.forEach(({ name, value }) => {
