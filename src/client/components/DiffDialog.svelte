@@ -1,6 +1,6 @@
 <script>
   import {
-    ROUTE__API__USER_SET_DATA,
+    ROUTE__API__USER__DATA__SET,
   } from '../../constants';
   import {
     dialogDataForDiff,
@@ -104,7 +104,7 @@
     title="Offline Changes"
   >
     <form
-      action={ROUTE__API__USER_SET_DATA}
+      action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
       class="diff-form"
       method="POST"

@@ -10,19 +10,19 @@ const {
   PATH__CONFIG,
   PATH__DATA,
   PATH__PUBLIC,
-  ROUTE__API__CONFIG_CREATE,
+  ROUTE__API__CONFIG__CREATE,
+  ROUTE__API__USER__DATA__GET,
+  ROUTE__API__USER__DATA__SET,
+  ROUTE__API__USER__LOGIN,
+  ROUTE__API__USER__PROFILE__CREATE,
   ROUTE__API__USER__PROFILE__DELETE,
-  ROUTE__API__USER_CREATE,
-  ROUTE__API__USER_GET_DATA,
-  ROUTE__API__USER_GET_PROFILE,
-  ROUTE__API__USER_LOGIN,
-  ROUTE__API__USER_SET_DATA,
-  ROUTE__API__USER_SET_PROFILE,
+  ROUTE__API__USER__PROFILE__GET,
+  ROUTE__API__USER__PROFILE__SET,
   SERVER__PORT,
 } = require('../constants');
 const log = require('../utils/logger')('server');
 const createConfig = require('./api/config.create');
-const createUser = require('./api/user.create');
+const createUserProfile = require('./api/user.profile.create');
 const deleteUserProfile = require('./api/user.profile.delete');
 const getUserData = require('./api/user.data.get');
 const setUserData = require('./api/user.data.set');
@@ -140,14 +140,14 @@ app
     next();
   })
   // NOTE: There's mirror logic for API routes in the SW
-  .post(ROUTE__API__CONFIG_CREATE, jsonParser, createConfig)
-  .post(ROUTE__API__USER_CREATE, jsonParser, createUser)
+  .post(ROUTE__API__CONFIG__CREATE, jsonParser, createConfig)
+  .post(ROUTE__API__USER__PROFILE__CREATE, jsonParser, createUserProfile)
   .post(ROUTE__API__USER__PROFILE__DELETE, jsonParser, deleteUserProfile)
-  .post(ROUTE__API__USER_GET_DATA, jsonParser, getUserData)
-  .post(ROUTE__API__USER_GET_PROFILE, jsonParser, getUserProfile)
-  .post(ROUTE__API__USER_LOGIN, jsonParser, userLogin)
-  .post(ROUTE__API__USER_SET_DATA, jsonParser, setUserData)
-  .post(ROUTE__API__USER_SET_PROFILE, jsonParser, setUserProfile)
+  .post(ROUTE__API__USER__DATA__GET, jsonParser, getUserData)
+  .post(ROUTE__API__USER__PROFILE__GET, jsonParser, getUserProfile)
+  .post(ROUTE__API__USER__LOGIN, jsonParser, userLogin)
+  .post(ROUTE__API__USER__DATA__SET, jsonParser, setUserData)
+  .post(ROUTE__API__USER__PROFILE__SET, jsonParser, setUserProfile)
   .get('/', async (req, res) => {
     const MANIFEST_PATH = '../public/manifest.json';
     const VIEW = 'app'; // usually tied to the `entry` name in your bundler

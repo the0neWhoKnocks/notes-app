@@ -1,6 +1,6 @@
 <script>
   import {
-    ROUTE__API__CONFIG_CREATE,
+    ROUTE__API__CONFIG__CREATE,
   } from '../../constants';
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
@@ -21,7 +21,7 @@
 <div class="config">
   <Dialog modal open>
     <form
-      action={ROUTE__API__CONFIG_CREATE}
+      action={ROUTE__API__CONFIG__CREATE}
       autocomplete="off"
       bind:this={formRef}
       on:submit={handleSubmit}

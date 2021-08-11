@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import {
     NAMESPACE__STORAGE__USER,
-    ROUTE__API__USER_CREATE,
-    ROUTE__API__USER_LOGIN,
+    ROUTE__API__USER__LOGIN,
+    ROUTE__API__USER__PROFILE__CREATE,
   } from '../../constants';
   import postData from '../utils/postData';
   import { offline } from '../stores.js';
@@ -93,7 +93,7 @@
 {#if loginOpen}
   <Dialog modal onCloseClick={handleCloseClick}>
     <form
-      action={ROUTE__API__USER_LOGIN}
+      action={ROUTE__API__USER__LOGIN}
       autocomplete='off'
       bind:this={loginFormRef}
       class="login-form"
@@ -140,7 +140,7 @@
 {#if createUserOpen}
   <Dialog onCloseClick={handleCloseClick}>
     <form
-      action={ROUTE__API__USER_CREATE}
+      action={ROUTE__API__USER__PROFILE__CREATE}
       autocomplete="off"
       bind:this={createFormRef}
       class="create-form"

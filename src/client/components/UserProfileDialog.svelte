@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import {
     ROUTE__API__USER__PROFILE__DELETE,
-    ROUTE__API__USER_GET_PROFILE,
-    ROUTE__API__USER_SET_PROFILE,
+    ROUTE__API__USER__PROFILE__GET,
+    ROUTE__API__USER__PROFILE__SET,
   } from '../../constants';
   import { userData } from '../stores';
   import postData from '../utils/postData';
@@ -34,7 +34,7 @@
   }
   
   function getUserProfile() {
-    return postData(ROUTE__API__USER_GET_PROFILE, $userData)
+    return postData(ROUTE__API__USER__PROFILE__GET, $userData)
       .catch(({ message }) => {
         if (onError) onError();
         alert(message);
@@ -84,7 +84,7 @@
     title="User Profile"
   >
     <form
-      action={ROUTE__API__USER_SET_PROFILE}
+      action={ROUTE__API__USER__PROFILE__SET}
       bind:this={formRef}
       class="user-profile-form"
       method="POST"

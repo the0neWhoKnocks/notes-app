@@ -2,8 +2,8 @@
   import { onDestroy, onMount } from 'svelte';
   import {
     NAMESPACE__STORAGE__USER,
-    ROUTE__API__USER_GET_DATA,
-    ROUTE__API__USER_SET_DATA,
+    ROUTE__API__USER__DATA__GET,
+    ROUTE__API__USER__DATA__SET,
     SCHEMA_VERSION__EXPORTED_DATA,
   } from '../../constants';
   import getPathNode from '../../utils/getPathNode';
@@ -187,7 +187,7 @@
           ? undefined
           : await window.sw.getOfflineData(creds);
         const offlineChangesExist = offlineData && offlineData.data;
-        const serverData = await postData(ROUTE__API__USER_GET_DATA, {
+        const serverData = await postData(ROUTE__API__USER__DATA__GET, {
           ...$userData,
           offlineChangesExist,
         });
@@ -387,7 +387,7 @@
   }
   
   async function exportData() {
-    const serverData = await postData(ROUTE__API__USER_GET_DATA, $userData);
+    const serverData = await postData(ROUTE__API__USER__DATA__GET, $userData);
     
     saveFile({
       data: JSON.stringify({
@@ -407,7 +407,7 @@
       const {
         notesData,
         preferences,
-      } = await postData(ROUTE__API__USER_SET_DATA, {
+      } = await postData(ROUTE__API__USER__DATA__SET, {
         ...$userData,
         action: 'importData',
         importedData: data,
