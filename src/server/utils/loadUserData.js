@@ -13,5 +13,10 @@ module.exports = async function loadUserData(appConfig, username, password) {
     return JSON.parse(await decrypt(appConfig, data, password));
   }
   
-  return { root: groupNodeShape() };
+  return {
+    notesData: {
+      root: groupNodeShape(),
+    },
+    preferences: {},
+  };
 }
