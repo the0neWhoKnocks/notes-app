@@ -9,6 +9,7 @@ const getMissingRequiredItems = (required, propObj) => {
     if (!propObj[_prop]) arr.push(_prop);
     return obj;
   }, { conditionals: [], required: [] });
+  const onlyConditionals = required.every(i => i.startsWith('?') && i.endsWith('?'));
   const reqMsg = groupedProps.required
     .map(prop => `\`${prop}\``)
     .join(` and `);
@@ -19,7 +20,11 @@ const getMissingRequiredItems = (required, propObj) => {
 
   if (reqMsg && condMsg) msg = `${reqMsg} or ${condMsg}`;
   else if (reqMsg && !condMsg) msg = reqMsg;
-  else if (condMsg) msg = condMsg;
+  else if (
+    condMsg
+    && onlyConditionals
+    && groupedProps.conditionals.length === required.length
+  ) msg = condMsg;
 
   return msg;
 };
