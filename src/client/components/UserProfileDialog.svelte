@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import {
+    ROUTE__API__USER__PROFILE__DELETE,
     ROUTE__API__USER_GET_PROFILE,
     ROUTE__API__USER_SET_PROFILE,
   } from '../../constants';
@@ -10,6 +11,7 @@
   import LabeledInput from './LabeledInput.svelte';
   
   export let onClose = undefined;
+  export let onDelete = undefined;
   export let onError = undefined;
   export let onSuccess = undefined;
   let oldPassword = '';
@@ -21,6 +23,7 @@
   let inputRef;
   let dataUpdated = false;
   let initialFormData;
+  let clickedDelete = false;
 
   function handleSubmit() {
     postData(formRef.action, formRef)
@@ -44,6 +47,20 @@
   
   function handleChange() {
     dataUpdated = initialFormData !== [...new FormData(formRef).values()].join('');
+  }
+  
+  async function deleteProfile() {
+    if (clickedDelete) {
+      try {
+        const { deleted } = await postData(ROUTE__API__USER__PROFILE__DELETE, $userData);
+        if (deleted) {
+          handleCloseClick();
+          if (onDelete) onDelete();
+        }
+      }
+      catch ({ message }) { alert(message); }
+    }
+    else clickedDelete = true;
   }
   
   $: if (dataLoaded && inputRef) inputRef.focus();
@@ -82,6 +99,20 @@
       <nav>
         <button disabled={!dataUpdated}>Update</button>
       </nav>
+      
+      <div
+        class="delete-profile"
+        class:clicked-once={clickedDelete}
+      >
+        Delete Profile. This can't be undone.
+        <button type="button" on:click={deleteProfile}>
+          {#if clickedDelete}
+            Confirm Delete
+          {:else}
+            Delete
+          {/if}
+        </button>
+      </div>
     </form>
   </Dialog>
 {/if}
@@ -96,5 +127,22 @@
   .user-profile-form button:disabled {
     opacity: 0.5;
     cursor: default;
+  }
+  
+  .delete-profile {
+    text-align: center;
+    padding: 0.5em;
+    border: groove 2px;
+    margin-top: 1em;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .delete-profile button {
+    margin-top: 0.5em;
+  }
+  .delete-profile.clicked-once {
+    background: rgba(255, 0, 0, 0.3);
+  }
+  .delete-profile.clicked-once button {
+    background: #a50000;
   }
 </style>

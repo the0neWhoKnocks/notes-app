@@ -11,6 +11,7 @@ const {
   PATH__DATA,
   PATH__PUBLIC,
   ROUTE__API__CONFIG_CREATE,
+  ROUTE__API__USER__PROFILE__DELETE,
   ROUTE__API__USER_CREATE,
   ROUTE__API__USER_GET_DATA,
   ROUTE__API__USER_GET_PROFILE,
@@ -22,6 +23,7 @@ const {
 const log = require('../utils/logger')('server');
 const createConfig = require('./api/config.create');
 const createUser = require('./api/user.create');
+const deleteUserProfile = require('./api/user.profile.delete');
 const getUserData = require('./api/user.data.get');
 const setUserData = require('./api/user.data.set');
 const userLogin = require('./api/user.login');
@@ -139,9 +141,10 @@ app
   })
   // NOTE: There's mirror logic for API routes in the SW
   .post(ROUTE__API__CONFIG_CREATE, jsonParser, createConfig)
+  .post(ROUTE__API__USER_CREATE, jsonParser, createUser)
+  .post(ROUTE__API__USER__PROFILE__DELETE, jsonParser, deleteUserProfile)
   .post(ROUTE__API__USER_GET_DATA, jsonParser, getUserData)
   .post(ROUTE__API__USER_GET_PROFILE, jsonParser, getUserProfile)
-  .post(ROUTE__API__USER_CREATE, jsonParser, createUser)
   .post(ROUTE__API__USER_LOGIN, jsonParser, userLogin)
   .post(ROUTE__API__USER_SET_DATA, jsonParser, setUserData)
   .post(ROUTE__API__USER_SET_PROFILE, jsonParser, setUserProfile)
