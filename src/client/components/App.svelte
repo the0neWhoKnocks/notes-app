@@ -3,6 +3,8 @@
   import {
     NAMESPACE__STORAGE__USER,
     ROUTE__API__USER_GET_DATA,
+    ROUTE__API__USER_SET_DATA,
+    SCHEMA_VERSION__EXPORTED_DATA,
   } from '../../constants';
   import getPathNode from '../../utils/getPathNode';
   import logger from '../../utils/logger';
@@ -18,11 +20,14 @@
     userData,
     userPreferences,
   } from '../stores.js';
+  import pickJSONFile from '../utils/pickJSONFile';
   import postData from '../utils/postData';
+  import saveFile, { FILE_TYPE__JSON } from '../utils/saveFile';
   import {
     getStorageType,
     setStorage,
   } from '../utils/storage';
+  import timestamp from '../utils/timestamp';
   import DeleteDialog from './DeleteDialog.svelte';
   import DiffDialog from './DiffDialog.svelte';
   import GroupDialog from './GroupDialog.svelte';
@@ -381,6 +386,39 @@
     }
   }
   
+  async function exportData() {
+    const serverData = await postData(ROUTE__API__USER_GET_DATA, $userData);
+    
+    saveFile({
+      data: JSON.stringify({
+        app: {
+          schema: SCHEMA_VERSION__EXPORTED_DATA,
+        },  
+        data: serverData,
+      }, null, 2),
+      name: `notes-backup-${timestamp({ format: '[y]-[mo]-[d]-[h][mi][s]' })}.json`,
+      type: FILE_TYPE__JSON,
+    });
+  }
+  
+  async function importData() {
+    try {
+      const data = await pickJSONFile();
+      const {
+        notesData,
+        preferences,
+      } = await postData(ROUTE__API__USER_SET_DATA, {
+        ...$userData,
+        action: 'importData',
+        importedData: data,
+        type: 'all',
+      });
+      noteGroups.set(notesData);
+      userPreferences.set(preferences);
+    }
+    catch ({ message }) { alert(message); }
+  }
+  
   $: if (userProfileOpened) {
     userNavOpen = false;
   }
@@ -499,6 +537,8 @@
             {#if !$offline}
               <button on:click={openUserProfile}>Profile</button>
             {/if}
+            <button on:click={importData}>Import</button>
+            <button on:click={exportData}>Export</button>
             <button on:click={logoutUser}>Logout</button>
           </nav>
         </div>

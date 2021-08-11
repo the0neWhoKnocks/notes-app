@@ -114,6 +114,7 @@ const conf = {
     }),
     new webpack.DefinePlugin({
       'process.env.FOR_CLIENT_BUNDLE': JSON.stringify(true),
+      'process.env.TIME_ZONE': JSON.stringify(process.env.TIME_ZONE),
     }),
     new MiniCssExtractPlugin({
       filename: `[name]_[chunkhash:${HASH_LENGTH}].css`,

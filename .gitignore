@@ -10,3 +10,4 @@ node_modules
 *.log
 *.patch
 .DS_STORE
+notes-backup*.json
