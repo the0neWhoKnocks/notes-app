@@ -252,27 +252,29 @@ channel.msgs.addEventListener('message', async (ev) => {
 });
 
 channel.apiData.addEventListener('message', async (ev) => {
-  const { data: { creds } } = ev;
+  const { data: { creds, error, status } } = ev;
   
-  try {
-    dbAPI = await initDB();
-    
-    if (!cryptData) {
-      const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
-      cryptData = {
-        iv: base64ToBuffer(iv),
-        salt: base64ToBuffer(salt),
-      };
+  if (!error && !status) {
+    try {
+      dbAPI = await initDB();
+      
+      if (!cryptData) {
+        const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
+        cryptData = {
+          iv: base64ToBuffer(iv),
+          salt: base64ToBuffer(salt),
+        };
+      }
+      
+      if (creds) await setUserInfo(creds);
+      
+      channel.apiData.postMessage({ status: 'initialized' });
     }
-    
-    if (creds) await setUserInfo(creds);
-    
-    channel.apiData.postMessage({ status: 'initialized' });
-  }
-  catch (err) {
-    const errMsg = `${LOG_PREFIX} Error initializing API data:\n${err}`;
-    console.error(errMsg);
-    channel.apiData.postMessage({ error: { message: errMsg } });
+    catch (err) {
+      const errMsg = `${LOG_PREFIX} Error initializing API data:\n${err}`;
+      console.error(errMsg);
+      channel.apiData.postMessage({ error: { message: errMsg } });
+    }
   }
 });
 
