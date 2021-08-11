@@ -79,7 +79,7 @@
   let currNotes;
   let ignoreOfflineChanges = false;
   
-  function diff(objA, objB, { diffs, parentObjB, parentProp = '' } = {}) {
+  function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
     let _objB = objB;
     if (!_objB) {
       const objBKeys = Object.keys(parentObjB);
@@ -101,9 +101,20 @@
     };
     
     if (!_objB) {
-      _diffs.added.push({ obj: objA, path: parentProp });
+      _diffs.added.push({ obj: objA, path: parentPath });
     }
     else {
+      const objBKeys = Object.keys(_objB);
+      
+      if (objBKeys.length > objAKeys.length) {
+        objBKeys.forEach((prop) => {
+          if (!objA[prop]) {
+            const _parentPath = parentPath ? `${parentPath}/${prop}` : prop;
+            _diffs.removed.push({ obj: _objB[prop], path: _parentPath });
+          }
+        });
+      }
+      
       objAKeys.forEach(prop => {
         const valA = objA[prop];
         const valB = _objB[prop];
@@ -113,30 +124,24 @@
           || typeof valA === 'number'
           || typeof valA === 'string'
         ) {
-          const _prop = parentProp ? `${parentProp}.${prop}` : prop;
-          
           if (
             prop !== 'modified' // already know that it's changed, don't need to track this
             && valA !== valB
           ) {
-            console.log(`"${_prop}" has changed`);
             _diffs.modified.push({
               from: valB,
-              path: _prop,
+              path: parentPath ? parentPath : prop,
+              prop,
               to: valA,
             });
           }
         }
         else {
-          const objBKeys = Object.keys(_objB);
-          if (objBKeys.length > objAKeys.length) {
-            objBKeys.forEach((prop) => {
-              if (!objA[prop]) _diffs.removed.push({ obj: _objB[prop], path: parentProp });
-            });
-          }
-          
-          const _prop = parentProp ? `${parentProp}.${prop}` : prop;
-          diff(valA, valB, { diffs: _diffs, parentObjB: _objB, parentProp: _prop });
+          diff(valA, valB, {
+            diffs: _diffs,
+            parentObjB: _objB,
+            parentPath: parentPath ? `${parentPath}/${prop}` : prop,
+          });
         }
       });
     }

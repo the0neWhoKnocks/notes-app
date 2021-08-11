@@ -4,9 +4,11 @@
   } from '../../constants';
   import {
     dialogDataForDiff,
+    noteGroups,
     userData,
+    userPreferences,
   } from '../stores';
-  // import postData from '../utils/postData';
+  import postData from '../utils/postData';
   import serializeForm from '../utils/serializeForm';
   import Dialog from './Dialog.svelte';
   import Diffs from './Diffs.svelte';
@@ -24,24 +26,75 @@
     closeDialog();
   }
   
+  function buildChosenDiffsObj(chosenObj, diffsObj) {
+    return Object.keys(chosenObj).reduce((obj, diffType) => {
+      if (!obj[diffType]) obj[diffType] = [];
+      
+      chosenObj[diffType].forEach((ndx) => {
+        obj[diffType].push(diffsObj[diffType][+ndx]);
+      });
+      
+      return obj;
+    }, {});
+  }
+  
   async function handleSubmit() {
-    const payload = serializeForm(formRef);
+    const formData = serializeForm(formRef);
     
-    if (!payload.changes) return discardChanges();
+    if (!formData.changes) return discardChanges();
     
-    console.log('submit', payload);
+    const {
+      changes: { notes, preferences: prefs },
+      ...payload
+    } = formData;
+    const { notesDiff, prefsDiff } = $dialogDataForDiff;
     
-    // TODO: `modifyUserData` will have to start accepting `created` and `modified`
-    // so that synced data behaves like it was added while online.
+    if (notes || prefs) payload.offlineChanges = {};
+    if (notes) payload.offlineChanges.notes = buildChosenDiffsObj(notes, notesDiff);
+    if (prefs) payload.offlineChanges.prefs = buildChosenDiffsObj(prefs, prefsDiff);
     
-    // try {
-    //   const { notesData } = await postData(formRef.getAttribute('action'), formRef);
-    //   closeDialog();
-    // }
-    // catch (err) {
-    //   alert(err.message);
-    //   if (err.stack) throw (err);
-    // }
+    try {
+      const {
+        notesData,
+        preferences,
+      } = await postData(formRef.getAttribute('action'), payload);
+      noteGroups.set(notesData);
+      userPreferences.set(preferences);
+      closeDialog();
+    }
+    catch (err) {
+      alert(err.message);
+      if (err.stack) throw (err);
+    }
+  }
+  
+  function transformNotePath({ path }) {
+    const ICON__FILE = '&#x01F4C4;';
+    const ICON__FOLDER = '&#x01F4C2;';
+    const markup = path
+      .split('/')
+      .reduce((arr, item, ndx, srcArr) => {
+        const odd = !!(ndx % 2);
+        let icon = '';
+        
+        if (
+          // IF the `root` item
+          ndx === 0
+          // OR the previous item was the `groups` Array
+          || (!odd && srcArr[ndx - 1] === 'groups')
+        ) icon = ICON__FOLDER;
+        // IF the previous item was the `notes` Array
+        else if (!odd && srcArr[ndx - 1] === 'notes') icon = ICON__FILE;
+        
+        // No need to display the `groups` and `notes` props since they're
+        // just for data organization, and they take up extra visual space.
+        if (!odd) arr.push(`${icon}${item}`);
+        
+        return arr;
+      }, [])
+      .join('/');
+    
+    return markup;
   }
 </script>
 
@@ -60,6 +113,8 @@
     >
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />
+      <input type="hidden" name="action" value="applyOfflineChanges" />
+      <input type="hidden" name="type" value="all" />
       
       Looks like you made some changes while you were offline.
       <ul>
@@ -85,7 +140,11 @@
         )}
           <div class="diff-form__section">
             <header>Notes</header>
-            <Diffs diffs={$dialogDataForDiff.notesDiff} type="notes" />
+            <Diffs
+              diffs={$dialogDataForDiff.notesDiff}
+              transformPath={transformNotePath}
+              type="notes"
+            />
           </div>
         {/if}
       </div>

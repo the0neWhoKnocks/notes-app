@@ -73,6 +73,9 @@ Features:
   that data while offline, store the changes in something like `updatedData`.
   Then when back online, those changes can be added in, and `updatedData` can
   be cleared out.
+- [ ] If Server request failed, check if offline data exists, use it, but inform
+  the User that they're viewing possibly stale data.
+- [ ] Check what happens if Groups or Notes have dots or slashes in the title
 
 ---
 
@@ -94,6 +97,7 @@ encryption:
 
 sw
 - Stuff I wish I'd known sooner about service workers https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9
+- Possible fix for stalled SW install (while in Dev) https://stackoverflow.com/questions/63675460/chrome-85-service-worker-stuck-on-trying-to-install
 
 indexedDB
 - https://github.com/jakearchibald/svgomg/blob/master/src/js/utils/storage.js#L5

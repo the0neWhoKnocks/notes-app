@@ -171,40 +171,50 @@ self.addEventListener('fetch', (ev) => {
       
       return ev.respondWith(
         _fetch(request, ev, async (data) => {
-          if (reqURL.endsWith('user/login')) {
-            await setUserInfo(data.json());
-          }
-          else if (
-            reqURL.endsWith('user/data')
-            || reqURL.endsWith('user/data/set')
-          ) {
-            try {
-              const { offlineChangesExist, password, username } = await reqBody;
-              const encryptedUsername = await encrypt(cryptData, username, password);
-              const userData = await data.json();
-              
-              if (userData) {
-                if (offlineChangesExist) {
-                  console.log(`${LOG_PREFIX} Offline changes exist, skipping save of User data`);
+          // only save good data
+          if (data.status < 400) {
+            if (reqURL.endsWith('user/login')) {
+              await setUserInfo(data.json());
+            }
+            else if (
+              reqURL.endsWith('user/data')
+              || reqURL.endsWith('user/data/set')
+            ) {
+              try {
+                const {
+                  offlineChangesExist,
+                  password,
+                  username,
+                } = await reqBody;
+                const encryptedUsername = await encrypt(cryptData, username, password);
+                const userData = await data.json();
+                
+                if (userData) {
+                  if (offlineChangesExist) {
+                    console.log(`${LOG_PREFIX} Offline changes exist, skipping save of User data`);
+                  }
+                  else {
+                    const jsonData = JSON.stringify(userData);
+                    const encryptedData = await encrypt(cryptData, jsonData, password);
+                    
+                    await dbAPI.selectStore('userData').set({
+                      data: encryptedData,
+                      username: encryptedUsername,
+                    });
+                    console.log(`${LOG_PREFIX} Saved User data`);
+                  }
                 }
                 else {
-                  const jsonData = JSON.stringify(userData);
-                  const encryptedData = await encrypt(cryptData, jsonData, password);
-                  
-                  await dbAPI.selectStore('userData').set({
-                    data: encryptedData,
-                    username: encryptedUsername,
-                  });
-                  console.log(`${LOG_PREFIX} Saved User data`);
+                  console.warn(`${LOG_PREFIX} No User data returned`);
                 }
               }
-              else {
-                console.warn(`${LOG_PREFIX} No User data returned`);
+              catch (err) {
+                console.error(`${LOG_PREFIX} Error saving User data\n${err}`);
               }
             }
-            catch (err) {
-              console.error(`${LOG_PREFIX} Error saving User data\n${err}`);
-            }
+          }
+          else {
+            console.log(`${LOG_PREFIX} Skipping save, error response recieved`);
           }
         })
       );

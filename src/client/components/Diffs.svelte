@@ -1,5 +1,6 @@
 <script>
   export let diffs = undefined;
+  export let transformPath = undefined;
   export let type = undefined;
   
   const objKeys = Object.keys(diffs);
@@ -13,9 +14,16 @@
         <div class="diff">
           <label class="path">
             <input type="checkbox" name={`changes[${type}][${typeProp}][]`} value={ndx} checked />
-            <div>{diff.path}</div>
+            <div>
+              {#if transformPath}
+                {@html transformPath(diff)}
+              {:else}
+                {diff.path}
+              {/if}
+            </div>
           </label>
           {#if typeProp === 'modified'}
+            <div class="prop">{diff.prop}</div>
             <div class="from">{diff.from}</div>
             <div class="to">{diff.to}</div>
           {/if}
@@ -45,6 +53,7 @@
     display: grid;
     grid-template-areas:
       "path path"
+      "prop prop"
       "old  new";
     grid-template-columns: repeat(2, 1fr);
   }
@@ -56,18 +65,30 @@
     display: flex;
     align-items: center;
   }
-  .diff .path input {
+  .diff .path > input {
     width: 1.75em;
     height: 1em;
     margin: 0;
     flex-shrink: 0;
   }
-  .diff .path div {
+  .diff .path > div {
     width: 100%;
     line-height: 1em;
     padding: 6px;
     text-shadow: 1px 1px 6px #001d5a, -1px 2px 6px #001d5a;
     background: linear-gradient(180deg, #1c2e4a, #90afde);
+  }
+  .diff .prop {
+    grid-area: prop;
+    color: var(--bg-color--app);
+    font-size: 0.8em;
+    font-weight: bold;
+    line-height: 1em;
+    text-align: center;
+    padding: 0.25em 0.5em;
+    border-top: solid 2px var(--bg-color--app);
+    background: #fff;
+    display: inline-block;
   }
   .diff .from,
   .diff .to {
