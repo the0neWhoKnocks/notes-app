@@ -419,6 +419,10 @@
     catch ({ message }) { alert(message); }
   }
   
+  function profileDeleted() {
+    logoutUser();
+  }
+  
   $: if (userProfileOpened) {
     userNavOpen = false;
   }
@@ -566,6 +570,7 @@
     {#if userProfileOpened}
       <UserProfileDialog
         onClose={closeUserProfile}
+        onDelete={profileDeleted}
         onError={closeUserProfile}
         onSuccess={handleProfileUpdate}
       />

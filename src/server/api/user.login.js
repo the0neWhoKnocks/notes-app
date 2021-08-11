@@ -33,7 +33,8 @@ module.exports = function userLogin(req, res) {
         .then((decryptedUserData) => {
           const userData = JSON.parse(decryptedUserData);
           
-          log.info(`User "${userData.username}" logged in`);
+          if (req.getProfile) log.info(`Got profile data for "${userData.username}"`);
+          else log.info(`User "${userData.username}" logged in`);
           res.json(userData);
         })
         .catch((err) => {

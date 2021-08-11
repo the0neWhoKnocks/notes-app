@@ -11,6 +11,7 @@ const constants = {
   NAMESPACE__STORAGE__USER: `${NAMESPACE__STORAGE}.user`,
   ROUTE__API__CONFIG_CREATE: `${API_PREFIX}/config/create`,
   ROUTE__API__USER_CREATE: `${API_PREFIX}/user/create`,
+  ROUTE__API__USER__PROFILE__DELETE: `${API_PREFIX}/user/profile/delete`,
   ROUTE__API__USER_GET_DATA: `${API_PREFIX}/user/data`,
   ROUTE__API__USER_GET_PROFILE: `${API_PREFIX}/user/profile`,
   ROUTE__API__USER_LOGIN: `${API_PREFIX}/user/login`,
