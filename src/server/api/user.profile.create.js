@@ -4,7 +4,7 @@ const log = require('../../utils/logger')('api.user.create');
 const encrypt = require('../utils/encrypt');
 const loadUsers = require('../utils/loadUsers');
 
-module.exports = function createUser(req, res) {
+module.exports = function createUserProfile(req, res) {
   const {
     appConfig,
     body: { password, username },

@@ -1,7 +1,7 @@
 <script>
   import { tick } from 'svelte';
   import {
-    ROUTE__API__USER_SET_DATA,
+    ROUTE__API__USER__DATA__SET,
   } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
   import {
@@ -411,7 +411,7 @@
     onCloseClick={handleCloseClick}
   >
     <form
-      action={ROUTE__API__USER_SET_DATA}
+      action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
       class="note-form"
       method="POST"

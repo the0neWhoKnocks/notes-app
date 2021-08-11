@@ -1,6 +1,6 @@
 import { get as getStoreValue, derived, writable } from 'svelte/store';
 import {
-	ROUTE__API__USER_SET_DATA,
+	ROUTE__API__USER__DATA__SET,
 } from '../constants';
 import getPathNode from '../utils/getPathNode';
 import postData from './utils/postData';
@@ -32,7 +32,7 @@ export const userPreferences = (function createPrefsStore() {
 		set,
 		setPreference: async (prop, value) => {
 			try {
-				const { preferences } = await postData(ROUTE__API__USER_SET_DATA, {
+				const { preferences } = await postData(ROUTE__API__USER__DATA__SET, {
 					...getStoreValue(userData),
 					action: 'edit',
 					prefs: { [prop]: value },
