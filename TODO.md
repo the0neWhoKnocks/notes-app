@@ -76,6 +76,8 @@ Features:
 - [ ] If Server request failed, check if offline data exists, use it, but inform
   the User that they're viewing possibly stale data.
 - [ ] Check what happens if Groups or Notes have dots or slashes in the title
+- [ ] After preferences are updated via an Offline update, or Import, a check
+  needs to happen to verify the theme file is loaded.
 
 ---
 

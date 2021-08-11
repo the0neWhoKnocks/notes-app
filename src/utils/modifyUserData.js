@@ -64,6 +64,7 @@ module.exports = async function modifyUserData({
     action,
     content,
     id,
+    importedData,
     name,
     offlineChanges,
     oldName,
@@ -83,6 +84,7 @@ module.exports = async function modifyUserData({
     'applyOfflineChanges', 
     'edit', 
     'delete',
+    'importData',
   ].includes(action)) return { error: { code: 400, msg: `The \`action\` "${action}" is unknown` } };
   else if (!type) return { error: { code: 400, msg: 'Missing `type`' } };
   else if (!username && !password) return { error: { code: 400, msg: 'Missing `username` and `password`' } };
@@ -113,13 +115,13 @@ module.exports = async function modifyUserData({
     missingRequiredItems = getMissingRequiredItems(required, reqBody);
   }
   else if (type === 'all') {
-    const required = ['offlineChanges'];
+    const required = ['?importedData?', '?offlineChanges?'];
     missingRequiredItems = getMissingRequiredItems(required, reqBody);
   }
   
   if (missingRequiredItems) return { error: { code: 400, msg: `Missing ${missingRequiredItems}` } };
   
-  const data = await loadCurrentData();
+  let data = await loadCurrentData();
   const notesData = data.notesData;
   let logMsg = 'Data set';
   
@@ -329,6 +331,11 @@ module.exports = async function modifyUserData({
         return { error: { code: 500, msg: err.stack } };
       }
       
+      break;
+    }
+    case 'importData': {
+      data = { ...importedData.data };
+      logMsg = `Imported data for "${username}"`;
       break;
     }
   }
