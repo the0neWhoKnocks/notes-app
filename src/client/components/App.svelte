@@ -614,8 +614,8 @@
 
 <style>
   :root {
-    --bg-color--app: #333;
-    --fg-color--app: #eee;
+    --color--app--bg: #333;
+    --color--app--fg: #eee;
   }
   
   .status-msg {
@@ -648,7 +648,7 @@
   .app {
     width: 100%;
     height: 100%;
-    background: var(--bg-color--app);
+    background: var(--color--app--bg);
     display: flex;
     flex-direction: column;
   }
@@ -669,7 +669,7 @@
   }
   
   .top-nav {
-    color: var(--fg-color--app);
+    color: var(--color--app--fg);
     padding: 0.25em 0.5em;
     border-bottom: solid 1px;
     display: flex;
@@ -706,7 +706,7 @@
     border: solid 1px;
     border-top: none;
     margin: 0;
-    background: var(--bg-color--app);
+    background: var(--color--app--bg);
     position: absolute;
     z-index: 1;
     top: calc(100% + var(--nav-padding));
@@ -740,7 +740,7 @@
   .current-grouped-notes {
     width: 100%;
     height: 100%;
-    color: var(--fg-color--app);
+    color: var(--color--app--fg);
     overflow: auto;
     padding: 1em;
   }

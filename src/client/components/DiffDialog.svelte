@@ -172,12 +172,12 @@
   }
   
   .diff-form__section {
-    border: solid 1px var(--bg-color--app);
+    border: solid 1px var(--color--app--bg);
   }
   .diff-form header {
-    color: var(--fg-color--app);
+    color: var(--color--app--fg);
     padding: 0.25em 0.5em;
-    background: var(--bg-color--app);
+    background: var(--color--app--bg);
   }
   
   .diff-form__btm-nav {

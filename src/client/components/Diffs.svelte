@@ -35,14 +35,14 @@
 
 <style>
   .diff-group {
-    border: solid 1px var(--bg-color--app);
+    border: solid 1px var(--color--app--bg);
     margin: 0.5em;
   }
   .diff-group header {
-    color: var(--fg-color--app);
+    color: var(--color--app--fg);
     text-transform: capitalize;
     padding: 0.25em 0.5em;
-    background: var(--bg-color--app);
+    background: var(--color--app--bg);
   }
 
   .diff {
@@ -59,8 +59,8 @@
   }
   .diff .path {
     grid-area: path;
-    color: var(--fg-color--app);
-    background: var(--bg-color--app);
+    color: var(--color--app--fg);
+    background: var(--color--app--bg);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -80,20 +80,20 @@
   }
   .diff .prop {
     grid-area: prop;
-    color: var(--bg-color--app);
+    color: var(--color--app--bg);
     font-size: 0.8em;
     font-weight: bold;
     line-height: 1em;
     text-align: center;
     padding: 0.25em 0.5em;
-    border-top: solid 2px var(--bg-color--app);
+    border-top: solid 2px var(--color--app--bg);
     background: #fff;
     display: inline-block;
   }
   .diff .from,
   .diff .to {
     padding: 0.5em;
-    border-top: solid 2px var(--bg-color--app);
+    border-top: solid 2px var(--color--app--bg);
   }
   .diff .from {
     grid-area: old;

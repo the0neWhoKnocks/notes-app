@@ -53,6 +53,6 @@
     width: 20vw;
     overflow: auto;
     min-width: 250px;
-    border-right: solid 1px var(--fg-color--app);
+    border-right: solid 1px var(--color--app--fg);
   }
 </style>

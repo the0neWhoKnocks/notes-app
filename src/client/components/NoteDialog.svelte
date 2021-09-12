@@ -503,7 +503,7 @@
   
   .note-form__toolbar {
     padding: 2px;
-    background: var(--bg-color--app);
+    background: var(--color--app--bg);
     display: flex;
   }
   .note-form__toolbar button,
@@ -522,7 +522,7 @@
     width: 2px;
     height: 100%;
     margin: 0 6px;
-    background: var(--fg-color--app);
+    background: var(--color--app--fg);
   }
   
   .note-form__content-wrapper {

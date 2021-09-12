@@ -64,7 +64,7 @@
   }
 
   .note-group {
-    color: var(--fg-color--app);
+    color: var(--color--app--fg);
   }
   
   .note-group__header {
@@ -90,7 +90,7 @@
   
   .note-group.is--root > .note-group__header {
     border-bottom: solid 1px;
-    background: var(--bg-color--app);
+    background: var(--color--app--bg);
     position: sticky;
     top: 0;
     z-index: 1;
