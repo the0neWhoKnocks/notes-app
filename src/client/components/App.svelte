@@ -40,6 +40,7 @@
   import NoteBlurb from './NoteBlurb.svelte';
   import NoteDialog from './NoteDialog.svelte';
   import NoteGroups from './NoteGroups.svelte';
+  import NotesNav from './NotesNav.svelte';
   import UserProfileDialog from './UserProfileDialog.svelte';
   
   export let appTitle = '';
@@ -548,6 +549,7 @@
         </div>
       </nav>
       <section class="user-content" on:click={delegateClick}>
+        <NotesNav />
         <NoteGroups />
         <section class="current-grouped-notes">
         	{#if currNotes && currNotes.notes && Object.keys(currNotes.notes).length}
@@ -616,6 +618,8 @@
   :root {
     --color--app--bg: #333;
     --color--app--fg: #eee;
+    --width--notes-nav: 200px;
+    --width--notes-previews: 250px;
   }
   
   .status-msg {

@@ -289,14 +289,16 @@ channel.apiData.addEventListener('message', async (ev) => {
 });
 
 channel.offlineData.addEventListener('message', async (ev) => {
-  const { password, username } = ev.data.creds;
-  const encryptedUsername = await encrypt(cryptData, username, password);
-  const userData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
-  let data;
-  
-  if (userData && userData.offlineUpdates) {
-    data = JSON.parse(await decrypt(cryptData, userData.data, password));
+  if (ev.data) {
+    const { password, username } = ev.data.creds;
+    const encryptedUsername = await encrypt(cryptData, username, password);
+    const userData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
+    let data;
+    
+    if (userData && userData.offlineUpdates) {
+      data = JSON.parse(await decrypt(cryptData, userData.data, password));
+    }
+    
+    channel.offlineData.postMessage({ data });
   }
-  
-  channel.offlineData.postMessage({ data });
 });

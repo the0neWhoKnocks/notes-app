@@ -50,9 +50,9 @@
 
 <style>
   .full-notes-list {
-    width: 20vw;
+    width: var(--width--notes-previews);
     overflow: auto;
-    min-width: 250px;
     border-right: solid 1px var(--color--app--fg);
+    flex-shrink: 0;
   }
 </style>
