@@ -1,9 +1,12 @@
 module.exports = function getPathNode(obj, path) {
   let node;
   
-  path.split('/').forEach(group => {
-    node = node ? node.groups[group] : obj[group];
-  });
+  if (obj) {
+    path.split('/').forEach(group => {
+      const _node = node ? node.groups[group] : obj[group];
+      if (_node) node = _node;
+    });
+  }
   
   return node;
 }
