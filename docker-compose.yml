@@ -23,23 +23,3 @@ services:
       # - "${PWD}/dist/server:/home/node/app/server"
       # - "${PWD}/dist/utils:/home/node/app/utils"
       # - "${PWD}/dist/constants.js:/home/node/app/constants.js"
-  
-  e2e:
-    build:
-      context: ./e2e/
-      dockerfile: Dockerfile
-    # command: 'cypress run --browser chrome'
-    container_name: e2e-notes
-    depends_on:
-      - notes
-    environment:
-      CYPRESS_baseUrl: http://host.docker.internal:3000
-      # ELECTRON_ENABLE_LOGGING: 1 # view console logs from Browser (headless)
-      # DEBUG: cypress:server:browsers:electron # view Electron internal logging
-    ipc: host # https://github.com/cypress-io/cypress/issues/350#issuecomment-267704772
-    ports:
-      - "3001:3000"
-    working_dir: /e2e
-    volumes:
-      - "${PWD}/e2e:/e2e"
-      - "${PWD}/data:/app/data"
