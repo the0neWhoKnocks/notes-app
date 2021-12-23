@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 const { create } = require('browser-sync');
 const nodemon = require('nodemon');
 const chokidar = require('chokidar');
