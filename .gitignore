@@ -2,7 +2,6 @@
 .assets
 .git
 certs.*
-e2e/cypress/screenshots
 data
 dist
 node_modules
