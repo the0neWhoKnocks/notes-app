@@ -12,7 +12,7 @@
   import {
     currentNoteGroupNotes,
     dialogDataForDelete,
-    dialogDataForDiff,
+    // dialogDataForDiff,
     dialogDataForGroup,
     dialogDataForNote,
     noteGroups,
@@ -29,7 +29,7 @@
   } from '../utils/storage';
   import timestamp from '../utils/timestamp';
   import DeleteDialog from './DeleteDialog.svelte';
-  import DiffDialog from './DiffDialog.svelte';
+  // import DiffDialog from './DiffDialog.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import Icon, {
     ICON__ANGLE_DOWN,
@@ -83,129 +83,137 @@
   let swError = false;
   let swInstalling = false;
   let currNotes;
-  let ignoreOfflineChanges = false;
+  // let ignoreOfflineChanges = false;
   
-  function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
-    let _objB = objB;
-    if (!_objB) {
-      const objBKeys = Object.keys(parentObjB);
-      for (let i=0; i<objBKeys.length; i++) {
-        const prop = objBKeys[i];
-        const obj = parentObjB[prop];
-        if (obj.created === objA.created) {
-          _objB = obj;
-          break;
-        }
-      }
-    }
-    
-    const objAKeys = Object.keys(objA);
-    const _diffs = diffs || {
-      added: [],
-      modified: [],
-      removed: [],
-    };
-    
-    if (!_objB) {
-      _diffs.added.push({ obj: objA, path: parentPath });
-    }
-    else {
-      const objBKeys = Object.keys(_objB);
-      
-      if (objBKeys.length > objAKeys.length) {
-        objBKeys.forEach((prop) => {
-          if (!objA[prop]) {
-            const _parentPath = parentPath ? `${parentPath}/${prop}` : prop;
-            _diffs.removed.push({ obj: _objB[prop], path: _parentPath });
-          }
-        });
-      }
-      
-      objAKeys.forEach(prop => {
-        const valA = objA[prop];
-        const valB = _objB[prop];
-        
-        if (
-          typeof valA === 'boolean'
-          || typeof valA === 'number'
-          || typeof valA === 'string'
-        ) {
-          if (
-            prop !== 'modified' // already know that it's changed, don't need to track this
-            && valA !== valB
-          ) {
-            _diffs.modified.push({
-              from: valB,
-              path: parentPath ? parentPath : prop,
-              prop,
-              to: valA,
-            });
-          }
-        }
-        else {
-          diff(valA, valB, {
-            diffs: _diffs,
-            parentObjB: _objB,
-            parentPath: parentPath ? `${parentPath}/${prop}` : prop,
-          });
-        }
-      });
-    }
-    
-    return _diffs;
-  }
+  // function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
+  //   let _objB = objB;
+  //   if (!_objB) {
+  //     const objBKeys = Object.keys(parentObjB);
+  //     for (let i=0; i<objBKeys.length; i++) {
+  //       const prop = objBKeys[i];
+  //       const obj = parentObjB[prop];
+  //       if (obj.created === objA.created) {
+  //         _objB = obj;
+  //         break;
+  //       }
+  //     }
+  //   }
+  // 
+  //   const objAKeys = Object.keys(objA);
+  //   const _diffs = diffs || {
+  //     added: [],
+  //     modified: [],
+  //     removed: [],
+  //   };
+  // 
+  //   if (!_objB) {
+  //     _diffs.added.push({ obj: objA, path: parentPath });
+  //   }
+  //   else {
+  //     const objBKeys = Object.keys(_objB);
+  // 
+  //     if (objBKeys.length > objAKeys.length) {
+  //       objBKeys.forEach((prop) => {
+  //         if (!objA[prop]) {
+  //           const _parentPath = parentPath ? `${parentPath}/${prop}` : prop;
+  //           _diffs.removed.push({ obj: _objB[prop], path: _parentPath });
+  //         }
+  //       });
+  //     }
+  // 
+  //     objAKeys.forEach(prop => {
+  //       const valA = objA[prop];
+  //       const valB = _objB[prop];
+  // 
+  //       if (
+  //         typeof valA === 'boolean'
+  //         || typeof valA === 'number'
+  //         || typeof valA === 'string'
+  //       ) {
+  //         if (
+  //           prop !== 'modified' // already know that it's changed, don't need to track this
+  //           && valA !== valB
+  //         ) {
+  //           _diffs.modified.push({
+  //             from: valB,
+  //             path: parentPath ? parentPath : prop,
+  //             prop,
+  //             to: valA,
+  //           });
+  //         }
+  //       }
+  //       else {
+  //         diff(valA, valB, {
+  //           diffs: _diffs,
+  //           parentObjB: _objB,
+  //           parentPath: parentPath ? `${parentPath}/${prop}` : prop,
+  //         });
+  //       }
+  //     });
+  //   }
+  // 
+  //   return _diffs;
+  // }
   
-  function diffData(serverData, offlineData) {
-    const serverJSON = JSON.stringify(serverData);
-    const offlineJSON = JSON.stringify(offlineData);
-    
-    if (serverJSON !== offlineJSON) {
-      const {
-        notesData: serverNotesData,
-        preferences: serverPreferences,
-      } = serverData;
-      const {
-        notesData: offlineNotesData,
-        preferences: offlinePreferences,
-      } = offlineData;
-      
-      try {
-        return {
-          notesDiff: diff(offlineNotesData, serverNotesData),
-          prefsDiff: diff(offlinePreferences, serverPreferences),
-        };
-      }
-      catch (err) {
-        console.error(err);
-      }
-    }
-  }
+  // function diffData(serverData, offlineData) {
+  //   const serverJSON = JSON.stringify(serverData);
+  //   const offlineJSON = JSON.stringify(offlineData);
+  // 
+  //   if (serverJSON !== offlineJSON) {
+  //     const {
+  //       notesData: serverNotesData,
+  //       preferences: serverPreferences,
+  //     } = serverData;
+  //     const {
+  //       notesData: offlineNotesData,
+  //       preferences: offlinePreferences,
+  //     } = offlineData;
+  // 
+  //     try {
+  //       return {
+  //         notesDiff: diff(offlineNotesData, serverNotesData),
+  //         prefsDiff: diff(offlinePreferences, serverPreferences),
+  //       };
+  //     }
+  //     catch (err) {
+  //       console.error(err);
+  //     }
+  //   }
+  // }
   
   async function syncOfflineData(creds) {
     if (creds) {
       try {
-        const offlineData = (ignoreOfflineChanges)
-          ? undefined
-          : await window.sw.getOfflineData(creds);
-        const offlineChangesExist = offlineData && offlineData.data;
-        const serverData = await postData(ROUTE__API__USER__DATA__GET, {
-          ...$userData,
-          offlineChangesExist,
-        });
+        // const offlineData = (ignoreOfflineChanges)
+        //   ? undefined
+        //   : await window.sw.getOfflineData(creds);
+        // const offlineChangesExist = offlineData && offlineData.data;
+        // const serverData = await postData(ROUTE__API__USER__DATA__GET, {
+        //   ...$userData,
+        //   offlineChangesExist,
+        // });
         
-        if (offlineChangesExist) {
-          const diffs = diffData(serverData, offlineData.data);
-          dialogDataForDiff.set(diffs);
-        }
-        else {
-          const {
-            notesData,
-            preferences,
-          } = serverData;
-          noteGroups.set(notesData);
-          userPreferences.set(preferences);
-          loadThemeCSS(preferences.theme);
-        }
+        const {
+          notesData,
+          preferences,
+        } = await postData(ROUTE__API__USER__DATA__GET, $userData);
+        noteGroups.set(notesData);
+        userPreferences.set(preferences);
+        loadThemeCSS(preferences.theme);
+        
+        // if (offlineChangesExist) {
+        //   const diffs = diffData(serverData, offlineData.data);
+        //   dialogDataForDiff.set(diffs);
+        // }
+        // else {
+        //   const {
+        //     notesData,
+        //     preferences,
+        //   } = serverData;
+        //   noteGroups.set(notesData);
+        //   userPreferences.set(preferences);
+        //   loadThemeCSS(preferences.theme);
+        // }
       }
       catch ({ message }) { alert(message); }
     } 
@@ -225,11 +233,11 @@
     catch ({ message }) { alert(message); }
   }
   
-  async function discardOfflineChanges() {
-    ignoreOfflineChanges = true;
-    await loadNotes();
-    ignoreOfflineChanges = false;
-  }
+  // async function discardOfflineChanges() {
+  //   ignoreOfflineChanges = true;
+  //   await loadNotes();
+  //   ignoreOfflineChanges = false;
+  // }
   
   function setUserInfo() {
     userStorageType = getStorageType(NAMESPACE__STORAGE__USER);
@@ -478,32 +486,33 @@
     window.addEventListener('offline', updateOnlineStatus);
     window.addEventListener('load', updateOnlineStatus);
     
-    function ensureDB() {
-      return window.sw.initAPIData($userData);
-    }
-    window.sw.onActivated(async () => {
-      swInstalling = false;
-      swActivated = true;
-      
-      await ensureDB();
-      
-      setTimeout(() => {
-        swActivated = false;
-      }, 1000);
-    });
-    window.sw.onError(() => {
-      swError = true;
-    });
-    window.sw.onInstall(() => {
-      swInstalling = true;
-    });
-    window.sw.onRegistered(async () => {
-      await ensureDB();
-      loadNotes();
-    });
-    window.sw.register();
+    // function ensureDB() {
+    //   return window.sw.initAPIData($userData);
+    // }
+    // window.sw.onActivated(async () => {
+    //   swInstalling = false;
+    //   swActivated = true;
+    // 
+    //   await ensureDB();
+    // 
+    //   setTimeout(() => {
+    //     swActivated = false;
+    //   }, 1000);
+    // });
+    // window.sw.onError(() => {
+    //   swError = true;
+    // });
+    // window.sw.onInstall(() => {
+    //   swInstalling = true;
+    // });
+    // window.sw.onRegistered(async () => {
+    //   await ensureDB();
+    //   loadNotes();
+    // });
+    // window.sw.register();
     
     setUserInfo();
+    loadNotes();
     
     mounted = true;
   });
@@ -586,11 +595,11 @@
     {#if $dialogDataForDelete}
       <DeleteDialog />
     {/if}
-    {#if $dialogDataForDiff}
+    <!-- {#if $dialogDataForDiff}
       <DiffDialog
         onDiscard={discardOfflineChanges}
       />
-    {/if}
+    {/if} -->
   {/if}
   
   <div
