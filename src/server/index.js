@@ -169,7 +169,7 @@ app
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-copy-to-clipboard.min.js`,
         `/${PUBLIC_JS_VENDOR}/purify.min.js`,
         manifest['vendor.js'],
-        manifest['sw.register.js'],
+        // manifest['sw.register.js'],
         manifest[`${VIEW}.js`],
       ],
       styles: [

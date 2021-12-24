@@ -13,7 +13,7 @@ import {
 import { initDB } from './db';
 
 const CACHE_KEY = 'notes-app';
-const LOG_PREFIX = '[SW]';
+const LOG_PREFIX = '[SW:NOTES]';
 const channel = { 
   apiData: new BroadcastChannel(SW__CHANNEL__INIT_API_DATA),
   msgs: new BroadcastChannel(SW__CHANNEL__MESSAGES),

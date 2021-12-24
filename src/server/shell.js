@@ -34,6 +34,25 @@ const addNodes = (type, arr) => {
   return _arr.join('\n');
 };
 
+// window.sw = {
+//   assetsToCache: ${
+//     JSON.stringify(
+//       [
+//         '/',
+//         ...head.styles,
+//         ...body.styles,
+//         ...body.asyncStyles,
+//         ...head.scripts,
+//         ...body.scripts,
+//         ...body.asyncScripts,
+//       ]
+//       .map(asset => {
+//         return (typeof asset === 'object') ? asset.url : asset;
+//       })
+//     )
+//   },
+// };
+
 const shell = ({
   body,
   head,
@@ -205,24 +224,6 @@ const shell = ({
       <script>
         window.app = {
           props: ${JSON.stringify(props || {})},
-        };
-        window.sw = {
-          assetsToCache: ${
-            JSON.stringify(
-              [
-                '/',
-                ...head.styles,
-                ...body.styles,
-                ...body.asyncStyles,
-                ...head.scripts,
-                ...body.scripts,
-                ...body.asyncScripts,
-              ]
-              .map(asset => {
-                return (typeof asset === 'object') ? asset.url : asset;
-              })
-            )
-          },
         };
       </script>
       ${addNodes('script', head.scripts)}
