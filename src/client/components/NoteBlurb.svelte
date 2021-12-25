@@ -1,5 +1,5 @@
 <script>
-  import ModifyNav from './ModifyNav';
+  import ModifyNav from './ModifyNav.svelte';
   
   export let content = undefined;
   export let id = undefined;
