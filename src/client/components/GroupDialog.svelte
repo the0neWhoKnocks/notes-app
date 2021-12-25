@@ -12,17 +12,16 @@
   import Dialog from './Dialog.svelte';
   import LabeledInput from './LabeledInput.svelte';  
   
+  let editingGroup;
   let formRef;
+  let query
+  let saveBtnDisabled;
   
   const genQuery = (name = '') => {
     let query = `?p=${encodeURIComponent($dialogDataForGroup.path)}`;
     if (name) query += `/${encodeURIComponent(name)}`;
     return query;
   };
-  
-  const editingGroup = $dialogDataForGroup.action === 'edit';
-  let saveBtnDisabled = editingGroup;
-  let query = genQuery();
   
   function closeDialog() {
     dialogDataForGroup.set();
@@ -49,6 +48,12 @@
       alert(err.message);
       if (err.stack) throw (err);
     }
+  }
+  
+  $: if ($dialogDataForGroup) {
+    editingGroup = $dialogDataForGroup.action === 'edit';
+    saveBtnDisabled = editingGroup;
+    query = genQuery();
   }
 </script>
 
@@ -87,7 +92,8 @@
   .group-form {
     --labeled-input__input-width: 100%;
     
-    width: 30vw;
+    width: 70vw;
+    max-width: 25em;
     overflow: auto;
     padding: 1em;
     display: flex;

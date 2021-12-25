@@ -1,19 +1,19 @@
 <script>
-  import { onMount } from 'svelte';
   import {
     ROUTE__API__USER__PROFILE__DELETE,
     ROUTE__API__USER__PROFILE__GET,
     ROUTE__API__USER__PROFILE__SET,
   } from '../../constants';
-  import { userData } from '../stores';
+  import {
+    logout,
+    profileUpdated,
+    userData,
+    userProfileOpened,
+  } from '../stores';
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   import LabeledInput from './LabeledInput.svelte';
   
-  export let onClose = undefined;
-  export let onDelete = undefined;
-  export let onError = undefined;
-  export let onSuccess = undefined;
   let oldPassword = '';
   let oldUsername = '';
   let password = '';
@@ -27,22 +27,12 @@
 
   function handleSubmit() {
     postData(formRef.action, formRef)
-      .then((data) => {
-        if (onSuccess) onSuccess(data);
-      })
+      .then((data) => { profileUpdated(data); })
       .catch(({ message }) => { alert(message); });
   }
   
-  function getUserProfile() {
-    return postData(ROUTE__API__USER__PROFILE__GET, $userData)
-      .catch(({ message }) => {
-        if (onError) onError();
-        alert(message);
-      });
-  }
-  
   function handleCloseClick() {
-    if (onClose) onClose();
+    userProfileOpened.set(false);
   }
   
   function handleChange() {
@@ -54,8 +44,9 @@
       try {
         const { deleted } = await postData(ROUTE__API__USER__PROFILE__DELETE, $userData);
         if (deleted) {
+          clickedDelete = false;
           handleCloseClick();
-          if (onDelete) onDelete();
+          logout();
         }
       }
       catch ({ message }) { alert(message); }
@@ -63,22 +54,30 @@
     else clickedDelete = true;
   }
   
+  async function loadProfileData() {
+    try {
+      const profileData = await postData(ROUTE__API__USER__PROFILE__GET, $userData);
+      
+      oldPassword = profileData.password;
+      oldUsername = profileData.username;
+      password = profileData.password;
+      username = profileData.username;
+      dataLoaded = true;
+    }
+    catch ({ message }) {
+      userProfileOpened.set(false);
+      alert(message);
+    }
+  }
+  
   $: if (dataLoaded && inputRef) inputRef.focus();
   $: if (formRef && dataLoaded) {
     initialFormData = [...new FormData(formRef).values()].join('');
   }
-  
-  onMount(async () => {
-    const profileData = await getUserProfile();
-    oldPassword = profileData.password;
-    oldUsername = profileData.username;
-    password = profileData.password;
-    username = profileData.username;
-    dataLoaded = true;
-  });
+  $: if ($userProfileOpened) loadProfileData();
 </script>
 
-{#if dataLoaded}
+{#if $userProfileOpened && dataLoaded}
   <Dialog
     onCloseClick={handleCloseClick}
     title="User Profile"

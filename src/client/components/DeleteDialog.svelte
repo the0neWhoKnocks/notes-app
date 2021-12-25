@@ -71,7 +71,8 @@
 
 <style>
   .delete-form {
-    width: 30vw;
+    width: 70vw;
+    max-width: 25em;
     overflow: auto;
     padding: 1em;
     display: flex;
