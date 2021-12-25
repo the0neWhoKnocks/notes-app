@@ -258,6 +258,7 @@ const shell = ({
         </div>
         <div id="${DOM__SVELTE_MOUNT_POINT}"></div>
       </div>
+      <div id=overlays></div>
       
       ${addNodes('link', body.styles)}
       ${addNodes('script', body.scripts)}
