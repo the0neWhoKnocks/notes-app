@@ -3,7 +3,7 @@
 </script>
 <script>
   import { cubicOut } from 'svelte/easing'; // visualizations https://svelte.dev/repl/6904f0306d6f4985b55f5f9673f762ef?version=3.4.1
-  import Portal from 'svelte-portal';
+  import Portal from './Portal.svelte';
   
   export let animDuration = 300;
   export let bodyColor = '#eee';
