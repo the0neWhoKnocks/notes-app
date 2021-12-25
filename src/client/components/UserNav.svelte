@@ -81,7 +81,7 @@
     margin: 0;
     background: var(--color--app--bg);
     position: absolute;
-    z-index: 1;
+    z-index: 5;
     top: calc(100% + var(--nav-padding));
     right: 0;
     opacity: 0;
