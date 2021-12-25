@@ -28,7 +28,6 @@
 
 <style>
   .notes-nav-group {
-    color: var(--color--app--fg);
     margin: 0;
     list-style: none;
   }

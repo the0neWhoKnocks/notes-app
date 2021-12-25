@@ -45,7 +45,6 @@
   }
   
   .notes-nav-drawer__btn {
-    color: var(--color--app--fg);
     text-align: left;
     padding: 0;
     border: none;

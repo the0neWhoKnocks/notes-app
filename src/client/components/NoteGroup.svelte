@@ -62,10 +62,6 @@
   .root-separator:first-of-type {
     margin-top: 0;
   }
-
-  .note-group {
-    color: var(--color--app--fg);
-  }
   
   .note-group__header {
     position: relative;
