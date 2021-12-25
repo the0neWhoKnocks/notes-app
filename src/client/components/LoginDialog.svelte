@@ -1,59 +1,49 @@
 <script>
-  import { onMount } from 'svelte';
   import {
-    NAMESPACE__STORAGE__USER,
     ROUTE__API__USER__LOGIN,
     ROUTE__API__USER__PROFILE__CREATE,
   } from '../../constants';
   import postData from '../utils/postData';
-  import { offline } from '../stores.js';
   import {
-    getStorageType,
-    setStorage,
-  } from '../utils/storage';
+    login,
+    offline,
+    userData,
+    userIsLoggedIn,
+    userStorageType,
+  } from '../stores.js';
   import Dialog from './Dialog.svelte';
   import HRWithText from './HRWithText.svelte';
   import LabeledInput from './LabeledInput.svelte';
   
-  export let onClose = undefined;
-  export let onSuccess = undefined;
-  let loginOpen = true;
   let createUserOpen = false;
-  let loginFormRef;
-  let rememberCredentialsRef;
-  let createFormRef;
-  let loginUsername;
-  let loginPassword;
+  let loginOpen = true;
   let rememberCredentials = false;
+  let createFormRef;
+  let loginFormRef;
+  let loginPassword;
+  let loginUsername;
   
   function handleLoginSubmit(ev) {
     ev.preventDefault();
     
     postData(loginFormRef.action, loginFormRef)
       .then((userData) => {
-        setStorage({
+        login({
           data: userData,
-          key: NAMESPACE__STORAGE__USER,
-          persistent: rememberCredentialsRef.checked,
+          persistent: rememberCredentials,
         });
-        
-        onSuccess(userData);
       })
       .catch(({ message }) => { alert(message); });
   }
   
-  function handleCloseClick() {
-    if (onClose) onClose();
-  }
-  
-  function handleCreateAccountClick() {
-    loginOpen = false;
-    createUserOpen = true;
-  }
-  
-  function handleCancelCreateClick() {
+  function closeCreateAccount() {
     createUserOpen = false;
     loginOpen = true;
+  }
+  
+  function openCreateAccount() {
+    loginOpen = false;
+    createUserOpen = true;
   }
   
   function handleCreateSubmit(ev) {
@@ -68,7 +58,7 @@
         .then(() => {
           loginUsername = username;
           loginPassword = password;
-          handleCancelCreateClick();
+          closeCreateAccount();
         })
         .catch(({ error }) => { alert(error); });
     }
@@ -77,107 +67,115 @@
     }
   }
   
-  onMount(() => {
-    const storageType = getStorageType(NAMESPACE__STORAGE__USER);
-    
-    if (storageType) {
-      const { password, username } = JSON.parse(window[storageType].getItem(NAMESPACE__STORAGE__USER));
+  function updateStorageType({ currentTarget: { checked } }) {
+    if (checked) userStorageType.set('localStorage');
+    else userStorageType.set('sessionStorage');
+  }
+  
+  $: if (!$userIsLoggedIn) {
+    if ($userData) {
+      const { password, username } = $userData;
       loginUsername = username;
       loginPassword = password;
-      
-      if (storageType === 'localStorage') rememberCredentials = true;
     }
-  });
+    else {
+      loginUsername = '';
+      loginPassword = '';
+    }
+  }
+  $: rememberCredentials = $userStorageType === 'localStorage';
 </script>
 
-{#if loginOpen}
-  <Dialog modal onCloseClick={handleCloseClick}>
-    <form
-      action={ROUTE__API__USER__LOGIN}
-      autocomplete='off'
-      bind:this={loginFormRef}
-      class="login-form"
-      method="POST"
-      on:submit={handleLoginSubmit}
-      slot="dialogBody"
-      spellcheck="false"
-    >
-      <HRWithText label="Log In" />
-      <LabeledInput
-        autoFocus
-        label="Username"
-        name="username"
-        required
-        value={loginUsername}
-      />
-      <LabeledInput
-        label="Password"
-        name="password"
-        required
-        type="password"
-        value={loginPassword}
-      />
-      <label class="remember-me">
-        <input
-          type="checkbox"
-          bind:checked={rememberCredentials}
-          bind:this={rememberCredentialsRef}
+{#if !$userIsLoggedIn}
+  {#if loginOpen}
+    <Dialog modal>
+      <form
+        action={ROUTE__API__USER__LOGIN}
+        autocomplete='off'
+        bind:this={loginFormRef}
+        class="login-form"
+        method="POST"
+        on:submit={handleLoginSubmit}
+        slot="dialogBody"
+        spellcheck="false"
+      >
+        <HRWithText label="Log In" />
+        <LabeledInput
+          autoFocus
+          label="Username"
+          name="username"
+          required
+          value={loginUsername}
         />
-        Remember Me
-      </label>
-      <button value="login">Log In</button>
-      {#if !$offline}
-        <HRWithText label="or" />
-        <button
-          type="button"
-          value="create"
-          on:click={handleCreateAccountClick}
-        >Create Account</button>
-      {/if}
-    </form>
-  </Dialog>
-{/if}
-{#if createUserOpen}
-  <Dialog onCloseClick={handleCloseClick}>
-    <form
-      action={ROUTE__API__USER__PROFILE__CREATE}
-      autocomplete="off"
-      bind:this={createFormRef}
-      class="create-form"
-      method="POST"
-      on:submit={handleCreateSubmit}
-      slot="dialogBody"
-      spellcheck="false"
-    >
-      <HRWithText label="Create Account" />
-      <LabeledInput
-        autoFocus 
-        label="Username"
-        name="username"
-        required
-      />
-      <LabeledInput
-        label="Password"
-        name="password"
-        required
-        type="password"
-      />
-      <LabeledInput
-        label="Confirm Password"
-        name="passwordConfirmed"
-        required
-        type="password"
-      />
-      <nav>
-        <button
-          on:click={handleCancelCreateClick}
-          type="button"
-          value="cancel"
-        >Cancel</button>
-        <button value="create">Create</button>
-      </nav>
-    </form>
-  </Dialog>
+        <LabeledInput
+          label="Password"
+          name="password"
+          required
+          type="password"
+          value={loginPassword}
+        />
+        <label class="remember-me">
+          <input
+            type="checkbox"
+            checked={rememberCredentials}
+            on:change={updateStorageType}
+          />
+          Remember Me
+        </label>
+        <button value="login">Log In</button>
+        {#if !$offline}
+          <HRWithText label="or" />
+          <button
+            type="button"
+            value="create"
+            on:click={openCreateAccount}
+          >Create Account</button>
+        {/if}
+      </form>
+    </Dialog>
+  {/if}
+  {#if createUserOpen}
+    <Dialog onCloseClick={closeCreateAccount}>
+      <form
+        action={ROUTE__API__USER__PROFILE__CREATE}
+        autocomplete="off"
+        bind:this={createFormRef}
+        class="create-form"
+        method="POST"
+        on:submit={handleCreateSubmit}
+        slot="dialogBody"
+        spellcheck="false"
+      >
+        <HRWithText label="Create Account" />
+        <LabeledInput
+          autoFocus 
+          label="Username"
+          name="username"
+          required
+        />
+        <LabeledInput
+          label="Password"
+          name="password"
+          required
+          type="password"
+        />
+        <LabeledInput
+          label="Confirm Password"
+          name="passwordConfirmed"
+          required
+          type="password"
+        />
+        <nav>
+          <button
+            on:click={closeCreateAccount}
+            type="button"
+            value="cancel"
+          >Cancel</button>
+          <button value="create">Create</button>
+        </nav>
+      </form>
+    </Dialog>
+  {/if}
 {/if}
 
 <style>

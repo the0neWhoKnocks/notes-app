@@ -13,21 +13,20 @@
   import Dialog from './Dialog.svelte';
   import LabeledInput from './LabeledInput.svelte';  
   
+  let previewing = false;
+  let editingNote;
   let formRef;
   let previewRef;
+  let query;
+  let saveBtnDisabled;
   let textareaRef;
-  let titleValue = $dialogDataForNote.title;
-  let previewing = false;
+  let titleValue;
   
   const genQuery = (title = '') => {
     let query = `?p=${encodeURIComponent($dialogDataForNote.path)}`;
     if (title) query += `&t=${encodeURIComponent(title)}`;
     return query;
   };
-  
-  const editingNote = $dialogDataForNote.action === 'edit';
-  let saveBtnDisabled = editingNote;
-  let query = genQuery();
   
   function closeDialog() {
     dialogDataForNote.set();
@@ -403,6 +402,13 @@
       
       handleChange({ target: textareaRef });
     }
+  }
+  
+  $: if ($dialogDataForNote) {
+    titleValue = $dialogDataForNote.title;
+    editingNote = $dialogDataForNote.action === 'edit';
+    saveBtnDisabled = editingNote;
+    query = genQuery();
   }
 </script>
 
