@@ -53,7 +53,6 @@
 
 <style>
   .notes-nav {
-    width: var(--width--notes-nav);
     overflow: auto;
     padding: 0.5em;
     border-right: solid 1px var(--color--app--fg);
@@ -63,7 +62,6 @@
   }
   
   .notes-nav > * {
-    color: var(--color--app--fg);
     font-size: 1em;
     text-align: left;
     padding: 0;

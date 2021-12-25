@@ -22,8 +22,7 @@
   import LoginDialog from './LoginDialog.svelte';
   import NoteBlurb from './NoteBlurb.svelte';
   import NoteDialog from './NoteDialog.svelte';
-  import NoteGroups from './NoteGroups.svelte';
-  import NotesNav from './NotesNav.svelte';
+  import NotesFlyout from './NotesFlyout.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
   import UserNav from './UserNav.svelte';
   import UserProfileDialog from './UserProfileDialog.svelte';
@@ -228,8 +227,7 @@
         <UserNav />
       </nav>
       <section class="user-content" on:click={delegateClick}>
-        <NotesNav />
-        <NoteGroups />
+        <NotesFlyout />
         <section class="current-grouped-notes">
         	{#if $currentNotes && $currentNotes.notes && Object.keys($currentNotes.notes).length}
             {#each Object.entries($currentNotes.notes) as [noteId, note]}
@@ -280,8 +278,6 @@
   :root {
     --color--app--bg: #333;
     --color--app--fg: #eee;
-    --width--notes-nav: 200px;
-    --width--notes-previews: 250px;
   }
   
   .status-msg {
