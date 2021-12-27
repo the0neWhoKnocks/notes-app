@@ -280,6 +280,17 @@
     --color--app--fg: #eee;
   }
   
+  :global(body) {
+    background: #666;
+  }
+  
+  :global(.root) {
+    max-width: 800px;
+    margin: auto;
+    box-shadow: 0 0 3em 2em;
+    position: relative;
+  }
+  
   .status-msg {
     padding: 0.25em 0.5em;
     border: dashed 1px #9a4900;

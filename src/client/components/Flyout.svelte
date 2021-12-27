@@ -117,11 +117,9 @@
 
 <style>
   .flyout-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    overflow: hidden;
+    position: absolute;
+    inset: 0;
     z-index: 10;
   }
   .flyout-wrapper *,
@@ -141,8 +139,8 @@
   }
   
   .flyout {
-    width: calc(100vw - 3em);
-    height: 100vh;
+    width: calc(100% - 3em);
+    height: 100%;
     overflow: hidden;
     padding: 0;
     border: solid 4px var(--dialog-border-color);
