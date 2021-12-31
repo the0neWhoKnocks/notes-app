@@ -27,6 +27,74 @@ const mainFields = [
 const mode = process.env.NODE_ENV || 'development';
 const dev = mode === 'development';
 
+const outputFilename = ({ chunk: { name }, contentHashType }) => {
+  let _name;
+  
+  switch (contentHashType) {
+    case 'css/mini-extract': {
+      // dump CSS files in a 'css' folder
+      const newName = name.replace(/^js\//, 'css/');
+      _name = `${newName}_[chunkhash:${HASH_LENGTH}].css`;
+      break;
+    }
+    case 'javascript': {
+      _name = `[name]_[chunkhash:${HASH_LENGTH}].js`;
+      break;
+    }
+  }
+  
+  return _name;
+};
+
+class RemoveDupeCSSClassPlugin {
+  constructor() {
+    this.SVELTE_RULE_REGEX = /\.svelte-[a-z0-9]+/g;
+  }
+  
+  apply(compiler) {
+    compiler.hooks.emit.tapAsync('RemoveDupeCSSClassPlugin', (compilation, callback) => {
+      const { assets } = compilation;
+      const files = Object.keys(assets).filter(a => a.startsWith('css/'));
+      
+      files.forEach((f) => {
+        const asset = assets[f];
+        const { _children } = asset;
+        let cssObj = asset;
+        
+        // '_children' exists when source maps are enabled and are separate files
+        if (_children && _children.length) {
+          cssObj = _children[0]; // [1] is the line that references the sourceMap file
+        }
+        
+        const ruleMatches = (cssObj._value.match(this.SVELTE_RULE_REGEX) || []);
+        const rules = [...(new Set(ruleMatches)).values()];
+        const matchedDupes = rules.reduce((arr, rule) => {
+          const dupeRuleRegEx = new RegExp(`${rule}${rule}${Array(10).fill(`(?:${rule})?`).join('')}`, 'g');
+          const matches = cssObj._value.match(dupeRuleRegEx);
+          
+          if (matches) arr.push(...matches);
+          
+          return arr;
+        }, []);
+        // sort and reverse so that the longer dupe rules get replaced first
+        const uniqueDupes = [...(new Set(matchedDupes)).values()].sort().reverse();
+        
+        uniqueDupes.forEach((dupeRule) => {
+          const singleRule = `.${dupeRule.split('.')[1]}`;
+          const regEx = new RegExp(dupeRule, 'g');
+          
+          cssObj._valueAsBuffer = Buffer.from(
+            cssObj._valueAsBuffer.toString().replace(regEx, singleRule),
+            'utf8'
+          );
+        });
+      });
+      
+      callback();
+    });
+  }
+}
+
 const conf = {
   devtool: dev && 'source-map',
   entry: {
@@ -82,12 +150,8 @@ const conf = {
     // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info => resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     // assigns the hashed name to the file
-    filename: (pathData) => {
-      // No need to hash SW file, since the Browser does the diffing on file contents
-      return pathData.chunk.name.endsWith('sw')
-        ? '[name].js'
-        : `[name]_[chunkhash:${HASH_LENGTH}].js`;
-    },
+    chunkFilename: outputFilename,
+    filename: outputFilename,
     path: resolve(__dirname, './dist/public'),
     publicPath: '/',
   },
@@ -117,8 +181,10 @@ const conf = {
       'process.env.TIME_ZONE': JSON.stringify(process.env.TIME_ZONE),
     }),
     new MiniCssExtractPlugin({
-      filename: `[name]_[chunkhash:${HASH_LENGTH}].css`,
+      chunkFilename: outputFilename,
+      filename: outputFilename,
     }),
+    new RemoveDupeCSSClassPlugin(),
     /**
      * WP tries to emit the JS files for extracted CSS files, this prevents that
      */
