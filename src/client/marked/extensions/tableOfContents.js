@@ -6,22 +6,32 @@ module.exports = {
   tokenizer(src) {
     const match = src.match(/^::TOC::$/);
     if (match) {
-      const headings = this.tokens.reduce((arr, token) => {
+      // find all headings for later mapping
+      const headings = this.lexer.tokens.reduce((arr, token) => {
         if (token.type === 'heading') arr.push(token);
         return arr;
       }, []);
-      return {
-        type: NAME,
-        raw: match[0],
-        headings,
-        slugger: new window.marked.Slugger(),
-      };
+      
+      // replace any current TOC tokens with TOC token
+      this.lexer.tokens.forEach((token, ndx) => {
+        if (
+          token.type === 'paragraph'
+          && token.raw === '::TOC::'
+        ) {
+          this.lexer.tokens[ndx] = {
+            headings,
+            raw: match[0],
+            slugger: new window.marked.Slugger(),
+            type: NAME,
+          };
+        }
+      });
     }
   },
   renderer({ headings, slugger }) {
     let prevDepth = 1;
     const listItems = headings.map(({ depth, text }) => {
-      const { headerIds, headerPrefix } = this.options;
+      const { headerIds, headerPrefix } = this.parser.options;
       const wrapperStart = headerIds ? `<a href="#${headerPrefix}${slugger.slug(text)}">` : '';
       const wrapperEnd = headerIds ? `</a>` : '';
       const listStart = (depth > prevDepth)
