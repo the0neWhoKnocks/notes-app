@@ -1,36 +1,47 @@
 <script>
   import {
     loadThemeCSS,
+    themeSelectorOpen,
     userPreferences,
   } from '../stores';
-
-  function handleThemeSelect({ currentTarget: { value } }) {
-    loadThemeCSS(value);
-    userPreferences.setPreference('theme', value);
+  import DropDown from './DropDown.svelte';
+  
+  const themes = [
+    { label: 'default', value: '' },
+    { label: 'Coy', value: 'coy' },
+    { label: 'Dark', value: 'dark' },
+    { label: 'Okaidia', value: 'okaidia' },
+    { label: 'Solarized Light', value: 'solarizedlight' },
+    { label: 'Tomorrow', value: 'tomorrow' },
+    { label: 'Twilight', value: 'twilight' },
+  ];
+  
+  function handleThemeSelect({ target: { value } }) {
+    if (value !== undefined) {
+      loadThemeCSS(value);
+      userPreferences.setPreference('theme', value);
+    }
   }
 </script>
 
-<label class="theme-selector">
-  Theme:
-  <select on:input={handleThemeSelect} bind:value={$userPreferences.theme}>
-    <option value="">default</option>
-    <option value="coy">Coy</option>
-    <option value="dark">Dark</option>
-    <option value="okaidia">Okaidia</option>
-    <option value="solarizedlight">Solarized Light</option>
-    <option value="tomorrow">Tomorrow</option>
-    <option value="twilight">Twilight</option>
-  </select>
-</label>
+<DropDown bind:open={$themeSelectorOpen}>
+  <svelte:fragment slot="label">
+    Theme
+  </svelte:fragment>
+  <div on:click={handleThemeSelect}>
+    {#each themes as {label, value}}
+      <button
+        type="button"
+        class="theme-opt"
+        class:current={$userPreferences.theme === value}
+        {value}
+      >{label}</button>
+    {/each}
+  </div>
+</DropDown>
 
 <style>
-  .theme-selector {
-    display: flex;
-    align-items: center;
-  }
-  
-  .theme-selector select {
-    padding: 0.25em;
-    margin-left: 0.5em;
+  .theme-opt.current {
+    background: #13242a;
   }
 </style>
