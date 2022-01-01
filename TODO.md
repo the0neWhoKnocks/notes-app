@@ -1,6 +1,7 @@
 # TODO
 ---
 
+- [ ] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
 - [ ] recently viewed
   - [ ] max 10 items
   - [ ] add currently opened to beginning of list, if it already exists, move it to front
