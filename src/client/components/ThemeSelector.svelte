@@ -5,6 +5,7 @@
     userPreferences,
   } from '../stores';
   import DropDown from './DropDown.svelte';
+  import Icon, { ICON__THEME } from './Icon.svelte';
   
   const themes = [
     { label: 'default', value: '' },
@@ -26,6 +27,7 @@
 
 <DropDown bind:open={$themeSelectorOpen}>
   <svelte:fragment slot="label">
+    <Icon type={ICON__THEME} />
     Theme
   </svelte:fragment>
   <div on:click={handleThemeSelect}>
