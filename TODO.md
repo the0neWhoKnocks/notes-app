@@ -10,6 +10,10 @@
 - [ ] For the SW, have it check the App name, if it's registered and it doesn't match, unregister itself so it doesn't try to run for other Apps while I'm working on localhost.
   - https://love2dev.com/blog/how-to-uninstall-a-service-worker/
 - [ ] Support https cuz of login and service worker
+- [ ] Ability to open multiple notes at once.
+  - The note area could be 'flex' column.
+  - Each note could have a Close button
+  - The query param may have to be updated to 'notes' instead of 'note'. Maybe separate each note by a '|'.
 
 In order to ensure all assets are cached, refactor how scripts and styles are
 loaded into the shell. Use something like
