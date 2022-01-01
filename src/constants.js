@@ -4,6 +4,7 @@ const NAMESPACE__STORAGE = 'notes';
 // Shared by both Client and Server
 const constants = {
   APP__TITLE: 'Notes',
+  BASE_DATA_NODE: 'root',
   DOM__SVELTE_MOUNT_POINT: 'view',
   LOC__TIME_ZONE: process.env.TIME_ZONE || 'America/Los_Angeles',
   NAMESPACE__LOGGER: 'notes',

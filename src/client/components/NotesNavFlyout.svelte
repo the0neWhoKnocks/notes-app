@@ -1,27 +1,24 @@
 <script>
+  import { notesNavFlyoutOpen } from '../stores';
   import Flyout from './Flyout.svelte';
-  import NoteGroups from './NoteGroups.svelte';
   import NotesNav from './NotesNav.svelte';
   
-  let flyoutOpen = false;
-  
   function handleToggle() {
-    flyoutOpen = !flyoutOpen;
+    notesNavFlyoutOpen.set(!$notesNavFlyoutOpen);
   }
 </script>
 
 <button on:click={handleToggle}>&gt;</button>
 <Flyout
-  for="notes"
-  open={flyoutOpen}
+  for="notesNav"
+  open={$notesNavFlyoutOpen}
   onCloseClick={handleToggle}
 >
   <NotesNav />
-  <NoteGroups />
 </Flyout>
 
 <style>
-  :global([flyout-for="notes"] .flyout__body) {
+  :global([flyout-for="notesNav"] .flyout__body) {
     font-size: 1.5rem;
   }
 </style>

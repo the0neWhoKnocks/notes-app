@@ -1,28 +1,24 @@
 <script>
   import { onMount } from 'svelte';
-  import getPathNode from '../../utils/getPathNode';
+  // import getPathNode from '../../utils/getPathNode';
   import logger from '../../utils/logger';
   import initMarked from '../marked/init';
   import {
     checkLoggedInState,
-    currentNotes,
-    dialogDataForDelete,
-    dialogDataForGroup,
-    dialogDataForNote,
-    noteGroups,
     offline,
     syncOfflineData,
     trackNetworkStatus,
+    updateHistory,
     userData,
     userIsLoggedIn,
   } from '../stores.js';
   import DeleteDialog from './DeleteDialog.svelte';
   // import DiffDialog from './DiffDialog.svelte';
+  import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import LoginDialog from './LoginDialog.svelte';
-  import NoteBlurb from './NoteBlurb.svelte';
   import NoteDialog from './NoteDialog.svelte';
-  import NotesFlyout from './NotesFlyout.svelte';
+  import NotesNavFlyout from './NotesNavFlyout.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
   import UserNav from './UserNav.svelte';
   import UserProfileDialog from './UserProfileDialog.svelte';
@@ -152,31 +148,9 @@
   //   ignoreOfflineChanges = false;
   // }
   
-  function delegateClick({ target }) {
-    if (target.dataset) {
-      const { action, btnType, id, path, type } = target.dataset;
-      
-      if (btnType === 'modifyBtn') {
-        const { content, groupName, title } = getPathNode($noteGroups, path)[`${type}s`][id];
-        
-        switch (action) {
-          case 'delete': {
-            dialogDataForDelete.set({ groupName, id, path, title, type });
-            break;
-          }
-          
-          case 'edit': {
-            if (type === 'note') {
-              dialogDataForNote.set({ action: 'edit', content, path, title });
-            }
-            else if (type === 'group') {
-              dialogDataForGroup.set({ action: 'edit', content, name: groupName, path });
-            }
-            break;
-          }
-        }
-      }
-    }
+  function handleAppTitleClick(ev) {
+    ev.preventDefault();
+    updateHistory();
   }
   
   $: if ($userIsLoggedIn) loadNotes();
@@ -222,20 +196,18 @@
   {#if mounted}
     {#if $userIsLoggedIn}
       <nav class="top-nav">
-        <div class="app__title">{appTitle}</div>
+        <a
+          class="app__title"
+          href="/"
+          on:click={handleAppTitleClick}
+        >{appTitle}</a>
         <ThemeSelector />
         <UserNav />
       </nav>
-      <section class="user-content" on:click={delegateClick}>
-        <NotesFlyout />
-        <section class="current-grouped-notes">
-        	{#if $currentNotes && $currentNotes.notes && Object.keys($currentNotes.notes).length}
-            {#each Object.entries($currentNotes.notes) as [noteId, note]}
-              <NoteBlurb content={note.content} id={noteId} path={$currentNotes.path} title={note.title}  />
-            {/each}
-          {:else}
-            There are no notes in this group
-          {/if}
+      <section class="user-content">
+        <NotesNavFlyout />
+        <section class="user-content__body">
+          <FullNote />
         </section>
       </section>
     {/if}
@@ -345,11 +317,10 @@
     display: flex;
   }
   
-  .current-grouped-notes {
+  .user-content__body {
     width: 100%;
     height: 100%;
-    color: var(--color--app--fg);
-    overflow: auto;
     padding: 1em;
+    display: flex;
   }
 </style>

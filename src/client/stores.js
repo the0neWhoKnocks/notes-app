@@ -1,10 +1,9 @@
-import { get as getStoreValue, derived, writable } from 'svelte/store';
+import { get as getStoreValue, writable } from 'svelte/store';
 import {
 	NAMESPACE__STORAGE__USER,
 	ROUTE__API__USER__DATA__GET,
 	ROUTE__API__USER__DATA__SET,
 } from '../constants';
-import getPathNode from '../utils/getPathNode';
 import logger from '../utils/logger';
 import postData from './utils/postData';
 import {
@@ -14,32 +13,19 @@ import {
 
 const log = logger('stores');
 
-export const currentGroupPath = writable('root');
-export const currentNotes = writable();
+export const currentNote = writable();
 export const dialogDataForDelete = writable();
 export const dialogDataForDiff = writable();
 export const dialogDataForGroup = writable();
 export const dialogDataForNote = writable();
 export const noteGroups = writable();
+export const notesNavFlyoutOpen = writable(false);
 export const offline = writable(false);
 export const userData = writable();
 export const userIsLoggedIn = writable(false);
 export const userNavOpen = writable(false);
 export const userProfileOpened = writable(false);
 export const userStorageType = writable();
-
-export const currentNoteGroupNotes = derived( // current notes group
-	[noteGroups, currentGroupPath],
-	([groups, path], set) => {
-    if (groups) { // will be undefined until initial load of User data
-      const { notes } = getPathNode(groups, path);
-			set({ notes, path });
-    }
-  }
-);
-currentNoteGroupNotes.subscribe(data => {
-	currentNotes.set(data);
-});
 
 export const userPreferences = (function createPrefsStore() {
 	const { subscribe, set, update } = writable({});
@@ -90,7 +76,7 @@ export function logout() {
 	const storageType = getStoreValue(userStorageType);
 	window[storageType].removeItem(NAMESPACE__STORAGE__USER);
 	
-	currentNotes.set();
+	currentNote.set();
 	noteGroups.set();
 	userIsLoggedIn.set(false);
 	userNavOpen.set(false);
@@ -179,4 +165,22 @@ export function openUserProfile() {
 }
 export function closeUserProfile() {
 	userProfileOpened.set(false);
+}
+
+export function updateHistory({ params, path } = {}) {
+	const _url = new URL(window.location);
+	_url.pathname = path || '/';
+	_url.search = '';
+	
+	if (params) {
+		Object.entries(params).forEach(([prop, val]) => {
+			_url.searchParams.set(prop, val);
+		});
+	}
+	
+	if (_url.pathname === '/' && !_url.search) {
+		currentNote.set();
+	}
+	
+	window.history.replaceState({}, '', _url);
 }
