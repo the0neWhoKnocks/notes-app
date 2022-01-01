@@ -16,6 +16,7 @@
   // import DiffDialog from './DiffDialog.svelte';
   import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
+  import Icon, { ICON__MENU } from './Icon.svelte';
   import LoginDialog from './LoginDialog.svelte';
   import NoteDialog from './NoteDialog.svelte';
   import NotesNavFlyout from './NotesNavFlyout.svelte';
@@ -206,7 +207,10 @@
             on:click={handleAppTitleClick}
           >{appTitle}</a>
         </div>
-        <button on:click={openNotesNavFlyout}>☰</button>
+        <button class="notes-menu-btn" on:click={openNotesNavFlyout}>
+          <Icon type={ICON__MENU} />
+          Notes
+        </button>
         <ThemeSelector />
         <UserNav />
       </nav>
@@ -331,6 +335,14 @@
     color: inherit;
     border: none;
     background: transparent;
+  }
+  
+  .notes-menu-btn {
+    line-height: 1em;
+    padding: 0.25em 1em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
   }
   
   .user-content {

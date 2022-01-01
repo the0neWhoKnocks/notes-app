@@ -244,6 +244,23 @@ const shell = ({
         <symbol id="angle-down" viewBox="0 0 10 5" xmlns="http://www.w3.org/2000/svg">
           <polyline points="0,0 5,5 10,0" fill="none" stroke="currentColor" />
         </symbol>
+        <symbol
+          id="menu"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <polyline points="2,4 18,4" />
+          <polyline points="2,10 18,10" />
+          <polyline points="2,16 18,16" />
+        </symbol>
+        <symbol id="theme" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="70" cy="30" r="30" fill="rgba(255,255,255,0.75)"></circle>
+          <circle cx="70" cy="70" r="30" fill="rgba(255,255,255,0.5)"></circle>
+          <circle cx="30" cy="50" r="30" fill="rgba(255,255,255,0.25)"></circle>
+        </symbol>
       </svg>
       <script>
         document.body.classList.remove('no-js');

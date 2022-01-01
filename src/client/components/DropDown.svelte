@@ -46,6 +46,7 @@
   .drop-down__toggle {
     height: 100%;
     color: currentColor;
+    line-height: 1em;
     border: none;
     background: transparent;
     display: flex;
