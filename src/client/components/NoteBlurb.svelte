@@ -8,7 +8,7 @@
   export let truncated = false;
   
   function parseContent(c) {
-    const markup = window.marked(c);
+    const markup = window.marked.parse(c);
     return truncated
       ? window.DOMPurify.sanitize(markup.substring(0, 50))
       : markup;

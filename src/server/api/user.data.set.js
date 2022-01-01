@@ -34,6 +34,6 @@ module.exports = async function setData(req, res) {
     }
   
     log.info(logMsg);
-    res.json(data);
+    res.json({ ...data, newData: reqBody });
   });
 }

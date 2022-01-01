@@ -5,8 +5,10 @@
   } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
   import {
+    currentNote,
     dialogDataForNote,
     noteGroups,
+    updateHistory,
     userData,
   } from '../stores';
   import postData from '../utils/postData';
@@ -16,16 +18,23 @@
   let previewing = false;
   let editingNote;
   let formRef;
+  let noteId;
   let previewRef;
   let query;
+  let queryParams;
   let saveBtnDisabled;
   let textareaRef;
   let titleValue;
   
   const genQuery = (title = '') => {
-    let query = `?p=${encodeURIComponent($dialogDataForNote.path)}`;
-    if (title) query += `&t=${encodeURIComponent(title)}`;
-    return query;
+    let val = $dialogDataForNote.path;
+    noteId = kebabCase(title);
+    
+    if (title) val += `/${noteId}`;
+    queryParams = { note: val }; // has to happen before encode
+    
+    val = encodeURIComponent(val);
+    query = `?note=${val}`;
   };
   
   function closeDialog() {
@@ -67,7 +76,8 @@
       
       case 'title': {
         titleValue = target.value;
-        query = genQuery(kebabCase(titleValue));
+        
+        genQuery(titleValue);
         diffCheck();
         break;
       }
@@ -76,7 +86,19 @@
   
   async function handleSubmit() {
     try {
-      const { notesData } = await postData(formRef.getAttribute('action'), formRef);
+      const { newData, notesData } = await postData(formRef.getAttribute('action'), formRef);
+      
+      if ($currentNote) {
+        currentNote.set({
+          ...$currentNote,
+          content: newData.content,
+          id: noteId,
+          title: newData.title,
+        });
+        
+        updateHistory({ params: queryParams });
+      }
+      
       noteGroups.set(notesData);
       closeDialog();
     }
@@ -404,12 +426,15 @@
     }
   }
   
-  $: if ($dialogDataForNote) {
+  function deriveNoteData() {
     titleValue = $dialogDataForNote.title;
     editingNote = $dialogDataForNote.action === 'edit';
     saveBtnDisabled = editingNote;
-    query = genQuery();
+    
+    genQuery(titleValue);
   }
+  
+  $: if ($dialogDataForNote) deriveNoteData();
 </script>
 
 {#if $dialogDataForNote}
@@ -468,7 +493,7 @@
               bind:this={previewRef}
               class="note-form__content-preview"
             >
-              {@html window.marked(textareaRef.value)}
+              {@html window.marked.parse(textareaRef.value)}
             </div>
           {/if}
         </div>        
@@ -486,7 +511,8 @@
     --labeled-input__input-width: 100%;
     
     height: 80vh;
-    min-width: 50vw;
+    width: 75vw;
+    max-width: 700px;
     overflow: auto;
     padding: 1em;
     display: flex;
@@ -508,12 +534,15 @@
   }
   
   .note-form__toolbar {
+    color: var(--color--app--fg);
     padding: 2px;
     background: var(--color--app--bg);
     display: flex;
   }
   .note-form__toolbar button,
   .note-form__toolbar button:focus {
+    width: 100%;
+    color: inherit;
     padding: 2px;
     border: solid 1px;
     border-radius: unset;
@@ -525,10 +554,11 @@
   }
   
   .note-form__sep {
-    width: 2px;
+    width: 1px;
     height: 100%;
     margin: 0 6px;
     background: var(--color--app--fg);
+    flex-shrink: 0;
   }
   
   .note-form__content-wrapper {

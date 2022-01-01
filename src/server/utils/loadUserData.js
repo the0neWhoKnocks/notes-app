@@ -1,4 +1,5 @@
 const { existsSync, promises: { readFile } } = require('fs');
+const { BASE_DATA_NODE } = require('../../constants');
 const groupNodeShape = require('../../utils/groupNodeShape');
 const decrypt = require('./decrypt');
 const encrypt = require('./encrypt');
@@ -15,7 +16,7 @@ module.exports = async function loadUserData(appConfig, username, password) {
   
   return {
     notesData: {
-      root: groupNodeShape(),
+      [BASE_DATA_NODE]: groupNodeShape(),
     },
     preferences: {},
   };

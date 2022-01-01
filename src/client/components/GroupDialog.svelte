@@ -18,9 +18,9 @@
   let saveBtnDisabled;
   
   const genQuery = (name = '') => {
-    let query = `?p=${encodeURIComponent($dialogDataForGroup.path)}`;
-    if (name) query += `/${encodeURIComponent(name)}`;
-    return query;
+    let _query = `?p=${encodeURIComponent($dialogDataForGroup.path)}`;
+    if (name) _query += `/${encodeURIComponent(name)}`;
+    return _query;
   };
   
   function closeDialog() {
@@ -53,7 +53,11 @@
   $: if ($dialogDataForGroup) {
     editingGroup = $dialogDataForGroup.action === 'edit';
     saveBtnDisabled = editingGroup;
-    query = genQuery();
+    
+    const name = $dialogDataForGroup.name
+      ? kebabCase($dialogDataForGroup.name)
+      : '';
+    query = genQuery(name);
   }
 </script>
 
