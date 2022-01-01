@@ -4,7 +4,6 @@
   import initMarked from '../marked/init';
   import {
     checkLoggedInState,
-    notesNavFlyoutOpen,
     offline,
     syncOfflineData,
     trackNetworkStatus,
@@ -16,10 +15,12 @@
   // import DiffDialog from './DiffDialog.svelte';
   import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
-  import Icon, { ICON__MENU } from './Icon.svelte';
   import LoginDialog from './LoginDialog.svelte';
   import NoteDialog from './NoteDialog.svelte';
+  import NotesMenuBtn from './NotesMenuBtn.svelte';
   import NotesNavFlyout from './NotesNavFlyout.svelte';
+  import SearchBtn from './SearchBtn.svelte';
+  import SearchFlyout from './SearchFlyout.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
   import UserNav from './UserNav.svelte';
   import UserProfileDialog from './UserProfileDialog.svelte';
@@ -154,10 +155,6 @@
     updateHistory();
   }
   
-  function openNotesNavFlyout() {
-    notesNavFlyoutOpen.set(!$notesNavFlyoutOpen);
-  }
-  
   $: if ($userIsLoggedIn) loadNotes();
   
   onMount(async () => {
@@ -207,10 +204,8 @@
             on:click={handleAppTitleClick}
           >{appTitle}</a>
         </div>
-        <button class="notes-menu-btn" on:click={openNotesNavFlyout}>
-          <Icon type={ICON__MENU} />
-          Notes
-        </button>
+        <SearchBtn />
+        <NotesMenuBtn />
         <ThemeSelector />
         <UserNav />
       </nav>
@@ -221,6 +216,7 @@
       </section>
     {/if}
     
+    <SearchFlyout />
     <NotesNavFlyout />
     <LoginDialog />
     <UserProfileDialog />
@@ -326,6 +322,7 @@
     padding: 0.25em 0.5em;
   }
   :global(.top-nav > *:not(.app__title)) {
+    line-height: 1em;
     border-left: solid 1px;
   }
   :global(.top-nav > .drop-down:last-of-type) {
@@ -335,11 +332,6 @@
     color: inherit;
     border: none;
     background: transparent;
-  }
-  
-  .notes-menu-btn {
-    line-height: 1em;
-    padding: 0.25em 1em;
     display: flex;
     align-items: center;
     gap: 0.5em;
