@@ -262,6 +262,17 @@ const shell = ({
           <circle cx="30" cy="50" r="30" fill="rgba(255,255,255,0.25)"></circle>
         </symbol>
         <symbol
+          id="search"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          stroke="currentColor"
+          stroke-width="8"
+          stroke-linecap="round"
+        >
+          <circle cx="60" cy="38" r="30" fill="none"></circle>
+          <polyline points="82,75 92,92"></polyline>
+        </symbol>
+        <symbol
           id="folder"
           viewBox="0 0 20 20"
           xmlns="http://www.w3.org/2000/svg"

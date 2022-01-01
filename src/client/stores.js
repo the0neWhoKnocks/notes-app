@@ -21,6 +21,7 @@ export const dialogDataForNote = writable();
 export const noteGroups = writable();
 export const notesNavFlyoutOpen = writable(false);
 export const offline = writable(false);
+export const searchFlyoutOpen = writable(false);
 export const themeSelectorOpen = writable(false);
 export const userData = writable();
 export const userIsLoggedIn = writable(false);
