@@ -196,11 +196,12 @@
   {#if mounted}
     {#if $userIsLoggedIn}
       <nav class="top-nav">
-        <a
-          class="app__title"
-          href="/"
-          on:click={handleAppTitleClick}
-        >{appTitle}</a>
+        <div class="app__title">
+          <a
+            href="/"
+            on:click={handleAppTitleClick}
+          >{appTitle}</a>
+        </div>
         <ThemeSelector />
         <UserNav />
       </nav>
@@ -293,6 +294,9 @@
   .app {
     width: 100%;
     height: 100%;
+    border: solid 1px var(--color--app--fg);
+    border-top: none;
+    border-bottom: none;
     background: var(--color--app--bg);
     display: flex;
     flex-direction: column;
@@ -306,9 +310,14 @@
   
   .top-nav {
     color: var(--color--app--fg);
-    padding: 0.25em 0.5em;
     border-bottom: solid 1px;
     display: flex;
+  }
+  :global(.top-nav > *) {
+    padding: 0.25em 0.5em;
+  }
+  :global(.top-nav > .drop-down:last-of-type) {
+    margin-right: 0.25em;
   }
   
   .user-content {

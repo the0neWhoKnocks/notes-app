@@ -238,11 +238,11 @@ const shell = ({
           <circle cx="300" cy="230" r="115" />
           <path d="M106.819 481.4c37.887-106.691 155.09-162.469 261.781-124.582 58.165 20.654 103.927 66.417 124.582 124.582 0 0-61.682 83.6-193.182 83.6s-193.181-83.6-193.181-83.6z" />
         </symbol>
-        <symbol id="angle-up" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1395 1184q0 13-10 23l-50 50q-10 10-23 10t-23-10l-393-393-393 393q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l466-466q10-10 23-10t23 10l466 466q10 10 10 23z"/>
+        <symbol id="angle-up" viewBox="0 0 10 5" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="0,5 5,0 10,5" fill="none" stroke="currentColor" />
         </symbol>
-        <symbol id="angle-down" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1395 736q0 13-10 23l-466 466q-10 10-23 10t-23-10l-466-466q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l393 393 393-393q10-10 23-10t23 10l50 50q10 10 10 23z"/>
+        <symbol id="angle-down" viewBox="0 0 10 5" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="0,0 5,5 10,0" fill="none" stroke="currentColor" />
         </symbol>
       </svg>
       <script>

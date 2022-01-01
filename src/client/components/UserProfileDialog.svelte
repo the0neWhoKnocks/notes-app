@@ -123,6 +123,10 @@
   .user-profile-form nav {
     margin: 0;
   }
+  
+  .user-profile-form button {
+    width: 100%;
+  }
   .user-profile-form button:disabled {
     opacity: 0.5;
     cursor: default;

@@ -8,7 +8,7 @@
   export let type = undefined;
 </script>
 
-<svg class="svg-icon">
+<svg class="svg-icon for--{type}">
   <use xlink:href="#{type}" xmlns:xlink="http://www.w3.org/1999/xlink"></use>
 </svg>
 
