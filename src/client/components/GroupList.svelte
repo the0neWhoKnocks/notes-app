@@ -1,6 +1,4 @@
 <script context="module">
-  const ICON_DIAMETER = 20;
-  const ICON_STROKE_WIDTH = 1;
   const itemStyles = {};
   
   const getGroupData = (item, expanded) => {
@@ -25,9 +23,9 @@
       
       if (!itemStyles[ext]) {
         itemStyles[ext] = `
-          .item[data-ext="${ext}"] .icon {
-            fill: var(--color--item--${ext}--fill, var(--color--item--fill));
-            stroke: var(--color--item--${ext}--stroke, var(--color--item--stroke));
+          .item[data-ext="${ext}"] .svg-icon {
+            fill: var(--color--item--${ext}--fill, var(--color--file--fill));
+            stroke: var(--color--item--${ext}--stroke, var(--color--file--stroke));
           }
         `;
       }
@@ -37,7 +35,10 @@
   };
 </script>
 <script>
-  import SVG from './SVG.svelte';
+  import Icon, {
+    ICON__FILE,
+    ICON__FOLDER,
+  } from './Icon.svelte';
 
   export let data = undefined;
   export let expanded = false;
@@ -79,44 +80,6 @@
   style={addFileStyles(itemStyles)}
   on:click={isRoot && handleClick}
 >
-  {#if isRoot}
-    <SVG symbols={[
-      {
-        width: ICON_DIAMETER,
-        height: ICON_DIAMETER,
-        id: 'folder',
-        items: [
-          { // folder body
-            points: '0,5 1,5 2,3 10,3 12,5 20,5 20,18 0,18 0,5',
-            strokeWidth: ICON_STROKE_WIDTH,
-            type: 'polygon',
-          },
-          { // divider line
-            points: '0,7 1,7 2,8 9,8 10,7, 20,7',
-            strokeWidth: ICON_STROKE_WIDTH,
-            type: 'polyline',
-          },
-        ],
-      },
-      {
-        width: ICON_DIAMETER,
-        height: ICON_DIAMETER,
-        id: 'file',
-        items: [
-          { // file body
-            points: '2,0 13,0 18,5 18,20 2,20, 2,0',
-            strokeWidth: ICON_STROKE_WIDTH,
-            type: 'polygon',
-          },
-          { // file bend
-            points: '13,0 18,5 13,5 13,0',
-            strokeWidth: ICON_STROKE_WIDTH,
-            type: 'polygon',
-          },
-        ],
-      },
-    ]} />
-  {/if}
   {#each data as item}
     {#if item.groupName}
       {#each getGroupData(item, expanded) as {empty, groupName, hasItems, nameComponent, open, subGroup}}
@@ -126,7 +89,7 @@
               {#if hasItems}
                 <span class="indicator"></span>
               {/if}
-              <SVG use="folder" />{groupName}
+              <Icon type={ICON__FOLDER} />{groupName}
             </div>
             {#if nameComponent}
               <svelte:component this={nameComponent} {...item} />
@@ -144,14 +107,14 @@
       {#each getFileData(item, groupPath) as {dataAttrs, link, name, nameComponent}}
         {#if link}
           <a class="item" href={link} {...dataAttrs}>
-            <SVG use="file" />{name}
+            <Icon type={ICON__FILE} />{name}
             {#if nameComponent}
               <svelte:component this={nameComponent} {...item} />
             {/if}
           </a>
         {:else}
           <div class="item" {...dataAttrs}>
-            <SVG use="file" />{name}
+            <Icon type={ICON__FILE} />{name}
             {#if nameComponent}
               <svelte:component this={nameComponent} {...item} />
             {/if}
@@ -164,12 +127,6 @@
 
 <style>
   :root {
-    --color--item--fill: #fff;
-    --color--item--stroke: #000;
-    --color--folder--fill: yellow;
-    --color--folder--fill--hover: orange;
-    --color--folder--stroke: #000;
-    --color--folder--stroke--hover: #000;
     --color--text: #000;
     --color--text--hover: green;
   }
@@ -221,7 +178,7 @@
   }
   
   .group__name .indicator,
-  :global(.group__name .icon) {
+  :global(.group__name .svg-icon) {
     display: inline-block;
   }
   
@@ -244,9 +201,7 @@
     content: '-';
   }
   
-  :global(.group__name .icon) {
-    fill: var(--color--folder--fill);
-    stroke: var(--color--folder--stroke);
+  :global(.group__name .svg-icon) {
     margin-right: 0.25em;
   }
   
@@ -271,9 +226,7 @@
     position: relative;
   }
   
-  :global(.item .icon) {
-    fill: var(--color--item--fill);
-    stroke: var(--color--item--stroke);
+  :global(.item .svg-icon) {
     margin-right: 0.25em;
     display: inline-block;
   }
@@ -285,8 +238,7 @@
     text-shadow: 1px 0px 0px var(--color--text--hover);
   }
   
-  :global(.group[open]:not([empty]):hover > .group__name .icon) {
-    fill: var(--color--folder--fill--hover);
-    stroke: var(--color--folder--stroke--hover);
+  :global(.group[open]:not([empty]):hover > .group__name .svg-icon) {
+    --color--folder--fill: orange;
   }
 </style>

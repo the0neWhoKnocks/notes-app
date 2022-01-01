@@ -2,7 +2,10 @@
   export const ICON__ANGLE_DOWN = 'angle-down';
   export const ICON__ANGLE_UP = 'angle-up';
   export const ICON__ASTERISK = 'asterisk';
+  export const ICON__FILE = 'file';
+  export const ICON__FOLDER = 'folder';
   export const ICON__MENU = 'menu';
+  export const ICON__SEARCH = 'search';
   export const ICON__THEME = 'theme';
   export const ICON__USER = 'user';
 </script>

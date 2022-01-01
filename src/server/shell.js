@@ -261,6 +261,34 @@ const shell = ({
           <circle cx="70" cy="70" r="30" fill="rgba(255,255,255,0.5)"></circle>
           <circle cx="30" cy="50" r="30" fill="rgba(255,255,255,0.25)"></circle>
         </symbol>
+        <symbol
+          id="folder"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="var(--color--folder--fill, yellow)"
+          stroke="#000"
+          stroke-width="1"
+          stroke-linecap="round"
+        >
+          <!-- folder body -->
+          <polygon points="1,5 2,5 3,3 10,3 12,5 19,5 19,18 1,18 1,5"></polygon>
+          <!-- dividing line -->
+          <polyline points="1,7 2,7 3,8 9,8 10,7, 19,7" fill="none"></polyline>
+        </symbol>
+        <symbol
+          id="file"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="var(--color--file--fill, #fff)"
+          stroke="#000"
+          stroke-width="1"
+          stroke-linecap="round"
+        >
+          <!-- file body -->
+          <polygon points="2,1 13,1 18,5 18,19 2,19, 2,1"></polygon>
+          <!-- file bend -->
+          <polyline points="13,1 13,5 18,5" fill="none"></polyline>
+        </symbol>
       </svg>
       <script>
         document.body.classList.remove('no-js');
