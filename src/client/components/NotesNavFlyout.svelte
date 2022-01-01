@@ -8,7 +8,6 @@
   }
 </script>
 
-<button on:click={handleToggle}>&gt;</button>
 <Flyout
   for="notesNav"
   open={$notesNavFlyoutOpen}

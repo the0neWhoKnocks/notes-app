@@ -1,10 +1,10 @@
 <script>
   import { onMount } from 'svelte';
-  // import getPathNode from '../../utils/getPathNode';
   import logger from '../../utils/logger';
   import initMarked from '../marked/init';
   import {
     checkLoggedInState,
+    notesNavFlyoutOpen,
     offline,
     syncOfflineData,
     trackNetworkStatus,
@@ -153,6 +153,10 @@
     updateHistory();
   }
   
+  function openNotesNavFlyout() {
+    notesNavFlyoutOpen.set(!$notesNavFlyoutOpen);
+  }
+  
   $: if ($userIsLoggedIn) loadNotes();
   
   onMount(async () => {
@@ -202,17 +206,18 @@
             on:click={handleAppTitleClick}
           >{appTitle}</a>
         </div>
+        <button on:click={openNotesNavFlyout}>☰</button>
         <ThemeSelector />
         <UserNav />
       </nav>
       <section class="user-content">
-        <NotesNavFlyout />
         <section class="user-content__body">
           <FullNote />
         </section>
       </section>
     {/if}
     
+    <NotesNavFlyout />
     <LoginDialog />
     <UserProfileDialog />
     <NoteDialog />
@@ -316,8 +321,16 @@
   :global(.top-nav > *) {
     padding: 0.25em 0.5em;
   }
+  :global(.top-nav > *:not(.app__title)) {
+    border-left: solid 1px;
+  }
   :global(.top-nav > .drop-down:last-of-type) {
     margin-right: 0.25em;
+  }
+  :global(.top-nav > button) {
+    color: inherit;
+    border: none;
+    background: transparent;
   }
   
   .user-content {
