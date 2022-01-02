@@ -21,7 +21,7 @@
   function deleteItem() {
     const _path = parsePath();
     const { groupName, title } = getPathNode($noteGroups, _path)[`${type}s`][id];
-    log.info(`Delete ${type} ${id}`);
+    log.info(`Delete ${type} "${id}"`);
     dialogDataForDelete.set({ groupName, id, path: _path, title, type });
   }
   
@@ -29,7 +29,7 @@
     const _path = parsePath();
     const { content, groupName, title } = getPathNode($noteGroups, _path)[`${type}s`][id];
     
-    log.info(`Edit ${type} ${id}`);
+    log.info(`Edit ${type} "${id}"`);
     
     if (type === 'note') {
       dialogDataForNote.set({ action: 'edit', content, path: _path, title });
