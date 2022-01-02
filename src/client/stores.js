@@ -4,6 +4,7 @@ import {
 	ROUTE__API__USER__DATA__GET,
 	ROUTE__API__USER__DATA__SET,
 } from '../constants';
+import getPathNode from '../utils/getPathNode';
 import logger from '../utils/logger';
 import postData from './utils/postData';
 import {
@@ -185,4 +186,10 @@ export function updateHistory({ params, path } = {}) {
 	}
 	
 	window.history.replaceState({}, '', _url);
+}
+
+export function loadNote(notePath) {
+	const nG = getStoreValue(noteGroups);
+	const { id, notes } = getPathNode(nG, notePath);
+	currentNote.set({ ...notes[id], id, path: decodeURIComponent(notePath) });
 }

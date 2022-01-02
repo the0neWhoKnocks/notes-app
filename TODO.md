@@ -2,7 +2,7 @@
 ---
 
 - [x] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
-- [ ] Parse URL param 'note' so that it loads on page load.
+- [x] Parse URL param 'note' so that it loads on page load.
 - [ ] recently viewed
   - [ ] max 10 items
   - [ ] add currently opened to beginning of list, if it already exists, move it to front
