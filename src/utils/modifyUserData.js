@@ -56,6 +56,16 @@ const sortArrayByPropVal = (arr, orderArr) => {
   return [...sortedArr, ..._arr];
 };
 
+const sortObjByKeys = (obj) => {
+  return Object.keys(obj).sort().reduce((sorted, prop) => {
+    const curr = obj[prop];
+    sorted[prop] = (!Array.isArray(curr) && curr !== null && typeof curr === 'object')
+      ? sortObjByKeys(curr)
+      : curr;
+    return sorted;
+  }, {});
+};
+
 module.exports = async function modifyUserData({
   loadCurrentData,
   reqBody,
@@ -339,6 +349,8 @@ module.exports = async function modifyUserData({
       break;
     }
   }
+  
+  data = sortObjByKeys(data);
   
   return { data, logMsg };
 };
