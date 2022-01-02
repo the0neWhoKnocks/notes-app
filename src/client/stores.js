@@ -189,7 +189,9 @@ export function updateHistory({ params, path } = {}) {
 }
 
 export function loadNote(notePath) {
-	const nG = getStoreValue(noteGroups);
-	const { id, notes } = getPathNode(nG, notePath);
-	currentNote.set({ ...notes[id], id, path: decodeURIComponent(notePath) });
+	if (notePath) {
+		const nG = getStoreValue(noteGroups);
+		const { id, notes } = getPathNode(nG, notePath);
+		currentNote.set({ ...notes[id], id, path: decodeURIComponent(notePath) });
+	}
 }
