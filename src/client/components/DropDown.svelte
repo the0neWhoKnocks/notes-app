@@ -22,10 +22,13 @@
 
 <svelte:window on:click={handleOuterClick} />
 
-<div class="{_class} drop-down" bind:this={ddRef}>
+<div
+  class="{_class} drop-down"
+  class:open={open}
+  bind:this={ddRef}
+>
   <button class="drop-down__toggle" on:click={handleToggle}>
     <slot name="label" />
-    
     {#if open}
       <Icon type={ICON__ANGLE_UP} />
     {:else}
@@ -33,9 +36,7 @@
     {/if}
   </button>
   <div class="drop-down__nav-wrapper">
-    <nav class:open={open}>
-      <slot />
-    </nav>
+    <nav ><slot /></nav>
   </div>
 </div>
 
@@ -69,6 +70,10 @@
     z-index: 5;
     top: 100%;
     right: 0;
+    pointer-events: none;
+  }
+  .drop-down.open .drop-down__nav-wrapper {
+    pointer-events: all;
   }
   .drop-down nav {
     padding: 0.25em;
@@ -79,11 +84,9 @@
     background: var(--color--app--bg);
     transform: translateY(-101%);
     transition: transform 200ms;
-    pointer-events: none;
   }
-  .drop-down nav.open {
+  .drop-down.open nav {
     transform: translateY(0%);
-    pointer-events: all;
   }
   :global(.drop-down nav button) {
     width: 100%;

@@ -2,7 +2,6 @@
   import {
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
-  import kebabCase from '../../utils/kebabCase';
   import {
     dialogDataForGroup,
     noteGroups,
@@ -10,18 +9,11 @@
   } from '../stores';
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
-  import LabeledInput from './LabeledInput.svelte';  
+  import GroupNoteNameInput from './GroupNoteNameInput.svelte';  
   
   let editingGroup;
   let formRef;
-  let query
   let saveBtnDisabled;
-  
-  const genQuery = (name = '') => {
-    let _query = `?p=${encodeURIComponent($dialogDataForGroup.path)}`;
-    if (name) _query += `/${encodeURIComponent(name)}`;
-    return _query;
-  };
   
   function closeDialog() {
     dialogDataForGroup.set();
@@ -34,7 +26,6 @@
   function handleChange({ target }) {
     if (target.name === 'name') {
       if (editingGroup) saveBtnDisabled = target.value === $dialogDataForGroup.name;
-      query = genQuery(kebabCase(target.value));
     }
   }
   
@@ -53,11 +44,6 @@
   $: if ($dialogDataForGroup) {
     editingGroup = $dialogDataForGroup.action === 'edit';
     saveBtnDisabled = editingGroup;
-    
-    const name = $dialogDataForGroup.name
-      ? kebabCase($dialogDataForGroup.name)
-      : '';
-    query = genQuery(name);
   }
 </script>
 
@@ -79,11 +65,15 @@
       <input type="hidden" name="action" value={$dialogDataForGroup.action} />
       <input type="hidden" name="path" value={$dialogDataForGroup.path} />
       <input type="hidden" name="type" value="group" />
-      {#if editingGroup}
-        <input type="hidden" name="oldName" value={$dialogDataForGroup.name} />
-      {/if}
-      <LabeledInput label="Name" name="name" value={$dialogDataForGroup.name} autoFocus required />
-      <div class="group-form__query">{query}</div>
+      
+      <GroupNoteNameInput
+        editing={editingGroup}
+        label="Name"
+        nameAttr="name"
+        oldNameAttr="oldName"
+        path={$dialogDataForGroup.path}
+        valueAttr={$dialogDataForGroup.name}
+      />
       <nav class="group-form__btm-nav">
         <button type="button" on:click={handleCloseClick}>Cancel</button>
         <button disabled={saveBtnDisabled}>Save</button>

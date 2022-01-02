@@ -3,7 +3,6 @@
   import {
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
-  import kebabCase from '../../utils/kebabCase';
   import {
     currentNote,
     dialogDataForNote,
@@ -13,29 +12,17 @@
   } from '../stores';
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
-  import LabeledInput from './LabeledInput.svelte';  
+  import GroupNoteNameInput from './GroupNoteNameInput.svelte';
   
   let previewing = false;
   let editingNote;
   let formRef;
   let noteId;
   let previewRef;
-  let query;
   let queryParams;
   let saveBtnDisabled;
   let textareaRef;
   let titleValue;
-  
-  const genQuery = (title = '') => {
-    let val = $dialogDataForNote.path;
-    noteId = kebabCase(title);
-    
-    if (title) val += `/${noteId}`;
-    queryParams = { note: val }; // has to happen before encode
-    
-    val = encodeURIComponent(val);
-    query = `?note=${val}`;
-  };
   
   function closeDialog() {
     dialogDataForNote.set();
@@ -76,12 +63,14 @@
       
       case 'title': {
         titleValue = target.value;
-        
-        genQuery(titleValue);
         diffCheck();
         break;
       }
     }
+  }
+  
+  function handleQueryChange(params) {
+    queryParams = params;
   }
   
   async function handleSubmit() {
@@ -430,8 +419,6 @@
     titleValue = $dialogDataForNote.title;
     editingNote = $dialogDataForNote.action === 'edit';
     saveBtnDisabled = editingNote;
-    
-    genQuery(titleValue);
   }
   
   $: if ($dialogDataForNote) deriveNoteData();
@@ -455,11 +442,16 @@
       <input type="hidden" name="action" value={$dialogDataForNote.action} />
       <input type="hidden" name="path" value={$dialogDataForNote.path} />
       <input type="hidden" name="type" value="note" />
-      {#if editingNote}
-        <input type="hidden" name="oldTitle" value={$dialogDataForNote.title} />
-      {/if}
-      <LabeledInput label="Title" name="title" value={$dialogDataForNote.title} autoFocus required />
-      <div class="note-form__query">{query}</div>
+      
+      <GroupNoteNameInput
+        editing={editingNote}
+        label="Title"
+        nameAttr="title"
+        oldNameAttr="oldTitle"
+        onQueryChange={handleQueryChange}
+        path={$dialogDataForNote.path}
+        valueAttr={$dialogDataForNote.title}
+      />
       <div class="note-form__content-area">
         <nav class="note-form__toolbar" on:click={handleToolClick}>
           <button type="button" title="Heading" data-type="heading" tabindex="-1">#</button>
@@ -519,13 +511,13 @@
     flex-direction: column;
   }
   
-  .note-form__query {
+  /* .note-form__query {
     font-size: 0.8em;
     padding-left: 3em;
     margin: 0;
     opacity: 0.5;
     transform: translateY(-12px);
-  }
+  } */
   
   .note-form__content-area {
     height: 100%;
