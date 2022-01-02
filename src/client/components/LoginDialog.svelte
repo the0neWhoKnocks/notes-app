@@ -96,7 +96,6 @@
         class="login-form"
         method="POST"
         on:submit={handleLoginSubmit}
-        slot="dialogBody"
         spellcheck="false"
       >
         <HRWithText label="Log In" />
@@ -143,7 +142,6 @@
         class="create-form"
         method="POST"
         on:submit={handleCreateSubmit}
-        slot="dialogBody"
         spellcheck="false"
       >
         <HRWithText label="Create Account" />

@@ -106,7 +106,7 @@
         </nav>
       {/if}
       <div class="dialog__body">
-        <slot name="dialogBody"></slot>
+        <slot></slot>
       </div>
     </dialog>
   </div>
