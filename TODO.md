@@ -1,7 +1,8 @@
 # TODO
 ---
 
-- [ ] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
+- [x] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
+- [ ] Parse URL param 'note' so that it loads on page load.
 - [ ] recently viewed
   - [ ] max 10 items
   - [ ] add currently opened to beginning of list, if it already exists, move it to front
@@ -14,6 +15,8 @@
   - The note area could be 'flex' column.
   - Each note could have a Close button
   - The query param may have to be updated to 'notes' instead of 'note'. Maybe separate each note by a '|'.
+- [ ] Ability to move note to a different group.
+- [ ] Sort groups and notes alphabetically in notes nav.
 
 In order to ensure all assets are cached, refactor how scripts and styles are
 loaded into the shell. Use something like

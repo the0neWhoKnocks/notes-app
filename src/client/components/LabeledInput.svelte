@@ -9,6 +9,7 @@
   export let hiddenValue = '';
   export let label = '';
   export let name = '';
+  export let onInput = undefined;
   export let placeholder = '';
   export let required;
   export let type = 'text';
@@ -16,7 +17,7 @@
   let _class = '';
   export { _class as class };
   
-  const id = btoa(`cli_${name}`).replace(/=/g, '');
+  const id = window.btoa(`cli_${name}`).replace(/=/g, '');
   let inputRef;
   
   if (autoFocus) {
@@ -32,6 +33,7 @@
     <input
       autocomplete={autoComplete ? 'on' : 'off'}
       bind:this={inputRef}
+      on:input={onInput}
       {id}
       {disabled}
       {name}
