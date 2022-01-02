@@ -11,7 +11,6 @@
   export let modal = false;
   export let onCloseClick = undefined;
   export let onCloseEnd = undefined;
-  export let title = '';
   export let titleBGColor = '#333';
   export let titleTextColor = '#eee';
   
@@ -91,10 +90,10 @@
       out:toggleDialog="{{ start: 50 }}"
       on:outroend={handleCloseEnd}
     >
-      {#if !modal || modal && title}
+      {#if !modal || modal && $$slots.dialogTitle}
         <nav class="dialog__nav">
           <div class="dialog__title">
-            <slot name="dialogTitle">{title}</slot>
+            <slot name="dialogTitle"></slot>
           </div>
           {#if !modal}
             <button

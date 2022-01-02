@@ -51,6 +51,9 @@
   <Dialog
     onCloseClick={handleCloseClick}
   >
+    <svelte:fragment slot="dialogTitle">
+      {#if editingGroup}Edit{:else}Add{/if} Group
+    </svelte:fragment>
     <form
       action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
@@ -96,14 +99,6 @@
   .group-form button:disabled {
     opacity: 0.5;
     cursor: default;
-  }
-  
-  .group-form__query {
-    font-size: 0.8em;
-    padding-left: 3em;
-    margin: 0;
-    opacity: 0.5;
-    transform: translateY(-12px);
   }
   
   .group-form__btm-nav {
