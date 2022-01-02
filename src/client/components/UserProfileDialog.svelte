@@ -89,7 +89,6 @@
       method="POST"
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
-      slot="dialogBody"
     >
       <input type="hidden" name="oldPassword" value={oldPassword} />
       <input type="hidden" name="oldUsername" value={oldUsername} />

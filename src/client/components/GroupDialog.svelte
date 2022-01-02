@@ -58,7 +58,6 @@
       method="POST"
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
-      slot="dialogBody"
     >
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />

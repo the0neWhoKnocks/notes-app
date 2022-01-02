@@ -26,7 +26,6 @@
       bind:this={formRef}
       on:submit={handleSubmit}
       method="POST"
-      slot="dialogBody"
     >
       <HRWithText label="Create Config" />
       <p>
