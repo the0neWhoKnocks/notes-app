@@ -1,6 +1,7 @@
 # TODO
 ---
 
+Feat:
 - [x] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
 - [x] Parse URL param 'note' so that it loads on page load.
 - [ ] recently viewed
@@ -18,6 +19,13 @@
 - [ ] Ability to move note to a different group.
 - [x] Sort groups and notes alphabetically in notes nav.
 - [ ] While editing a note, if newline after a line that is part of a list, continue the previous list type to the next line. If ENTER again with an empty list item line, cancel (remove) the last empty list line.
+- [ ] tags
+  - [ ] add/delete tags
+  - [ ] auto-complete from previously added tags
+  - [ ] diff check when tags change
+
+Fix:
+- [ ] Notes dialog toolbar overflows on small screens
 
 In order to ensure all assets are cached, refactor how scripts and styles are
 loaded into the shell. Use something like
