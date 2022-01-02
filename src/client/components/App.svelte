@@ -4,13 +4,15 @@
   import initMarked from '../marked/init';
   import {
     checkLoggedInState,
+    loadNote,
     offline,
     syncOfflineData,
     trackNetworkStatus,
     updateHistory,
     userData,
     userIsLoggedIn,
-  } from '../stores.js';
+  } from '../stores';
+  import getParams from '../utils/getParams';
   import DeleteDialog from './DeleteDialog.svelte';
   // import DiffDialog from './DiffDialog.svelte';
   import FullNote from './FullNote.svelte';
@@ -139,6 +141,9 @@
         window.Prism.highlightAll();
         
         log.info('Notes loaded and formatted');
+        
+        const { note } = getParams(location.href);
+        loadNote(note);
       }, 0);
     }
     catch ({ message }) { alert(message); }
