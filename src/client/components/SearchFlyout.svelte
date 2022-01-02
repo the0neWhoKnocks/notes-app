@@ -47,7 +47,9 @@
   }
   
   function handleSearch(query) {
-    results = [searchData(query, $noteGroups[BASE_DATA_NODE])];
+    results = query
+      ? [searchData(query, $noteGroups[BASE_DATA_NODE])]
+      : [];
   }
   
   $: if ($searchFlyoutOpen) results = [];
