@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "build": "./bin/prep-dist.sh && NODE_ENV=production webpack",
+    "build": "./bin/prep-dist.sh && webpack",
     "lint": "eslint ./*.js \"{bin,src}/**/*.{js,svelte}\"",
-    "start": "node ./dist/server",
-    "start:dev": "./bin/prep-dist.sh && webpack & ./watcher.js \"./bin/prep-dist.sh\" \"./dist/public/manifest.json\""
+    "start": "eval $(grep '^NODE_EXTRA_CA_CERTS' .env) node ./dist/server",
+    "start:dev": "npm run build & eval $(grep '^NODE_EXTRA_CA_CERTS' .env) ./watcher.js \"./bin/prep-dist.sh\" \"./dist/public/manifest.json\""
   },
   "dependencies": {
     "anylogger": "1.0.11",
