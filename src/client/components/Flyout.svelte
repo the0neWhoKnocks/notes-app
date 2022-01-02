@@ -13,7 +13,6 @@
   let flyoutFor = undefined;
   export let onCloseClick = undefined;
   export let onCloseEnd = undefined;
-  export let open = false;
   export let title = '';
   export let titlebar = true;
   export let titleBGColor = '#333';
@@ -73,47 +72,44 @@
 
 <svelte:window on:keydown={handleKeyDown}/>
 
-{#if open}
-  <Portal target="#overlays">
-    <div 
-      class="flyout-wrapper"
-      class:is--open={open}
-      flyout-for={flyoutFor}
-      style={cssVars}
+<Portal target="#overlays">
+  <div 
+    class="flyout-wrapper"
+    flyout-for={flyoutFor}
+    style={cssVars}
+  >
+    <div
+      class="flyout-mask"
+      on:click={handleCloseClick}
+      in:toggleMask
+      out:toggleMask
+    ></div>
+    <dialog
+      class="flyout"
+      tabindex="0"
+      open
+      in:toggleFlyout={{ dir: 'in' }}
+      out:toggleFlyout={{}}
+      on:outroend={handleCloseEnd}
     >
-      <div
-        class="flyout-mask"
-        on:click={handleCloseClick}
-        in:toggleMask
-        out:toggleMask
-      ></div>
-      <dialog
-        class="flyout"
-        tabindex="0"
-        open
-        in:toggleFlyout="{{ dir: 'in' }}"
-        out:toggleFlyout=""
-        on:outroend={handleCloseEnd}
-      >
-        {#if titlebar}
-          <nav class="flyout__nav">
-            <div class="flyout__title">
-              <slot name="flyoutTitle">{title}</slot>
-            </div>
-            <button
-              type="button"
-              class="flyout__close-btn"
-              on:click={handleCloseClick}
-            >&#10005;</button>
-          </nav>
-        {/if}
-        <div class="flyout__body">
-          <slot></slot>
-        </div>
-      </dialog>
-    </div>
-  </Portal>
-{/if}
+      {#if titlebar}
+        <nav class="flyout__nav">
+          <div class="flyout__title">
+            <slot name="flyoutTitle">{title}</slot>
+          </div>
+          <button
+            type="button"
+            class="flyout__close-btn"
+            on:click={handleCloseClick}
+          >&#10005;</button>
+        </nav>
+      {/if}
+      <div class="flyout__body">
+        <slot></slot>
+      </div>
+    </dialog>
+  </div>
+</Portal>
 
 <style>
   .flyout-wrapper {

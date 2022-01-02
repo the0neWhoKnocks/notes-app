@@ -3,18 +3,19 @@
   import Flyout from './Flyout.svelte';
   import NotesNav from './NotesNav.svelte';
   
-  function handleToggle() {
-    notesNavFlyoutOpen.set(!$notesNavFlyoutOpen);
+  function handleClose() {
+    notesNavFlyoutOpen.set(false);
   }
 </script>
 
-<Flyout
-  for="notesNav"
-  open={$notesNavFlyoutOpen}
-  onCloseClick={handleToggle}
->
-  <NotesNav />
-</Flyout>
+{#if $notesNavFlyoutOpen}
+  <Flyout
+    for="notesNav"
+    onCloseClick={handleClose}
+  >
+    <NotesNav />
+  </Flyout>
+{/if}
 
 <style>
   :global([flyout-for="notesNav"] .flyout__body) {
