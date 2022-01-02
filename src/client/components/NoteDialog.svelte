@@ -13,6 +13,7 @@
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   import GroupNoteNameInput from './GroupNoteNameInput.svelte';
+  import TagsInput from './TagsInput.svelte';
   
   let previewing = false;
   let editingNote;
@@ -454,6 +455,11 @@
         path={$dialogDataForNote.path}
         valueAttr={$dialogDataForNote.title}
       />
+      <!-- <TagsInput
+        autoCompleteItems={['test', 'zip', 'this']}
+        tags={['test']}
+      /> -->
+      <TagsInput />
       <div class="note-form__content-area">
         <nav class="note-form__toolbar" on:click={handleToolClick}>
           <button type="button" title="Heading" data-type="heading" tabindex="-1">#</button>
@@ -512,14 +518,6 @@
     display: flex;
     flex-direction: column;
   }
-  
-  /* .note-form__query {
-    font-size: 0.8em;
-    padding-left: 3em;
-    margin: 0;
-    opacity: 0.5;
-    transform: translateY(-12px);
-  } */
   
   .note-form__content-area {
     height: 100%;
@@ -587,5 +585,18 @@
   .note-form button:disabled {
     opacity: 0.5;
     cursor: default;
+  }
+  
+  :global(.note-form .tags-input__container) {
+    border-radius: 0.5em 0.5em 0 0;
+    margin: 0;
+    background: var(--color--app--bg);
+  }
+  :global(.note-form .tags-input__input) {
+    color: var(--color--app--fg); 
+    background: transparent;
+  }
+  :global(.note-form .tags-input__input::placeholder) {
+    color: var(--color--app--fg); 
   }
 </style>
