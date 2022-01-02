@@ -7,7 +7,7 @@
   - [ ] max 10 items
   - [ ] add currently opened to beginning of list, if it already exists, move it to front
   - [ ] display a column list in the main area on load, or after note is closed 
-- [ ] search button opens flyout with input and results list
+- [X] search button opens flyout with input and results list
 - [ ] For the SW, have it check the App name, if it's registered and it doesn't match, unregister itself so it doesn't try to run for other Apps while I'm working on localhost.
   - https://love2dev.com/blog/how-to-uninstall-a-service-worker/
 - [x] Support https cuz of login and service worker
