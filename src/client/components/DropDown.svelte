@@ -9,8 +9,12 @@
   export { _class as class };
   
   let ddRef;
+  let openedOnce = false;
   
-  function handleToggle() { open = !open; }
+  function handleToggle() {
+    open = !open;
+    if (open && !openedOnce) openedOnce = true;
+  }
   
   function handleOuterClick({ target }) {
     if (open) {
@@ -25,6 +29,7 @@
 <div
   class="{_class} drop-down"
   class:open={open}
+  class:no-anim={!openedOnce}
   bind:this={ddRef}
 >
   <button class="drop-down__toggle" on:click={handleToggle}>
@@ -68,6 +73,7 @@
     width: 0.6em;
     height: 0.6em;
   }
+  
   .drop-down__nav-wrapper {
     min-width: 100%;
     overflow: hidden;
@@ -80,6 +86,37 @@
   .drop-down.open .drop-down__nav-wrapper {
     pointer-events: all;
   }
+  
+  @keyframes open {
+    0% {
+      visibility: visible;
+      transform: translateY(-101%);
+    }
+    100% {
+      transform: translateY(0%);
+    }
+  }
+  @keyframes close {
+    0% {
+      transform: translateY(0%);
+    }
+    100% {
+      transform: translateY(-101%);
+      visibility: hidden;
+    }
+  }
+  
+  /*
+    NOTE: this allows for an accessible nav that utilizes proper animations.
+    The trick being, to use the closing animation in the default state. Normally
+    this'd result in the closing animation playing on page load, but since
+    animation is disabled until the first 'open' is triggered, no anomalies are
+    displayed to the User.
+   */
+  .drop-down.no-anim nav {
+    visibility: hidden;
+  }
+  
   .drop-down nav {
     padding: 0.25em;
     padding-top: 0;
@@ -87,11 +124,12 @@
     border-top: none;
     margin: 0;
     background: var(--color--app--bg);
-    transform: translateY(-101%);
-    transition: transform 200ms;
+    animation-name: close;
+    animation-duration: 200ms;
+    animation-fill-mode: both;
   }
   .drop-down.open nav {
-    transform: translateY(0%);
+    animation-name: open;
   }
   :global(.drop-down nav button) {
     width: 100%;
