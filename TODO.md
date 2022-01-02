@@ -17,6 +17,7 @@
   - The query param may have to be updated to 'notes' instead of 'note'. Maybe separate each note by a '|'.
 - [ ] Ability to move note to a different group.
 - [x] Sort groups and notes alphabetically in notes nav.
+- [ ] While editing a note, if newline after a line that is part of a list, continue the previous list type to the next line. If ENTER again with an empty list item line, cancel (remove) the last empty list line.
 
 In order to ensure all assets are cached, refactor how scripts and styles are
 loaded into the shell. Use something like

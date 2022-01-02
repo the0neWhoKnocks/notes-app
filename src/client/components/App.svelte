@@ -267,6 +267,21 @@
     background: #666;
   }
   
+  :global(button) {
+    color: var(--color--app--fg);
+    border: solid 1px;
+    border-radius: 0.25em;
+    background: var(--color--app--bg);
+  }
+  :global(button:not(:disabled):hover),
+  :global(button:not(:disabled):focus) {
+    outline: solid 1px var(--color--app--fg);
+    outline-offset: -6px;
+  }
+  :global(form button) {
+    width: 100%;
+  }
+  
   :global(.root) {
     max-width: 800px;
     margin: auto;
@@ -329,6 +344,7 @@
   :global(.top-nav > *:not(.app__title)) {
     line-height: 1em;
     border-left: solid 1px;
+    border-radius: unset;
   }
   :global(.top-nav > .drop-down:last-of-type) {
     margin-right: 0.25em;
