@@ -428,6 +428,9 @@
   <Dialog
     onCloseClick={handleCloseClick}
   >
+    <svelte:fragment slot="dialogTitle">
+      {#if editingNote}Edit{:else}Add{/if} Note
+    </svelte:fragment>
     <form
       action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
