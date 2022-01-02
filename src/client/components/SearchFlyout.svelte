@@ -11,7 +11,7 @@
   let results;
   
   function handleClose() {
-    searchFlyoutOpen.set(!$searchFlyoutOpen);
+    searchFlyoutOpen.set(false);
   }
   
   function searchData(query, { groups, notes } = {}, matches, path) {
@@ -55,27 +55,28 @@
   $: if ($searchFlyoutOpen) results = [];
 </script>
 
-<Flyout
-  for="search"
-  open={$searchFlyoutOpen}
-  onCloseClick={handleClose}
->
-  <SearchInput focused onSearch={handleSearch} />
-  <div class="search-results">
-    {#each results as {groups, notes}}
-      {#if groups.length}
-        {#each groups as group}
-          <SearchResult {...group} />
-        {/each}
-      {/if}
-      {#if notes.length}
-        {#each notes as note}
-          <SearchResult {...note} />
-        {/each}
-      {/if}
-    {/each}
-  </div>
-</Flyout>
+{#if $searchFlyoutOpen}
+  <Flyout
+    for="search"
+    onCloseClick={handleClose}
+  >
+    <SearchInput focused onSearch={handleSearch} />
+    <div class="search-results">
+      {#each results as {groups, notes}}
+        {#if groups.length}
+          {#each groups as group}
+            <SearchResult {...group} />
+          {/each}
+        {/if}
+        {#if notes.length}
+          {#each notes as note}
+            <SearchResult {...note} />
+          {/each}
+        {/if}
+      {/each}
+    </div>
+  </Flyout>
+{/if}
 
 <style>
   :global([flyout-for="search"] .flyout__body) {
