@@ -533,18 +533,11 @@
     background: var(--color--app--bg);
     display: flex;
   }
-  .note-form__toolbar button,
-  .note-form__toolbar button:focus {
+  .note-form__toolbar button {
     width: 100%;
     color: inherit;
-    padding: 2px;
-    border: solid 1px;
     border-radius: unset;
     margin: 2px;
-    background: transparent;
-  }
-  .note-form__toolbar button:focus::after {
-    content: none;
   }
   
   .note-form__sep {

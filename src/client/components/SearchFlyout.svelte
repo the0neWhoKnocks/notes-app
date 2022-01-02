@@ -91,6 +91,12 @@
     border-radius: unset;
   }
   
+  :global([flyout-for="search"] .flyout__body .search > button) {
+    width: auto;
+    border-color: #000;
+    background: var(--color--app--bg);
+  }
+  
   .search-results {
     height: 100%;
     overflow-y: auto;

@@ -36,7 +36,7 @@
     {/if}
   </button>
   <div class="drop-down__nav-wrapper">
-    <nav ><slot /></nav>
+    <nav><slot /></nav>
   </div>
 </div>
 
@@ -49,11 +49,16 @@
     color: currentColor;
     line-height: 1em;
     border: none;
+    border-radius: unset;
     background: transparent;
     display: flex;
     gap: 0.5em;
     align-items: center;
     justify-content: space-between;
+  }
+  .drop-down__toggle:focus,
+  .drop-down__toggle:hover {
+    outline-offset: 0;
   }
   :global(.drop-down__toggle > *) {
     pointer-events: none;
@@ -93,6 +98,7 @@
     color: currentColor;
     white-space: nowrap;
     border: solid 1px;
+    border-radius: unset;
     background: transparent;
   }
 </style>
