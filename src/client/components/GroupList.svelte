@@ -63,7 +63,7 @@
         else group.setAttribute('open', '');
       }
     }
-    else if (target.classList.contains('item')) {
+    else if (target.classList.contains('item__label')) {
       if (onItemClick) {
         ev.preventDefault();
         onItemClick(target);
@@ -105,21 +105,20 @@
     {:else}
       <!-- TODO: Can simplify if they ever merge the @const PR -->
       {#each getFileData(item, groupPath) as {dataAttrs, link, name, nameComponent}}
-        {#if link}
-          <a class="item" href={link} {...dataAttrs}>
-            <Icon type={ICON__FILE} />{name}
-            {#if nameComponent}
-              <svelte:component this={nameComponent} {...item} />
-            {/if}
-          </a>
-        {:else}
-          <div class="item" {...dataAttrs}>
-            <Icon type={ICON__FILE} />{name}
-            {#if nameComponent}
-              <svelte:component this={nameComponent} {...item} />
-            {/if}
-          </div>
-        {/if}
+        <div class="item">
+          {#if link}
+            <a class="item__label" href={link} {...dataAttrs}>
+              <Icon type={ICON__FILE} />{name}
+            </a>
+          {:else}
+            <div class="item__label" {...dataAttrs}>
+              <Icon type={ICON__FILE} />{name}
+            </div>
+          {/if}
+          {#if nameComponent}
+            <svelte:component this={nameComponent} {...item} />
+          {/if}
+        </div>
       {/each}
     {/if}
   {/each}
@@ -137,7 +136,6 @@
   }
   
   .group-list.is--root {
-    overflow: auto;
     padding-left: 0.75em;
     flex-shrink: 0;
   }
@@ -217,6 +215,13 @@
     display: block;
   }
   
+  .group-list {
+    padding-top: 0.25em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+  }
+  
   .item {
     min-width: 100%;
     user-select: none;
@@ -226,6 +231,11 @@
     position: relative;
   }
   
+  .item__label {
+    line-height: 1em;
+    display: flex;
+  }
+  
   :global(.item .svg-icon) {
     margin-right: 0.25em;
     display: inline-block;
@@ -233,7 +243,8 @@
   
   .group[open]:not([empty]):hover::after,
   .group[open]:not([empty]):hover > .group__name,
-  a.item:hover {
+  .item:hover,
+  .item:hover a {
     color: var(--color--text--hover);
     text-shadow: 1px 0px 0px var(--color--text--hover);
   }
