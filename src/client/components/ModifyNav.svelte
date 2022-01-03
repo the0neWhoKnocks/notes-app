@@ -32,10 +32,10 @@
     log.info(`Edit ${type} "${id}"`);
     
     if (type === 'note') {
-      dialogDataForNote.set({ action: 'edit', content, path: _path, title });
+      dialogDataForNote.set({ action: 'edit', content, id, path: _path, title });
     }
     else if (type === 'group') {
-      dialogDataForGroup.set({ action: 'edit', content, name: groupName, path: _path });
+      dialogDataForGroup.set({ action: 'edit', content, id, name: groupName, path: _path });
     }
   }
 </script>
