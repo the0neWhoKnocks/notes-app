@@ -192,6 +192,11 @@ export function loadNote(notePath) {
 	if (notePath) {
 		const nG = getStoreValue(noteGroups);
 		const { id, notes } = getPathNode(nG, notePath);
-		currentNote.set({ ...notes[id], id, path: decodeURIComponent(notePath) });
+		const note = notes[id];
+		
+		// could be 'undefined' if a User hits up a dead URL
+		if (note) currentNote.set({ ...note, id, path: decodeURIComponent(notePath) });
+		// no note found, so update URL
+		else updateHistory();
 	}
 }
