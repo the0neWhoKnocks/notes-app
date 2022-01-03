@@ -1,34 +1,26 @@
 <script>
   import { currentNote } from '../stores'; 
   import ModifyNav from './ModifyNav.svelte';
-  
-  let content;
-  let id;
-  let path;
-  let title;
-  
-  $: if ($currentNote) {
-    const note = $currentNote;
-    content = window.marked.parse(note.content);
-    id = note.id;
-    path = note.path;
-    title = note.title;
-  }
-  else {
-    content = undefined;
-    id = undefined;
-    path = undefined;
-    title = undefined
-  }
 </script>
 
-{#if content}
+{#if $currentNote && $currentNote.content}
   <article class="full-note">
     <header>
-      {title}
-      <ModifyNav {id} {path} type="note" />
+      {$currentNote.title}
+      <ModifyNav
+        id={$currentNote.id}
+        path={$currentNote.path}
+        type="note"
+      />
     </header>
-    <section>{@html content}</section>
+    {#if $currentNote.tags && $currentNote.tags.length}
+      <div class="full-note__tags">
+        {#each $currentNote.tags as tag}
+          <div class="full-note__tag">{tag}</div>
+        {/each}
+      </div>
+    {/if}
+    <section>{@html window.marked.parse($currentNote.content)}</section>
   </article>
 {/if}
 
@@ -40,16 +32,33 @@
     border: solid 1px;
   }
   
+  .full-note header,
+  .full-note__tags {
+    border-bottom: solid 1px;
+  }
+  
   .full-note header {
     font-size: 1.2em;
     font-weight: bold;
     padding: 0.5em;
-    border-bottom: solid 1px;
     background: var(--color--app--bg);
     display: flex;
     justify-content: space-between;
     position: sticky;
     top: 0;
+  }
+  
+  .full-note__tags {
+    padding: 0.5em;
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+  }
+  
+  .full-note__tag {
+    padding: 0 0.75em;
+    border: solid 1px;
+    border-radius: 0.25em;
   }
   
   .full-note section {

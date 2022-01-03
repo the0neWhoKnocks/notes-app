@@ -4,7 +4,9 @@
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
+  import parseTags from '../../utils/parseTags';
   import {
+    allTags,
     currentNote,
     dialogDataForNote,
     noteGroups,
@@ -19,9 +21,11 @@
   let previewing = false;
   let editingNote;
   let formRef;
+  let oldTags = [];
   let previewRef;
   let queryParams;
   let saveBtnDisabled;
+  let tags = [];
   let textareaRef;
   let titleValue;
   
@@ -35,9 +39,12 @@
   
   function diffCheck() {
     if (editingNote) {
+      const currTags = document.querySelector('[name="tags"]').value;
+      
       saveBtnDisabled = (
         textareaRef.value === $dialogDataForNote.content
         && titleValue === $dialogDataForNote.title
+        && currTags === oldTags
       );
     }
   }
@@ -57,10 +64,7 @@
   
   function handleChange({ target }) {
     switch (target.name) {
-      case 'content': {
-        diffCheck();
-        break;
-      }
+      case 'content': diffCheck(); break;
       
       case 'title': {
         titleValue = target.value;
@@ -76,7 +80,11 @@
   
   async function handleSubmit() {
     try {
-      const { newData, notesData } = await postData(formRef.getAttribute('action'), formRef);
+      const {
+        allTags: _allTags,
+        newData,
+        notesData,
+      } = await postData(formRef.getAttribute('action'), formRef);
       const { id } = $dialogDataForNote;
       
       updateCurrNote({
@@ -85,10 +93,12 @@
           ...$currentNote,
           content: newData.content,
           id: kebabCase(newData.title),
+          tags: parseTags(newData.tags),
           title: newData.title,
         },
         params: queryParams,
       });
+      allTags.set(_allTags);
       noteGroups.set(notesData);
       closeDialog();
     }
@@ -417,8 +427,12 @@
   }
   
   function deriveNoteData() {
-    titleValue = $dialogDataForNote.title;
-    editingNote = $dialogDataForNote.action === 'edit';
+    const { action, tags: _tags, title } = $dialogDataForNote;
+    
+    tags = _tags;
+    oldTags = (_tags || []).join(', ');
+    titleValue = title;
+    editingNote = action === 'edit';
     saveBtnDisabled = editingNote;
   }
   
@@ -455,11 +469,11 @@
         path={$dialogDataForNote.path}
         valueAttr={$dialogDataForNote.title}
       />
-      <!-- <TagsInput
-        autoCompleteItems={['test', 'zip', 'this']}
-        tags={['test']}
-      /> -->
-      <TagsInput />
+      <TagsInput
+        autoCompleteItems={$allTags}
+        onTagChange={diffCheck}
+        {tags}
+      />
       <div class="note-form__content-area">
         <nav class="note-form__toolbar" on:click={handleToolClick}>
           <button type="button" title="Heading" data-type="heading" tabindex="-1">#</button>

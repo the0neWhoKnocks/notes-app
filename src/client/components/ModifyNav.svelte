@@ -27,12 +27,12 @@
   
   function editItem() {
     const _path = parsePath();
-    const { content, groupName, title } = getPathNode($noteGroups, _path)[`${type}s`][id];
+    const { content, groupName, tags, title } = getPathNode($noteGroups, _path)[`${type}s`][id];
     
     log.info(`Edit ${type} "${id}"`);
     
     if (type === 'note') {
-      dialogDataForNote.set({ action: 'edit', content, id, path: _path, title });
+      dialogDataForNote.set({ action: 'edit', content, id, path: _path, tags, title });
     }
     else if (type === 'group') {
       dialogDataForGroup.set({ action: 'edit', content, id, name: groupName, path: _path });
