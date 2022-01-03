@@ -14,6 +14,7 @@ import {
 
 const log = logger('stores');
 
+export const allTags = writable([]);
 export const currentNote = writable();
 export const dialogDataForDelete = writable();
 export const dialogDataForDiff = writable();
@@ -112,9 +113,11 @@ export async function syncOfflineData(creds) {
 			// });
 			
 			const {
+				allTags: tags,
 				notesData,
 				preferences,
 			} = await postData(ROUTE__API__USER__DATA__GET, creds);
+			allTags.set(tags);
 			noteGroups.set(notesData);
 			userPreferences.set(preferences);
 			loadThemeCSS(preferences.theme);

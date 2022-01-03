@@ -1,4 +1,5 @@
 const groupNodeShape = require('../utils/groupNodeShape');
+const parseTags = require('../utils/parseTags');
 const getPathNode = require('./getPathNode');
 const kebabCase = require('./kebabCase');
 
@@ -66,6 +67,16 @@ const sortObjByKeys = (obj) => {
   }, {});
 };
 
+const mergeTags = (data, tags) => {
+  return data.allTags = tags
+    .filter(t => !!t)
+    .reduce((arr, tag) => {
+      if (!arr.includes(tag)) arr.push(tag);
+      return arr;
+    }, data.allTags)
+    .sort();
+};
+
 module.exports = async function modifyUserData({
   loadCurrentData,
   reqBody,
@@ -82,6 +93,7 @@ module.exports = async function modifyUserData({
     password,
     path,
     prefs,
+    tags,
     title,
     type,
     username,
@@ -144,9 +156,14 @@ module.exports = async function modifyUserData({
         const nodeId = kebabCase(title);
         
         if (!notes[nodeId]) {
+          const fTags = parseTags(tags);
+          
+          mergeTags(data, fTags);
+          
           notes[nodeId] = {
             content: sanitizeContent(content) || '',
             created: creationDate,
+            tags: fTags,
             title,
           };
           
@@ -177,6 +194,7 @@ module.exports = async function modifyUserData({
         const { notes } = getPathNode(notesData, path);
         let nodeId = kebabCase(oldTitle);
         const oldNote = { ...notes[nodeId] };
+        const fTags = parseTags(tags);
         
         if (oldTitle !== title) {
           const newNodeId = kebabCase(title);
@@ -188,10 +206,13 @@ module.exports = async function modifyUserData({
           nodeId = newNodeId;
         }
         
+        mergeTags(data, fTags);
+        
         notes[nodeId] = {
           ...oldNote,
           content: sanitizeContent(content) || '',
           modified: Date.now(),
+          tags: fTags,
           title,
         };
         

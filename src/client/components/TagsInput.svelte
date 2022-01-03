@@ -1,5 +1,8 @@
 <script>
-  export let autoCompleteItems = undefined;
+  import { tick } from 'svelte';
+
+  export let autoCompleteItems = [];
+  export let onTagChange = undefined;
   export let placeholder = 'Add Tag...';
   export let tags = [];
   
@@ -14,13 +17,13 @@
   let stylesRef;
   
   function updateStyleRule(query) {
-    if (!autoCompleteItems) return;
+    if (!autoCompleteItems.length) return;
     
-    let rule = '';
+    let rules = '';
     
     if (query !== '') {
       autoCompleteItemSelector = `[data-autocomplete-item*="${query.toLowerCase()}"]`;
-      rule = `
+      rules = `
         .tags-input__auto-complete-list,
         .tags-input__auto-complete-list ${autoCompleteItemSelector} {
           display: block !important;
@@ -31,7 +34,7 @@
       autoCompleteItemSelector = undefined;
     }
 
-    stylesRef.textContent = rule;
+    stylesRef.textContent = rules;
     autoCompleteRef.scrollTop = 0;
   }
   
@@ -142,7 +145,7 @@
     }
   }
   
-  function addTag(tag) {
+  async function addTag(tag) {
     // remove spacing around tag, and punctuation
     tag.trim().replace(/[.,';"]/g, '');
 
@@ -155,15 +158,25 @@
       if (tags.includes(tag)) return;
       
       tags = [...tags, tag];
+      
+      if (onTagChange) {
+        await tick();
+        onTagChange(tags);
+      }
     }
   }
   
-  function deleteTag({ target: btn }) {
+  async function deleteTag({ target: btn }) {
     const { tag } = btn.dataset;
 
     const tagNdx = tags.findIndex(t => t === tag);
     tags.splice(tagNdx, 1);
     tags = [...tags];
+    
+    if (onTagChange) {
+      await tick();
+      onTagChange(tags);
+    }
   }
 </script>
 
@@ -173,7 +186,11 @@
 >
   <style type="text/css" bind:this={stylesRef}></style>
   
-  <input type="hidden" name="tags" value={tags.join(', ')} />
+  <input
+    type="hidden"
+    name="tags"
+    value={tags.join(', ')}
+  />
   
   {#each tags as tag}
     <div class="tags-input__tag">
@@ -199,7 +216,7 @@
     class="tags-input__measure"
     bind:this={measureRef}
   >{placeholder}</div>
-  {#if autoCompleteItems}
+  {#if autoCompleteItems.length}
     <nav
       class="tags-input__auto-complete-list"
       bind:this={autoCompleteRef}
@@ -286,7 +303,6 @@
   .tags-input__auto-complete-list {
     max-height: 150px;
     overflow-y: scroll;
-    padding: 0.5rem 1rem;
     border: solid 1px;
     border-top: none;
     margin: 0;
@@ -306,7 +322,7 @@
     padding: 0.5rem;
     border: none;
     border-bottom: solid 1px #bbb;
-    margin-bottom: 3px;
+    border-radius: unset;
     background: #eee;
     display: none;
     cursor: pointer;

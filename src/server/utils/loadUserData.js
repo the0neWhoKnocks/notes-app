@@ -8,16 +8,25 @@ const getUserDataPath = require('./getUserDataPath');
 module.exports = async function loadUserData(appConfig, username, password) {
   const { valueHex: encryptedUsername } = await encrypt(appConfig, username);
   const filePath = getUserDataPath(encryptedUsername);
-  
-  if (existsSync(filePath)) {
-    const data = JSON.parse(await readFile(filePath, 'utf8'));
-    return JSON.parse(await decrypt(appConfig, data, password));
-  }
-  
-  return {
+  const defaultObj = {
+    allTags: [],
     notesData: {
       [BASE_DATA_NODE]: groupNodeShape(),
     },
     preferences: {},
   };
+  
+  if (existsSync(filePath)) {
+    let data = JSON.parse(await readFile(filePath, 'utf8'));
+    data = JSON.parse(await decrypt(appConfig, data, password));
+    
+    // ensure default Object keys exist in case new items are added in the future.
+    Object.entries(defaultObj).forEach(([prop, val]) => {
+      if (!data[prop]) data[prop] = val;
+    });
+    
+    return data;
+  }
+  
+  return defaultObj;
 }

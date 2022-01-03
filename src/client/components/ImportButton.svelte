@@ -3,6 +3,7 @@
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
   import {
+    allTags,
     noteGroups,
     userData,
     userNavOpen,
@@ -17,6 +18,7 @@
     try {
       const data = await pickJSONFile();
       const {
+        allTags: tags,
         notesData,
         preferences,
       } = await postData(ROUTE__API__USER__DATA__SET, {
@@ -25,6 +27,7 @@
         importedData: data,
         type: 'all',
       });
+      allTags.set(tags);
       noteGroups.set(notesData);
       userPreferences.set(preferences);
     }
