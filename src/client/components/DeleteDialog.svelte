@@ -3,8 +3,10 @@
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
   import {
+    currentNote,
     dialogDataForDelete,
     noteGroups,
+    updateHistory,
     userData,
   } from '../stores';
   import postData from '../utils/postData';
@@ -24,6 +26,12 @@
     try {
       const { notesData } = await postData(formRef.getAttribute('action'), formRef);
       noteGroups.set(notesData);
+      
+      if ($currentNote) {
+        currentNote.set();
+        updateHistory();
+      }
+      
       closeDialog();
     }
     catch (err) {
