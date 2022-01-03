@@ -26,7 +26,9 @@
           id: noteId,
           link: `?note=${window.encodeURIComponent(path)}`,
           name: note.title,
+          nameComponent: NotesNavSubNav,
           path,
+          type: 'note',
         });
       }
     }
@@ -80,10 +82,6 @@
     height: 100%;
     overflow: auto;
     padding: 0.5em;
-    border-right: solid 1px var(--color--app--fg);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
   }
   
   :global(.notes-nav > .sub-nav) {
@@ -92,19 +90,26 @@
   
   :global(.notes-nav .group-list.is--root) {
     padding-left: unset;
-  }
-  :global(.notes-nav .group-list > *) {
-    margin-top: var(--nav-spacing);
+    display: flex;
+    gap: 0.25em;
+    flex-direction: column;
   }
   :global(.notes-nav .group[open]:not([empty])::after) {
     top: 2.4em;
     left: 0.5em;
   }
-  :global(.notes-nav .group__name .sub-nav) {
+  :global(.notes-nav .group__name .sub-nav),
+  :global(.notes-nav .item .sub-nav) {
     opacity: 0.3;
   }
   :global(.notes-nav .group-list .item) {
-    padding: 0 var(--nav-spacing);
+    padding: 0.3em var(--nav-spacing) 0;
+  }
+  :global(.notes-nav .group-list .item__label) {
+    width: 100%;
+  }
+  :global(.notes-nav .item .modify-nav button) {
+    padding: 0.6em 0.5em;
   }
   :global(.notes-nav .group__name) {
     padding: var(--nav-spacing);
@@ -119,7 +124,8 @@
     left: 0.75em;
     right: unset;
   }
-  :global(.notes-nav .group__name:hover .sub-nav) {
+  :global(.notes-nav .group__name:hover .sub-nav),
+  :global(.notes-nav .item:hover .sub-nav) {
     opacity: 1;
   }
 </style>

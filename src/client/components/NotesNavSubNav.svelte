@@ -10,6 +10,7 @@
   export let id = undefined;
   export let path = BASE_DATA_NODE;
   export let root = false;
+  export let type = 'group';
   
   const log = logger('NotesNavSubNav');
   
@@ -26,16 +27,18 @@
 
 <nav class="sub-nav">
   {#if !root}
-    <ModifyNav {id} {path} type="group" />
+    <ModifyNav {id} {path} {type} />
   {/if}
-  <button
-    title="Add Group"
-    on:click={addGroup}
-  >+ Group</button>
-  <button
-    title="Add Note"
-    on:click={addNote}
-  >+ Note</button>
+  {#if type === 'group'}
+    <button
+      title="Add Group"
+      on:click={addGroup}
+    >+ Group</button>
+    <button
+      title="Add Note"
+      on:click={addNote}
+    >+ Note</button>
+  {/if}
 </nav>
 
 <style>
