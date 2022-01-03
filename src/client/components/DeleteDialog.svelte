@@ -6,7 +6,7 @@
     currentNote,
     dialogDataForDelete,
     noteGroups,
-    updateHistory,
+    updateCurrNote,
     userData,
   } from '../stores';
   import postData from '../utils/postData';
@@ -27,11 +27,7 @@
       const { notesData } = await postData(formRef.getAttribute('action'), formRef);
       noteGroups.set(notesData);
       
-      if ($currentNote) {
-        currentNote.set();
-        updateHistory();
-      }
-      
+      updateCurrNote({ id: $dialogDataForDelete.id });
       closeDialog();
     }
     catch (err) {

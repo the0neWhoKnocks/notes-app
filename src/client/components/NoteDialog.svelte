@@ -3,11 +3,12 @@
   import {
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
+  import kebabCase from '../../utils/kebabCase';
   import {
     currentNote,
     dialogDataForNote,
     noteGroups,
-    updateHistory,
+    updateCurrNote,
     userData,
   } from '../stores';
   import postData from '../utils/postData';
@@ -18,7 +19,6 @@
   let previewing = false;
   let editingNote;
   let formRef;
-  let noteId;
   let previewRef;
   let queryParams;
   let saveBtnDisabled;
@@ -77,18 +77,18 @@
   async function handleSubmit() {
     try {
       const { newData, notesData } = await postData(formRef.getAttribute('action'), formRef);
+      const { id } = $dialogDataForNote;
       
-      if ($currentNote) {
-        currentNote.set({
+      updateCurrNote({
+        id,
+        noteData: {
           ...$currentNote,
           content: newData.content,
-          id: noteId,
+          id: kebabCase(newData.title),
           title: newData.title,
-        });
-        
-        updateHistory({ params: queryParams });
-      }
-      
+        },
+        params: queryParams,
+      });
       noteGroups.set(notesData);
       closeDialog();
     }

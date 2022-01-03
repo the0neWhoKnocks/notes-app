@@ -200,3 +200,15 @@ export function loadNote(notePath) {
 		else updateHistory();
 	}
 }
+
+export function updateCurrNote({ id, noteData, params } = {}) {
+	const cN = getStoreValue(currentNote);
+	
+	// For the case where another note is open, and the User decided to 
+	// edit/delete a note from the NotesNav, only update the URL and the currently
+	// open note's data if the ids match.
+	if (cN && cN.id === id) {
+		currentNote.set(noteData);
+		updateHistory({ params });
+	}
+}
