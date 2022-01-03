@@ -93,6 +93,7 @@ module.exports = async function modifyUserData({
     password,
     path,
     prefs,
+    recent,
     tags,
     title,
     type,
@@ -117,6 +118,7 @@ module.exports = async function modifyUserData({
     'group', 
     'note',
     'preferences',
+    'recentlyViewed',
   ].includes(type)) return { error: { code: 400, msg: `The \`type\` "${type}" is unknown` } };
   else if (type === 'note') {
     let required = ['path', 'title'];
@@ -247,6 +249,10 @@ module.exports = async function modifyUserData({
         };
         
         logMsg = `Updated preferences for ${Object.keys(prefs).map(pref => `"${pref}"`).join(', ')}`;
+      }
+      else if (type === 'recentlyViewed') {
+        data.recentlyViewed = recent;
+        logMsg = 'Updated recentlyViewed';
       }
       
       break;

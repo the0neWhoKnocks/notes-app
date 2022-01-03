@@ -42,7 +42,7 @@
 
 <nav class="modify-nav">
   <button type="button" title="Edit" on:click={editItem}>E</button>
-  <button type="button" title="Delete" on:click={deleteItem}>X</button>
+  <button type="button" title="Delete" on:click={deleteItem}>D</button>
 </nav>
 
 <style>

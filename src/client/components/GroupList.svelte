@@ -15,7 +15,7 @@
     const [, ext] = name.match(/\.(.*)$/) || ['', ''];
     const dataAttrs = {
       'data-id': id,
-      'data-path': `${groupPath}/${name}`,
+      'data-path': `${groupPath}/${id}`,
     };
     
     if (ext) {

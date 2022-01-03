@@ -4,10 +4,10 @@
 Feat:
 - [x] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
 - [x] Parse URL param 'note' so that it loads on page load.
-- [ ] recently viewed
-  - [ ] max 10 items
-  - [ ] add currently opened to beginning of list, if it already exists, move it to front
-  - [ ] display a column list in the main area on load, or after note is closed 
+- [x] recently viewed
+  - [x] max 10 items
+  - [x] add currently opened to beginning of list, if it already exists, move it to front
+  - [x] display a column list in the main area on load, or after note is closed 
 - [X] search button opens flyout with input and results list
 - [ ] For the SW, have it check the App name, if it's registered and it doesn't match, unregister itself so it doesn't try to run for other Apps while I'm working on localhost.
   - https://love2dev.com/blog/how-to-uninstall-a-service-worker/

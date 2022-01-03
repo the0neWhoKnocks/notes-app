@@ -1,9 +1,12 @@
 <script>
-  import { currentNote } from '../stores'; 
+  import {
+    currentNote,
+    recentlyViewedOpen,
+  } from '../stores'; 
   import ModifyNav from './ModifyNav.svelte';
 </script>
 
-{#if $currentNote && $currentNote.content}
+{#if !$recentlyViewedOpen && $currentNote && $currentNote.content}
   <article class="full-note">
     <header>
       {$currentNote.title}
@@ -30,6 +33,7 @@
     color: var(--color--app--fg);
     overflow-y: auto;
     border: solid 1px;
+    margin: 1em;
   }
   
   .full-note header,

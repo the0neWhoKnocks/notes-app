@@ -37,25 +37,21 @@
   };
 </script>
 <script>
-  import getPathNode from '../../utils/getPathNode';
   import {
-    currentNote,
+    loadNote,
     noteGroups,
     notesNavFlyoutOpen,
-    updateHistory,
   } from '../stores.js';
   import GroupList from './GroupList.svelte';
   
   let groupsData;
   
   function handleItemClick(el) {
-    const { dataset: { id, path }, href } = el;
+    const { dataset: { path }, href } = el;
     const _path = `${BASE_DATA_NODE}${path}`;
-    const noteData = getPathNode($noteGroups, _path).notes[id];
     
     notesNavFlyoutOpen.set(false);
-    currentNote.set({ ...noteData, id, path: _path });
-    updateHistory({ params: getParams(href) });
+    loadNote(_path);
   }
   
   noteGroups.subscribe((data = {}) => {

@@ -14,6 +14,7 @@ module.exports = async function loadUserData(appConfig, username, password) {
       [BASE_DATA_NODE]: groupNodeShape(),
     },
     preferences: {},
+    recentlyViewed: [],
   };
   
   if (existsSync(filePath)) {
