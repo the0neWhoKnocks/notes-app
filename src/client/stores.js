@@ -15,14 +15,16 @@ import {
 const log = logger('stores');
 
 export const allTags = writable([]);
-export const currentNote = writable();
 export const dialogDataForDelete = writable();
 export const dialogDataForDiff = writable();
 export const dialogDataForGroup = writable();
 export const dialogDataForNote = writable();
+export const initialUserDataLoaded = writable(false);
 export const noteGroups = writable();
 export const notesNavFlyoutOpen = writable(false);
 export const offline = writable(false);
+export const recentlyViewed = writable();
+export const recentlyViewedOpen = writable(false);
 export const searchFlyoutOpen = writable(false);
 export const themeSelectorOpen = writable(false);
 export const userData = writable();
@@ -30,6 +32,52 @@ export const userIsLoggedIn = writable(false);
 export const userNavOpen = writable(false);
 export const userProfileOpened = writable(false);
 export const userStorageType = writable();
+
+export const currentNote = (function curentNoteStore() {
+	const store = writable();
+	const MAX_ITEMS = 10;
+
+	return {
+		...store,
+		set: async (note) => {
+			store.set(note);
+			
+			if (note) {	
+				let changed = false;
+				let recent = getStoreValue(recentlyViewed);
+				
+				if (recent && recent.length) {
+					const trimmed = recent.filter(path => path !== note.path);
+					// current item removed
+					changed = (trimmed.length < recent.length);
+					// make sure current item is at top of list
+					const current = [note.path, ...trimmed];
+					// new item was added
+					if (!changed) changed = (current.length > recent.length);
+					// truncate list to max length
+					recent = (current.length > MAX_ITEMS)
+						? current.slice(0, MAX_ITEMS)
+						: current;
+				}
+				else {
+					recent = [note.path];
+					changed = true;
+				}
+				
+				if (changed) {
+					await postData(ROUTE__API__USER__DATA__SET, {
+						...getStoreValue(userData),
+						action: 'edit',
+						recent,
+						type: 'recentlyViewed',
+					});
+					
+					recentlyViewed.set(recent);
+				}
+			}
+		},
+	};
+})();
 
 export const userPreferences = (function createPrefsStore() {
 	const { subscribe, set, update } = writable({});
@@ -116,9 +164,11 @@ export async function syncOfflineData(creds) {
 				allTags: tags,
 				notesData,
 				preferences,
+				recentlyViewed: recent,
 			} = await postData(ROUTE__API__USER__DATA__GET, creds);
 			allTags.set(tags);
 			noteGroups.set(notesData);
+			recentlyViewed.set(recent);
 			userPreferences.set(preferences);
 			loadThemeCSS(preferences.theme);
 			
@@ -191,14 +241,18 @@ export function updateHistory({ params, path } = {}) {
 	window.history.replaceState({}, '', _url);
 }
 
-export function loadNote(notePath) {
+export async function loadNote(notePath) {
 	if (notePath) {
 		const nG = getStoreValue(noteGroups);
-		const { id, notes } = getPathNode(nG, notePath);
+		const path = decodeURIComponent(notePath);
+		const { id, notes } = getPathNode(nG, path);
 		const note = notes[id];
 		
 		// could be 'undefined' if a User hits up a dead URL
-		if (note) currentNote.set({ ...note, id, path: decodeURIComponent(notePath) });
+		if (note) {
+			await currentNote.set({ ...note, id, path });
+			updateHistory({ params: { note: encodeURIComponent(path) } });
+		}
 		// no note found, so update URL
 		else updateHistory();
 	}

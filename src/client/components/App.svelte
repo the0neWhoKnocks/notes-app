@@ -4,6 +4,7 @@
   import initMarked from '../marked/init';
   import {
     checkLoggedInState,
+    initialUserDataLoaded,
     loadNote,
     offline,
     syncOfflineData,
@@ -21,6 +22,7 @@
   import NoteDialog from './NoteDialog.svelte';
   import NotesMenuBtn from './NotesMenuBtn.svelte';
   import NotesNavFlyout from './NotesNavFlyout.svelte';
+  import RecentlyViewed from './RecentlyViewed.svelte';
   import SearchBtn from './SearchBtn.svelte';
   import SearchFlyout from './SearchFlyout.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
@@ -144,6 +146,8 @@
         
         const { note } = getParams(location.href);
         loadNote(note);
+        
+        initialUserDataLoaded.set(true);
       }, 0);
     }
     catch ({ message }) { alert(message); }
@@ -216,6 +220,7 @@
       </nav>
       <section class="user-content">
         <section class="user-content__body">
+          <RecentlyViewed />
           <FullNote />
         </section>
       </section>
@@ -367,7 +372,6 @@
   .user-content__body {
     width: 100%;
     height: 100%;
-    padding: 1em;
     display: flex;
   }
 </style>
