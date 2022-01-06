@@ -67,14 +67,28 @@ const sortObjByKeys = (obj) => {
   }, {});
 };
 
-const mergeTags = (data, tags) => {
-  return data.allTags = tags
-    .filter(t => !!t)
-    .reduce((arr, tag) => {
-      if (!arr.includes(tag)) arr.push(tag);
-      return arr;
-    }, data.allTags)
-    .sort();
+const mergeTags = (data, tags, path) => {
+  data.allTags = tags
+    .filter(tag => !!tag)
+    .reduce((obj, tag) => {
+      if (!obj[tag]) obj[tag] = [];
+      if (!obj[tag].includes(path)) obj[tag].push(path);
+      return obj;
+    }, data.allTags);
+  
+  const remainingTags = Object.entries(data.allTags)
+    .filter(([tag]) => !tags.includes(tag))
+  
+  if (remainingTags.length) {
+    // if tags still contain note association, remove association
+    remainingTags.forEach(([, paths]) => {
+      if (paths.includes(path)) paths.splice(paths.indexOf(path), 1);
+    })
+    // if tag isn't associated with any notes, remove it
+    remainingTags.forEach(([tag, paths]) => {
+      if (!paths.length) delete data.allTags[tag];
+    });
+  }
 };
 
 module.exports = async function modifyUserData({
@@ -160,14 +174,14 @@ module.exports = async function modifyUserData({
         if (!notes[nodeId]) {
           const fTags = parseTags(tags);
           
-          mergeTags(data, fTags);
-          
           notes[nodeId] = {
             content: sanitizeContent(content) || '',
             created: creationDate,
             tags: fTags,
             title,
           };
+          
+          mergeTags(data, fTags, `${path}/${nodeId}`);
           
           logMsg = `Created note "${title}" in "${path}"`;
         }
@@ -208,8 +222,6 @@ module.exports = async function modifyUserData({
           nodeId = newNodeId;
         }
         
-        mergeTags(data, fTags);
-        
         notes[nodeId] = {
           ...oldNote,
           content: sanitizeContent(content) || '',
@@ -217,6 +229,8 @@ module.exports = async function modifyUserData({
           tags: fTags,
           title,
         };
+        
+        mergeTags(data, fTags, `${path}/${nodeId}`);
         
         logMsg = `Updated note "${title}" in "${path}"`;
       }
