@@ -196,7 +196,7 @@
     content: '+';
   }
   .group[open] > .group__name .indicator::before {
-    content: '-';
+    content: '\2212'; /* minus */
   }
   
   :global(.group__name .svg-icon) {

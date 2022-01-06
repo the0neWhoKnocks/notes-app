@@ -9,7 +9,7 @@ module.exports = async function loadUserData(appConfig, username, password) {
   const { valueHex: encryptedUsername } = await encrypt(appConfig, username);
   const filePath = getUserDataPath(encryptedUsername);
   const defaultObj = {
-    allTags: [],
+    allTags: {},
     notesData: {
       [BASE_DATA_NODE]: groupNodeShape(),
     },

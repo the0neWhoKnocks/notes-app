@@ -470,7 +470,7 @@
         valueAttr={$dialogDataForNote.title}
       />
       <TagsInput
-        autoCompleteItems={$allTags}
+        autoCompleteItems={Object.keys($allTags)}
         onTagChange={diffCheck}
         {tags}
       />
