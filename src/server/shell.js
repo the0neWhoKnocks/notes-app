@@ -300,6 +300,24 @@ const shell = ({
           <!-- file bend -->
           <polyline points="13,1 13,5 18,5" fill="none"></polyline>
         </symbol>
+        <symbol
+          id="eye"
+          viewBox="0 0 16 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m 15.867135,4.8835356 c 0,0 -1.756271,4.7109178 -7.8671444,4.7225358 -6.1108726,0.01162 -7.86714413,-4.7225358 -7.86714413,-4.7225358 0,0 1.70068753,-4.7225356 7.86714413,-4.7225356 6.1664564,0 7.8671444,4.7225356 7.8671444,4.7225356 z"
+            style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+          />
+          <circle
+            cx="50%" cy="50%" r="4.2194657"
+            style="fill:none;stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+          />
+          <circle
+            cx="50%" cy="50%" r="2.75"
+            style="fill:#000000;stroke:nonestroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+          />
+        </symbol>
       </svg>
       <script>
         document.body.classList.remove('no-js');
