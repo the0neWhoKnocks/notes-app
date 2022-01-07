@@ -4,7 +4,6 @@
     currentNote,
     getNoteBlurbs,
     initialUserDataLoaded,
-    loadNote,
     recentlyViewed,
     recentlyViewedOpen,
     tagsList,
@@ -34,10 +33,6 @@
     recentlyViewedOpen.set(false);
   }
   
-  function handleClick({ target: { dataset: { path } } }) {
-    if (path) loadNote(path);
-  }
-  
   $: if (
     $initialUserDataLoaded
     && (!$currentNote && !$tagsList)
@@ -55,7 +50,6 @@
     in:toggle={{ type: 'show' }}
     out:toggle={{}}
     on:outroend={handleCloseEnd}
-    on:click={handleClick}
   >
     <h3>Recently Viewed</h3>
     {#each recentItems as item}

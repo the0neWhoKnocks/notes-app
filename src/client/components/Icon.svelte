@@ -2,6 +2,7 @@
   export const ICON__ANGLE_DOWN = 'angle-down';
   export const ICON__ANGLE_UP = 'angle-up';
   export const ICON__ASTERISK = 'asterisk';
+  export const ICON__EYE = 'eye';
   export const ICON__FILE = 'file';
   export const ICON__FOLDER = 'folder';
   export const ICON__MENU = 'menu';

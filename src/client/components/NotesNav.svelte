@@ -38,14 +38,18 @@
 <script>
   import {
     allTags,
+    getNoteBlurbs,
     loadNote,
     noteGroups,
     notesNavFlyoutOpen,
+    recentlyViewed,
   } from '../stores.js';
+  import Icon, { ICON__EYE } from './Icon.svelte';
   import GroupList from './GroupList.svelte';
+  import NoteBlurb from './NoteBlurb.svelte';
+  import NotesNavItemsToggle from './NotesNavItemsToggle.svelte';
   import Tag from './Tag.svelte';
   
-  let tagsOpen = false;
   let groupsData;
   
   function handleNoteClick(el) {
@@ -56,32 +60,38 @@
     loadNote(_path);
   }
   
-  function toggleTags() {
-    tagsOpen = !tagsOpen;
-  }
-  
   noteGroups.subscribe((data = {}) => {
 		groupsData = formatData(data[BASE_DATA_NODE]);
 	});
 </script>
 
 <nav class="notes-nav">
+  {#if $recentlyViewed}
+    <section class="recent">
+      <NotesNavItemsToggle>
+        <svelte:fragment slot="toggleLabel">
+          <Icon type={ICON__EYE} /> Recently Viewed
+        </svelte:fragment>
+        <svelte:fragment slot="toggleItems">
+          {#each getNoteBlurbs($recentlyViewed) as item}
+            <NoteBlurb {...item} />
+          {/each}
+        </svelte:fragment>
+      </NotesNavItemsToggle>
+    </section>
+  {/if}
   {#if Object.keys($allTags).length}
     <section class="tags">
-      <button
-        class="tags-btn"
-        class:open={tagsOpen}
-        on:click={toggleTags}
-      >
-        <Tag rounded text="&nbsp;" />Tags
-      </button>
-      {#if tagsOpen}
-        <nav>
+      <NotesNavItemsToggle>
+        <svelte:fragment slot="toggleLabel">
+          <Tag rounded text="&nbsp;" />Tags
+        </svelte:fragment>
+        <svelte:fragment slot="toggleItems">
           {#each Object.entries($allTags) as [tag, notePaths]}
             <Tag count="({notePaths.length}) " rounded text={tag} />
           {/each}
-        </nav>
-      {/if}
+        </svelte:fragment>
+      </NotesNavItemsToggle>
     </section>
   {/if}
   {#if groupsData}
@@ -109,44 +119,23 @@
     gap: 0.5em;
   }
   
-  .tags {
-    font-size: 1.3rem;
+  :global(.recent .notes-nav-items-toggle__btn .svg-icon) {
+    width: 1.9em;
+    height: 1.25em;
+  }
+  :global(.recent .notes-nav-items-toggle__btn::after) {
+    color: #fff;
+    left: 0.91em;
+    transform: translateY(-50%) scale(0.75);
+  }
+  :global(.notes-nav-items-toggle__items .note-blurb) {
+    font-size: 0.8em;
   }
   
-  .tags-btn {
-    width: 100%;
-    color: #000;
-    border: none;
-    display: flex;
-    gap: 0.25em;
-    align-items: center;
-    position: relative;
-  }
-  .tags-btn:focus,
-  .tags-btn:hover {
-    outline: none;
-  }
-  .tags-btn::after {
-    content: '+';
-    position: absolute;
-    top: 50%;
-    left: 0.5em;
-    transform: translateY(-50%);
-  }
-  .tags-btn.open::after {
-    content: '\2212';  /* minus */
-  }
-  :global(.tags-btn .tag) {
+  :global(.notes-nav-items-toggle__btn .tag) {
     height: 1em;
   }
-  
-  .tags nav {
-    padding: 0.3em var(--nav-spacing) 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-  }
-  :global(.tags nav .tag) {
+  :global(.notes-nav-items-toggle__items .tag) {
     height: 1.2em;
   }
   
@@ -181,7 +170,6 @@
   :global(.notes-nav .item .modify-nav button) {
     padding: 0.6em 0.5em;
   }
-  .tags-btn,
   :global(.notes-nav .group__name) {
     padding: var(--nav-spacing);
     border-radius: var(--nav-spacing);

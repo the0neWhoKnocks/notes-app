@@ -183,6 +183,7 @@
   .group__name .indicator {
     width: 1em;
     height: 1em;
+    color: #000;
     font-family: monospace;
     display: flex;
     justify-content: center;
@@ -246,7 +247,6 @@
   .item:hover,
   .item:hover a {
     color: var(--color--text--hover);
-    text-shadow: 1px 0px 0px var(--color--text--hover);
   }
   
   :global(.group[open]:not([empty]):hover > .group__name .svg-icon) {

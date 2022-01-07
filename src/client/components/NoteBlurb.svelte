@@ -1,4 +1,8 @@
 <script>
+  import {
+    loadNote,
+  } from '../stores';
+
   export let content = undefined;
   export let path = undefined;
   export let subTitle = undefined;
@@ -11,12 +15,17 @@
     // const markup = window.marked.parse(c);
     // return window.DOMPurify.sanitize(markup.substring(0, 50));
   }
+  
+  function handleClick({ target: { dataset: { path } } }) {
+    if (path) loadNote(path);
+  }
 </script>
 
 <button
   type="button"
   class="note-blurb"
   data-path={encodeURIComponent(path)}
+  on:click={handleClick}
 >
   <div class="note-blurb__title">{title}</div>
   <div class="note-blurb__sub-title">{subTitle}</div>
