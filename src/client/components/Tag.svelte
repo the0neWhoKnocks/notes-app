@@ -1,5 +1,9 @@
 <script>
   import { onMount } from 'svelte';
+  import {
+    loadTaggedNotes,
+  } from '../stores.js';
+  import getParams from '../utils/getParams';
   import Wrap from './Wrap.svelte';
   
   export let count = '';
@@ -14,6 +18,7 @@
   const wrapperProps = {
     class: 'tag',
     href: `?tag=${encodeURIComponent(text)}`,
+    onClick: handleTagClick,
     type: (addAnchor) ? 'a' : undefined,
   };
   const offset = 5; // when the text's Y is set to zero, it's not aligned to the top, so fudging the numbers with this.
@@ -24,6 +29,12 @@
   let holeRadius;
   let pathPoints = [];
   let roundedPathPoints = [];
+  
+  function handleTagClick(ev) {
+    ev.preventDefault();
+    const { target: { href } } = ev;
+    loadTaggedNotes( getParams(href).tag );
+  }
   
   onMount(() => {
     const { width, height } = textRef.getBBox();

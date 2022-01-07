@@ -6,6 +6,7 @@
     checkLoggedInState,
     initialUserDataLoaded,
     loadNote,
+    loadTaggedNotes,
     offline,
     syncOfflineData,
     trackNetworkStatus,
@@ -25,6 +26,7 @@
   import RecentlyViewed from './RecentlyViewed.svelte';
   import SearchBtn from './SearchBtn.svelte';
   import SearchFlyout from './SearchFlyout.svelte';
+  import TaggedNotes from './TaggedNotes.svelte';
   import ThemeSelector from './ThemeSelector.svelte';
   import UserNav from './UserNav.svelte';
   import UserProfileDialog from './UserProfileDialog.svelte';
@@ -144,8 +146,9 @@
         
         log.info('Notes loaded and formatted');
         
-        const { note } = getParams(location.href);
-        loadNote(note);
+        const { note, tag } = getParams(location.href);
+        if (note) loadNote(note);
+        else if (tag) loadTaggedNotes(tag);
         
         initialUserDataLoaded.set(true);
       }, 0);
@@ -222,6 +225,7 @@
         <section class="user-content__body">
           <RecentlyViewed />
           <FullNote />
+          <TaggedNotes />
         </section>
       </section>
     {/if}

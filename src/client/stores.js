@@ -26,6 +26,7 @@ export const offline = writable(false);
 export const recentlyViewed = writable();
 export const recentlyViewedOpen = writable(false);
 export const searchFlyoutOpen = writable(false);
+export const tagsList = writable();
 export const themeSelectorOpen = writable(false);
 export const userData = writable();
 export const userIsLoggedIn = writable(false);
@@ -244,9 +245,12 @@ export function updateHistory({ params, path } = {}) {
 export async function loadNote(notePath) {
 	if (notePath) {
 		const nG = getStoreValue(noteGroups);
+		const tL = getStoreValue(tagsList);
 		const path = decodeURIComponent(notePath);
 		const { id, notes } = getPathNode(nG, path);
 		const note = notes[id];
+		
+		if (tL) tagsList.set();
 		
 		// could be 'undefined' if a User hits up a dead URL
 		if (note) {
@@ -268,4 +272,21 @@ export function updateCurrNote({ id, noteData, params } = {}) {
 		currentNote.set(noteData);
 		updateHistory({ params });
 	}
+}
+
+export function loadTaggedNotes(tag) {
+	const aT = getStoreValue(allTags);
+	const cN = getStoreValue(currentNote);
+	const nNFO = getStoreValue(notesNavFlyoutOpen);
+	
+	if (cN) currentNote.set();
+	if (nNFO) notesNavFlyoutOpen.set(false);
+	
+	// could be 'undefined' if a User hits up a dead URL
+	if (tag && aT && aT[tag]) {
+		tagsList.set(aT[tag]);
+		updateHistory({ params: { tag: encodeURIComponent(tag) } });
+	}
+	// no note found, so update URL
+	else updateHistory();
 }
