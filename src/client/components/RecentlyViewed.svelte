@@ -9,6 +9,7 @@
     noteGroups,
     recentlyViewed,
     recentlyViewedOpen,
+    tagsList,
   } from '../stores';
   
   let recentItems;
@@ -38,7 +39,11 @@
     if (path) loadNote(path);
   }
   
-  $: if ($initialUserDataLoaded && !$currentNote && $recentlyViewed) {
+  $: if (
+    $initialUserDataLoaded
+    && (!$currentNote && !$tagsList)
+    && $recentlyViewed
+  ) {
     recentItems = $recentlyViewed.map((path) => {
       const { id, notes } = getPathNode($noteGroups, path);
       return {

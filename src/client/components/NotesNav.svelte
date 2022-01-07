@@ -56,11 +56,6 @@
     loadNote(_path);
   }
   
-  function handleTagClick(ev) {
-    ev.preventDefault();
-    const { target: { href } } = ev;
-  }
-  
   function toggleTags() {
     tagsOpen = !tagsOpen;
   }
@@ -81,7 +76,7 @@
         <Tag rounded text="&nbsp;" />Tags
       </button>
       {#if tagsOpen}
-        <nav on:click={handleTagClick}>
+        <nav>
           {#each Object.entries($allTags) as [tag, notePaths]}
             <Tag count="({notePaths.length}) " rounded text={tag} />
           {/each}
@@ -159,7 +154,7 @@
     --tag--bg-color: #eee;
   }
   
-  :global(.notes-nav > .sub-nav) {
+  :global(.notes-nav .notes > .sub-nav) {
     padding: 0 var(--nav-spacing);
   }
   
