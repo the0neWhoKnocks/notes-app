@@ -1,29 +1,16 @@
 <script>
-  import { BASE_DATA_NODE } from '../../constants';
-  import getPathNode from '../../utils/getPathNode';
   import {
+    getNoteBlurbs,
     loadNote,
-    noteGroups,
     tagsList,
   } from '../stores';
-  
-  let list;
+  import NoteBlurb from './NoteBlurb.svelte';
   
   function handleClick({ target: { dataset: { path } } }) {
     if (path) loadNote(path);
   }
   
-  $: if ($tagsList) {
-    list = $tagsList.map((path) => {
-      const { id, notes } = getPathNode($noteGroups, path);
-      return {
-        path,
-        subTitle: path.replace(BASE_DATA_NODE, ''),
-        title: notes[id].title,
-      };
-    });
-  }
-  else list = undefined;
+  $: list = ($tagsList) ? getNoteBlurbs($tagsList) : undefined;
 </script>
 
 {#if list}
@@ -32,14 +19,8 @@
     on:click={handleClick}
   >
     <h3>Tagged Notes ({list.length})</h3>
-    {#each list as {path, subTitle, title}}
-      <button
-        class="note"
-        data-path={encodeURIComponent(path)}
-      >
-        <b>{title}</b>
-        <sub>{subTitle}</sub>
-      </button>
+    {#each list as item}
+      <NoteBlurb {...item} />
     {/each}
   </div>
 {/if}

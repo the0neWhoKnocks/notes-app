@@ -1,43 +1,58 @@
 <script>
-  import ModifyNav from './ModifyNav.svelte';
-  
   export let content = undefined;
-  export let id = undefined;
   export let path = undefined;
+  export let subTitle = undefined;
   export let title = undefined;
-  export let truncated = false;
   
   function parseContent(c) {
-    const markup = window.marked.parse(c);
-    return truncated
-      ? window.DOMPurify.sanitize(markup.substring(0, 50))
-      : markup;
+    return c.substring(0, 50);
+    
+    // TODO - maybe remove DOMPurify
+    // const markup = window.marked.parse(c);
+    // return window.DOMPurify.sanitize(markup.substring(0, 50));
   }
 </script>
 
-<article class="note-blurb">
-  <header>
-    {title}
-    <ModifyNav {id} {path} type="note" />
-  </header>
-  <section>{@html parseContent(content)}</section>
-</article>
+<button
+  type="button"
+  class="note-blurb"
+  data-path={encodeURIComponent(path)}
+>
+  <div class="note-blurb__title">{title}</div>
+  <div class="note-blurb__sub-title">{subTitle}</div>
+  {#if content}
+    <div class="note-blurb__content">
+      {@html parseContent(content)}
+    </div>
+  {/if}
+</button>
 
 <style>
   .note-blurb {
+    width: 100%;
     border: solid 1px;
-    margin: 0.5em;
+    border-radius: unset;
+    display: flex;
+    flex-direction: column;
+  }
+  .note-blurb > * {
+    width: 100%;
+    text-align: left;
+    pointer-events: none;
   }
   
-  .note-blurb header {
-    font-size: 1.2em;
+  .note-blurb__title {
     font-weight: bold;
-    padding: 0.5em;
-    border-bottom: solid 1px;
-    position: relative;
   }
   
-  .note-blurb section {
-    padding: 1em;
+  .note-blurb__sub-title {
+    opacity: 0.6;
+  }
+  
+  .note-blurb__content {
+    white-space: pre;
+    padding-top: 1em;
+    border-top: dashed 1px;
+    margin-top: 0.5em;
   }
 </style>
