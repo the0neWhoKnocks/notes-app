@@ -255,8 +255,8 @@ export async function loadNote(notePath) {
 		
 		// could be 'undefined' if a User hits up a dead URL
 		if (note) {
-			await currentNote.set({ ...note, id, path });
 			updateHistory({ params: { note: encodeURIComponent(path) } });
+			await currentNote.set({ ...note, id, path });
 		}
 		// no note found, so update URL
 		else updateHistory();
