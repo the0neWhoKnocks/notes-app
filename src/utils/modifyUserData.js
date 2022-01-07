@@ -212,7 +212,8 @@ module.exports = async function modifyUserData({
         const oldNote = { ...notes[nodeId] };
         const fTags = parseTags(tags);
         
-        if (oldTitle !== title) {
+        // could have just changed the casing of a title
+        if (oldTitle.toLowerCase() !== title.toLowerCase()) {
           const newNodeId = kebabCase(title);
           if (notes[newNodeId]) {
             return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
