@@ -247,13 +247,16 @@ export async function loadNote(notePath) {
 	if (notePath) {
 		const nG = getStoreValue(noteGroups);
 		const nNFO = getStoreValue(notesNavFlyoutOpen);
+		const sFO = getStoreValue(searchFlyoutOpen);
 		const tL = getStoreValue(tagsList);
 		const path = decodeURIComponent(notePath);
 		const { id, notes } = getPathNode(nG, path);
 		const note = notes[id];
 		
 		if (tL) tagsList.set();
+		
 		if (nNFO) notesNavFlyoutOpen.set(false);
+		else if (sFO) searchFlyoutOpen.set(false);
 		
 		// could be 'undefined' if a User hits up a dead URL
 		if (note) {
@@ -281,9 +284,12 @@ export function loadTaggedNotes(tag) {
 	const aT = getStoreValue(allTags);
 	const cN = getStoreValue(currentNote);
 	const nNFO = getStoreValue(notesNavFlyoutOpen);
+	const sFO = getStoreValue(searchFlyoutOpen);
 	
 	if (cN) currentNote.set();
+	
 	if (nNFO) notesNavFlyoutOpen.set(false);
+	else if (sFO) searchFlyoutOpen.set(false);
 	
 	// could be 'undefined' if a User hits up a dead URL
 	if (tag && aT && aT[tag]) {

@@ -1,6 +1,7 @@
 <script>
   import { BASE_DATA_NODE } from '../../constants';
   import {
+    allTags,
     noteGroups,
     searchFlyoutOpen,
   } from '../stores';
@@ -14,31 +15,76 @@
     searchFlyoutOpen.set(false);
   }
   
-  function searchData(query, { groups, notes } = {}, matches, path) {
+  function searchData(query, { groups, notes } = {}, matches, path = BASE_DATA_NODE) {
     if (!matches) {
-      matches = { groups: [], notes: [] };
+      matches = { groups: [], notes: [], tags: [] };
       query = query.toLowerCase();
-      path = '';
+      
+      Object.keys($allTags).forEach((tag) => {
+        if (tag.includes(query)) {
+          const title = tag.replace(new RegExp(`(${tag})`, 'gi'), '<mark>$1</mark>');
+          matches.tags.push({ type: 'tag', tag, title });
+        }
+      });
     }
     
     if (groups) {
       Object.entries(groups).forEach(([groupId, group]) => {
         const _path = `${path}/${groupId}`;
+        
         if (groupId.toLowerCase().includes(query)) {
-          matches.groups.push({ type: 'group', item: group, path: _path });
+          const title = group.groupName.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
+          matches.groups.push({
+            type: 'group',
+            path: _path,
+            subTitle: _path.replace(BASE_DATA_NODE, ''),
+            title,
+          });
         }
+        
         searchData(query, group, matches, _path);
       });
     }
     
     if (notes) {
       Object.entries(notes).forEach(([noteId, note]) => {
-        if (
-          noteId.toLowerCase().includes(query)
-          || note.content.toLowerCase().includes(query)
-        ) {
+        const matchedTitle = noteId.toLowerCase().includes(query);
+        const matchedContent = note.content.toLowerCase().includes(query);
+        
+        if (matchedTitle || matchedContent) {
           const _path = `${path}/${noteId}`;
-          matches.notes.push({ type: 'note', item: note, path: _path });
+          const obj = {
+            type: 'note',
+            path: _path,
+            subTitle: _path.replace(BASE_DATA_NODE, ''),
+          };
+          
+          if (matchedTitle) {
+            obj.title = note.title.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
+          }
+          else obj.title = note.title;
+          
+          if (matchedContent) {
+            obj.content = [...note.content.matchAll(new RegExp(query, 'gi'))]
+              .map((m) => {
+                const match = m[0];
+                const ndx = m.index;
+                const textPad = 10;
+                let startNdx = ndx - textPad;
+                let endNdx = ndx + match.length + textPad;
+                
+                if (startNdx < 0) startNdx = 0;
+                if (endNdx > note.content.length) endNdx = note.content.length;
+                
+                let str = note.content.substring(startNdx, endNdx);
+                str = str.replace(new RegExp(`(${match})`, 'gi'), '<mark>$1</mark>');
+                
+                return str;
+              });
+            obj.content = `${obj.content.join(' ... ')}`;
+          }
+          
+          matches.notes.push(obj);
         }
       });
     }
@@ -62,15 +108,20 @@
   >
     <SearchInput focused onSearch={handleSearch} />
     <div class="search-results">
-      {#each results as {groups, notes}}
-        {#if groups.length}
-          {#each groups as group}
-            <SearchResult {...group} />
+      {#each results as {groups, notes, tags}}
+        {#if tags.length}
+          {#each tags as tag}
+            <SearchResult {...tag} />
           {/each}
         {/if}
         {#if notes.length}
           {#each notes as note}
             <SearchResult {...note} />
+          {/each}
+        {/if}
+        {#if groups.length}
+          {#each groups as group}
+            <SearchResult {...group} />
           {/each}
         {/if}
       {/each}
