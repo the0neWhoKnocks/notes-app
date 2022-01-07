@@ -1,5 +1,6 @@
 import { get as getStoreValue, writable } from 'svelte/store';
 import {
+	BASE_DATA_NODE,
 	NAMESPACE__STORAGE__USER,
 	ROUTE__API__USER__DATA__GET,
 	ROUTE__API__USER__DATA__SET,
@@ -289,4 +290,19 @@ export function loadTaggedNotes(tag) {
 	}
 	// no note found, so update URL
 	else updateHistory();
+}
+
+export function getNoteBlurbs(notePaths) {
+	const nG = getStoreValue(noteGroups);
+	
+	return notePaths.map((path) => {
+		const { id, notes } = getPathNode(nG, path);
+		const { content, title } = notes[id];
+		return {
+			content,
+			path,
+			subTitle: path.replace(BASE_DATA_NODE, ''),
+			title,
+		};
+	});
 }

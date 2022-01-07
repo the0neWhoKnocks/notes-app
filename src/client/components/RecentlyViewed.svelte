@@ -1,16 +1,15 @@
 <script>
   import { cubicOut } from 'svelte/easing';
-  import { BASE_DATA_NODE } from '../../constants';
-  import getPathNode from '../../utils/getPathNode';
   import {
     currentNote,
+    getNoteBlurbs,
     initialUserDataLoaded,
     loadNote,
-    noteGroups,
     recentlyViewed,
     recentlyViewedOpen,
     tagsList,
   } from '../stores';
+  import NoteBlurb from './NoteBlurb.svelte';
   
   let recentItems;
   
@@ -44,14 +43,7 @@
     && (!$currentNote && !$tagsList)
     && $recentlyViewed
   ) {
-    recentItems = $recentlyViewed.map((path) => {
-      const { id, notes } = getPathNode($noteGroups, path);
-      return {
-        path,
-        subTitle: path.replace(BASE_DATA_NODE, ''),
-        title: notes[id].title,
-      };
-    });
+    recentItems = getNoteBlurbs($recentlyViewed);
     recentlyViewedOpen.set(true);
   }
   else recentItems = undefined;
@@ -66,15 +58,8 @@
     on:click={handleClick}
   >
     <h3>Recently Viewed</h3>
-    {#each recentItems as {path, subTitle, title}}
-      <button
-        type="button"
-        class="recently-viewed__item"
-        data-path={encodeURIComponent(path)}
-      >
-        <b>{title}</b>
-        <sub>{subTitle}</sub>
-      </button>
+    {#each recentItems as item}
+      <NoteBlurb {...item} />
     {/each}
   </nav>
 {/if}
@@ -93,19 +78,5 @@
   
   .recently-viewed h3 {
     margin: 0;
-  }
-  
-  .recently-viewed__item {
-    width: 100%;
-    border-right: solid 1px;
-    border-radius: unset;
-    display: flex;
-    flex-direction: column;
-  }
-  .recently-viewed__item > * {
-    pointer-events: none;
-  }
-  .recently-viewed__item sub {
-    opacity: 0.6;
   }
 </style>
