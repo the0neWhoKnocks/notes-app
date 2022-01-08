@@ -19,6 +19,7 @@
   import TagsInput from './TagsInput.svelte';
   
   let previewing = false;
+  let contentText = '';
   let editingNote;
   let formRef;
   let oldTags = [];
@@ -42,23 +43,59 @@
       const currTags = document.querySelector('[name="tags"]').value;
       
       saveBtnDisabled = (
-        textareaRef.value === $dialogDataForNote.content
+        contentText === $dialogDataForNote.content
         && titleValue === $dialogDataForNote.title
         && currTags === oldTags
       );
     }
   }
   
-  function handleContentKeyDown({ keyCode }) {
-    if (keyCode === 13) {
-      // Prevent the textarea from randomly scrolling to the top after a newline
-      // is added. There's still a flicker during the adjustment, but it's
-      // better than all the content suddenly shifting to the top.
+  function listItemCheck() {
+    const { indexes: { end, start }, lines } = getSelectedLines();
+    const newline = 1;
+    const [prevLine] = lines;
+    const nextLine = contentText.substring(end + newline).split('\n').shift();
+    const liRegEx = /^(?<leadingSpace>\s+)?(?<type>- |1\. )(?<liText>.*)/;
+    const {
+      groups: { leadingSpace = '', liText, type },
+    } = prevLine.match(liRegEx) || { groups: {} };
+    
+    if (
+      // previous line is a list item
+      type
+      && (
+        // with a value
+        liText
+        // OR within a list and the User is adding blank items to fill later
+        || liRegEx.test(nextLine)
+      )
+    ) {
+      insertText(`\n${leadingSpace}${type}`);
+      return true;
+    }
+    // previous line is a blank list item, User probably want to exit out of list
+    else if (type) {
+      const s = contentText.substring(0, start);
+      const e = contentText.substring(end, contentText.length);
+      // update text, minus the empty list item
+      updateEditorValue(start + newline, start + newline, `${s}\n${e}`);
+      return true;
+    }
+  }
+  
+  function handleContentKeyDown(ev) {
+    const { keyCode } = ev;
+    
+    if (keyCode === 13) { // ENTER
+      // NOTE: Prevent the textarea from randomly scrolling to the top after a
+      // newline is added. There's still a flicker during the adjustment, but
+      // it's better than all the content suddenly shifting to the top.
       // Only reference of the issue I could find: https://stackoverflow.com/questions/56329625/preventing-textarea-scroll-behaviour-in-chrome-after-newline-added
-      const scrollPos = textareaRef.scrollTop;
-      setTimeout(() => {
-        if (textareaRef.scrollTop !== scrollPos) textareaRef.scrollTop = scrollPos;
-      }, 0);
+      ev.preventDefault();
+      
+      const liAdded = listItemCheck();
+      
+      if (!liAdded) insertText('\n');
     }
   }
   
@@ -111,29 +148,33 @@
   function updateEditorValue(newSelStart, newSelEnd, newValue) {
     const scrollPos = textareaRef.scrollTop;
     
-    if (newValue && newValue !== textareaRef.value) textareaRef.value = newValue;
-    textareaRef.focus();
-    textareaRef.setSelectionRange(newSelStart, newSelEnd);
-    textareaRef.scrollTop = scrollPos;
+    if (newValue && newValue !== contentText) contentText = newValue;
+    
+    // wait a tick for the render
+    setTimeout(() => {
+      textareaRef.focus();
+      textareaRef.scrollTop = scrollPos;
+      textareaRef.setSelectionRange(newSelStart, newSelEnd);
+      
+      diffCheck();
+    }, 0);
   }
   
   function selectionIsSurroundedBy(char) {
-    const textVal = textareaRef.value;
     const selStart = textareaRef.selectionStart;
     const selEnd = textareaRef.selectionEnd;
     return (
-      textVal.substring(selStart - char.length, selStart) === char
-      && textVal.substring(selEnd, selEnd + char.length) === char
+      contentText.substring(selStart - char.length, selStart) === char
+      && contentText.substring(selEnd, selEnd + char.length) === char
     );
   }
   
   function selectionIsWrappedWith(char) {
-    const selection = textareaRef.value.substring(textareaRef.selectionStart, textareaRef.selectionEnd);
+    const selection = contentText.substring(textareaRef.selectionStart, textareaRef.selectionEnd);
     return selection.startsWith(char) && selection.endsWith(char);
   }
   
   function wrapSelectionWithChar(char) {
-    const textVal = textareaRef.value;
     let selStart = textareaRef.selectionStart;
     let selEnd = textareaRef.selectionEnd;
     let newSelStart = selStart;
@@ -146,15 +187,15 @@
       let wrapper = selIsSurrounded ? '' : char;
       const padding = selIsSurrounded ? char.length : 0;
       let selPadding = selIsSurrounded ? -padding : wrapper.length;
-      const s = textVal.substring(0, selStart - padding);
-      let selection = textVal.substring(selStart, selEnd);
-      const e = textVal.substring(selEnd + padding, textVal.length);
+      const s = contentText.substring(0, selStart - padding);
+      let selection = contentText.substring(selStart, selEnd);
+      const e = contentText.substring(selEnd + padding, contentText.length);
       
       if (selIsWrapped) {
         wrapper = '';
         selStart = selStart + char.length;
         selEnd = selEnd - char.length;
-        selection = textVal.substring(selStart, selEnd);
+        selection = contentText.substring(selStart, selEnd);
         selPadding = -char.length;
       }
       
@@ -167,13 +208,12 @@
   }
   
   function getSelectedLines() {
-    const textVal = textareaRef.value;
     let selStart = textareaRef.selectionStart;
     let selEnd = textareaRef.selectionEnd;
     
-    const s = textVal.substring(0, selStart).split('\n').pop();
-    const m = textVal.substring(selStart, selEnd);
-    const e = textVal.substring(selEnd, textVal.length).split('\n').shift();
+    const s = contentText.substring(0, selStart).split('\n').pop();
+    const m = contentText.substring(selStart, selEnd);
+    const e = contentText.substring(selEnd, contentText.length).split('\n').shift();
     
     return {
       indexes: {
@@ -185,15 +225,14 @@
   }
   
   function getCharIndex(startChar, endChar) {
-    const textVal = textareaRef.value;
     let selStart = textareaRef.selectionStart;
     let selEnd = textareaRef.selectionEnd;
     let startIndex = 0;
-    let endIndex = textVal.length;
+    let endIndex = contentText.length;
     
     if (startChar) {
       for (let i=selStart; i>=0; i--) {
-        if (textVal[i] === startChar) {
+        if (contentText[i] === startChar) {
           startIndex = i;
           break;
         }
@@ -201,8 +240,8 @@
     }
     
     if (endChar) {
-      for (let i=selEnd; i<textVal.length; i++) {
-        if (textVal[i] === endChar) {
+      for (let i=selEnd; i<contentText.length; i++) {
+        if (contentText[i] === endChar) {
           endIndex = i;
           break;
         }
@@ -213,14 +252,13 @@
   }
   
   function blockCheck(char) {
-    const textVal = textareaRef.value;
     const selStart = textareaRef.selectionStart;
     let block;
     
     // first check if there are any blocks
-    if (textVal.includes(char)) {
+    if (contentText.includes(char)) {
       // gather all blocks
-      const lines = textVal.split('\n');
+      const lines = contentText.split('\n');
       let currBlock = {};
       let lineNdx = 0;
       
@@ -255,7 +293,6 @@
   }
   
   function wrapSelectionWithBlock(char) {
-    const textVal = textareaRef.value;
     const block = blockCheck(char);
     
     let startIndex, endIndex, wrapper, nl;
@@ -278,9 +315,9 @@
     let newValue;
     const firstNL = startIndex === 0 ? '' : nl;
     
-    const s = textVal.substring(0, startIndex);
-    let selection = textVal.substring(startIndex, endIndex);
-    const e = textVal.substring(endIndex, textVal.length);
+    const s = contentText.substring(0, startIndex);
+    let selection = contentText.substring(startIndex, endIndex);
+    const e = contentText.substring(endIndex, contentText.length);
     
     if (block) {
       selection = selection
@@ -302,7 +339,6 @@
           ? line.replace(new RegExp(`^${char}`), '')
           : `${char}${line}`;
       };
-    const textVal = textareaRef.value;
     const selStart = textareaRef.selectionStart;
     const selEnd = textareaRef.selectionEnd;
     const { indexes, lines: selLines } = getSelectedLines();
@@ -314,8 +350,8 @@
         return updated;
       })
       .join('\n');
-    const s = textVal.substring(0, indexes.start);
-    const e = textVal.substring(indexes.end, textVal.length);
+    const s = contentText.substring(0, indexes.start);
+    const e = contentText.substring(indexes.end, contentText.length);
     const updatedText = `${s}${updates}${e}`;
     let updatedSelStart = selStart + updatedLengths[0];
     let updatedSelEnd = selEnd + updatedLengths.reduce((num, val) => num + val, 0);
@@ -328,15 +364,29 @@
     updateEditorValue(updatedSelStart, updatedSelEnd, updatedText);
   }
   
-  function addLink() {
-    const textVal = textareaRef.value;
-    const selStart = textareaRef.selectionStart;
-    const selEnd = textareaRef.selectionEnd;
-    const selText = textVal.substring(selStart, selEnd);
+  function insertText(text, pos) {
+    let selStart = textareaRef.selectionStart;
+    let selEnd = textareaRef.selectionEnd;
     
-    const s = textVal.substring(0, selStart);
-    const e = textVal.substring(selEnd, textVal.length);
-    const updatedText = `${s}[${selText}](LINK_HERE)${e}`;
+    const s = contentText.substring(0, selStart);
+    const e = contentText.substring(selEnd, contentText.length);
+    let updatedText;
+    
+    switch (pos) {
+      case 'wrap': {
+        const selText = contentText.substring(selStart, selEnd);
+        const formattedText = text.replace('%s', selText);
+        updatedText = `${s}${formattedText}${e}`;
+        selEnd = selStart + formattedText.length;
+        break;
+      }
+      default: {
+        updatedText = `${s}${text}${e}`;
+        selEnd = selStart + text.length;
+        selStart = selEnd;
+        break;
+      }
+    }
     
     updateEditorValue(selStart, selEnd, updatedText);
   }
@@ -375,7 +425,7 @@
           break;
         
         case 'anchor':
-          addLink();
+          insertText(`[%s](LINK_HERE)`, 'wrap');
           break;
         
         case 'ul':
@@ -427,13 +477,14 @@
   }
   
   function deriveNoteData() {
-    const { action, tags: _tags, title } = $dialogDataForNote;
+    const { action, content, tags: _tags, title } = $dialogDataForNote;
     
     tags = _tags;
     oldTags = (_tags || []).join(', ');
     titleValue = title;
     editingNote = action === 'edit';
     saveBtnDisabled = editingNote;
+    contentText = content;
   }
   
   $: if ($dialogDataForNote) deriveNoteData();
@@ -500,14 +551,14 @@
             class="note-form__content"
             name="content"
             on:keydown={handleContentKeyDown}
-            value={$dialogDataForNote.content || ''}
+            bind:value={contentText}
           ></textarea>
           {#if previewing}
             <div
               bind:this={previewRef}
               class="note-form__content-preview"
             >
-              {@html window.marked.parse(textareaRef.value)}
+              {@html window.marked.parse(contentText)}
             </div>
           {/if}
         </div>        
