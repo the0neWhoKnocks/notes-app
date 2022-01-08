@@ -525,7 +525,7 @@
     --labeled-input__input-width: 100%;
     
     height: 80vh;
-    width: 75vw;
+    width: 85vw;
     max-width: 700px;
     overflow: auto;
     padding: 1em;
@@ -541,7 +541,7 @@
   
   .note-form__toolbar {
     color: var(--color--app--fg);
-    padding: 2px;
+    padding: 0.75em;
     background: var(--color--app--bg);
     display: flex;
   }
@@ -612,5 +612,29 @@
   }
   :global(.note-form .tags-input__input::placeholder) {
     color: var(--color--app--fg); 
+  }
+  
+  @media (max-width: 700px) {
+    .note-form__toolbar {
+      display: grid;
+      grid-gap: 0.5em;
+      grid-template-columns: repeat(8, 1fr);
+    }
+    
+    .note-form__toolbar button {
+      width: auto;
+      padding: 0.25em 0;
+      margin: 0;
+    }
+    .note-form__toolbar button[data-type="toc"] {
+      grid-column: 5 / 7;
+    }
+    .note-form__toolbar button[data-type="preview"] {
+      grid-column: 7 / 9;
+    }
+    
+    .note-form__sep {
+      display: none;
+    }
   }
 </style>

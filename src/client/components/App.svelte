@@ -292,6 +292,7 @@
   }
   
   :global(.root) {
+    width: 100vw;
     max-width: 800px;
     margin: auto;
     box-shadow: 0 0 3em 2em;

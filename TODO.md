@@ -25,7 +25,7 @@ Feat:
   - [x] diff check when tags change
 
 Fix:
-- [ ] Notes dialog toolbar overflows on small screens
+- [x] Notes dialog toolbar overflows on small screens
 
 In order to ensure all assets are cached, refactor how scripts and styles are
 loaded into the shell. Use something like
