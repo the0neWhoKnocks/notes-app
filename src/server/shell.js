@@ -67,6 +67,16 @@ const shell = ({
       <meta charset="utf-8">
       <meta name="viewport" content="initial-scale=1.0, width=device-width">
       
+      <link rel="apple-touch-icon" sizes="180x180" href="/imgs/favicons/apple-touch-icon.png">
+      <link rel="icon" type="image/png" sizes="32x32" href="/imgs/favicons/favicon-32x32.png">
+      <link rel="icon" type="image/png" sizes="16x16" href="/imgs/favicons/favicon-16x16.png">
+      <link rel="manifest" href="/imgs/favicons/site.webmanifest">
+      <link rel="mask-icon" href="/imgs/favicons/safari-pinned-tab.svg" color="#5bbad5">
+      <link rel="shortcut icon" href="/imgs/favicons/favicon.ico">
+      <meta name="msapplication-TileColor" content="#ffc40d">
+      <meta name="msapplication-config" content="/imgs/favicons/browserconfig.xml">
+      <meta name="theme-color" content="#fffcc6">
+      
       <style>
         *, *::after, *::before {
           box-sizing: border-box;

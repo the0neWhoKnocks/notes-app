@@ -213,9 +213,13 @@
       <nav class="top-nav">
         <div class="app__title">
           <a
+            class="app__title-link"
             href="/"
             on:click={handleAppTitleClick}
-          >{appTitle}</a>
+          >
+            <img src="/imgs/favicons/android-chrome-192x192.png" alt="logo" />
+            {appTitle}
+          </a>
         </div>
         <SearchBtn />
         <NotesMenuBtn />
@@ -343,6 +347,16 @@
     width: 100%;
     font-size: 1.25em;
     font-weight: bold;
+  }
+  
+  .app__title-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
+  }
+  .app__title-link img {
+    height: 1em;
   }
   
   .top-nav {

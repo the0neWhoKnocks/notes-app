@@ -2,6 +2,7 @@
 
 mkdir -p \
   ./dist \
+  ./dist/public/imgs \
   ./dist/public/js/vendor
 
 # Sync Server files, delete anything that doesn't exist anymore.
@@ -17,6 +18,10 @@ rsync -avh \
   ./node_modules/dompurify/dist/purify.min.js \
   ./node_modules/marked/marked.min.js \
   ./dist/public/js/vendor
+
+rsync -avh \
+  ./src/static/favicons \
+  ./dist/public/imgs
 
 #########
 # Prism

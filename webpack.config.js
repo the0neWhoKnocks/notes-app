@@ -167,6 +167,8 @@ const conf = {
         '!css',
         '!css/vendor',
         '!css/vendor/**/*',
+        '!imgs',
+        '!imgs/**/*',
         '!js',
         '!js/vendor',
         '!js/vendor/**/*',
