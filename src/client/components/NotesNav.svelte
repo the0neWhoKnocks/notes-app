@@ -1,41 +1,5 @@
-<script context="module">
-  import { BASE_DATA_NODE } from '../../constants';
-  import NotesNavSubNav from './NotesNavSubNav.svelte';
-  
-  const formatData = ({ groups, notes } = {}, parent = BASE_DATA_NODE) => {
-    const ret = [];
-    
-    if (groups) {
-      for (const [groupId, group] of Object.entries(groups)) {
-        const path = `${parent}/${groupId}`;
-        ret.push({
-          groupName: group.groupName,
-          id: groupId,
-          nameComponent: NotesNavSubNav,
-          path,
-          subGroup: formatData(group, path),
-        });
-      }
-    }
-    
-    if (notes) {
-      for (const [noteId, note] of Object.entries(notes)) {
-        const path = `${parent}/${noteId}`;
-        ret.push({
-          id: noteId,
-          link: `?note=${window.encodeURIComponent(path)}`,
-          name: note.title,
-          nameComponent: NotesNavSubNav,
-          path,
-          type: 'note',
-        });
-      }
-    }
-    
-    return ret;
-  };
-</script>
 <script>
+  import { BASE_DATA_NODE } from '../../constants';
   import {
     allTags,
     getNoteBlurbs,
@@ -44,10 +8,12 @@
     notesNavFlyoutOpen,
     recentlyViewed,
   } from '../stores.js';
+  import transformNoteData from '../utils/transformNoteData';
   import Icon, { ICON__EYE } from './Icon.svelte';
   import GroupList from './GroupList.svelte';
   import NoteBlurb from './NoteBlurb.svelte';
   import NotesNavItemsToggle from './NotesNavItemsToggle.svelte';
+  import NotesNavSubNav from './NotesNavSubNav.svelte';
   import Tag from './Tag.svelte';
   
   let groupsData;
@@ -61,7 +27,10 @@
   }
   
   noteGroups.subscribe((data = {}) => {
-		groupsData = formatData(data[BASE_DATA_NODE]);
+		groupsData = transformNoteData(
+      data[BASE_DATA_NODE],
+      { groupComponent: NotesNavSubNav, itemComponent: NotesNavSubNav }
+    );
 	});
 </script>
 

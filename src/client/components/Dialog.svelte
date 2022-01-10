@@ -13,6 +13,8 @@
   export let onCloseEnd = undefined;
   export let titleBGColor = '#333';
   export let titleTextColor = '#eee';
+  let dialogFor = undefined;
+  export { dialogFor as for }
   
   dialogNum += 1;
   let dNum = dialogNum;
@@ -73,6 +75,7 @@
 <Portal target="#overlays">
   <div 
     class="dialog-wrapper"
+    dialog-for={dialogFor}
     style={cssVars}
   >
     <div
