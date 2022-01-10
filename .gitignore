@@ -1,6 +1,7 @@
 # Folders
 .assets
 .git
+.ignore
 certs.*
 data
 dist
