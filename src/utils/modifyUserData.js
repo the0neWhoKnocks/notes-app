@@ -1,3 +1,6 @@
+// NOTE: Since this file is used by the SW as well as the Server, NodeJS built-ins
+// can't be utilized (since WP may package up a huge chunk of code).
+
 const groupNodeShape = require('../utils/groupNodeShape');
 const parseTags = require('../utils/parseTags');
 const getPathNode = require('./getPathNode');
@@ -67,16 +70,16 @@ const sortObjByKeys = (obj) => {
   }, {});
 };
 
-const mergeTags = (data, tags, path) => {
-  data.allTags = tags
+function mergeTags(allTags, tags, path) {
+  const tagsObj = tags
     .filter(tag => !!tag)
     .reduce((obj, tag) => {
       if (!obj[tag]) obj[tag] = [];
       if (!obj[tag].includes(path)) obj[tag].push(path);
       return obj;
-    }, data.allTags);
+    }, allTags);
   
-  const remainingTags = Object.entries(data.allTags)
+  const remainingTags = Object.entries(tagsObj)
     .filter(([tag]) => !tags.includes(tag))
   
   if (remainingTags.length) {
@@ -86,10 +89,98 @@ const mergeTags = (data, tags, path) => {
     })
     // if tag isn't associated with any notes, remove it
     remainingTags.forEach(([tag, paths]) => {
-      if (!paths.length) delete data.allTags[tag];
+      if (!paths.length) delete tagsObj[tag];
     });
   }
-};
+  
+  return tagsObj;
+}
+
+function iterateData(data, groupPath, cb) {
+  const { groups, notes } = getPathNode(data, groupPath);
+  
+  if (groups) {
+    for (const [groupId, group] of Object.entries(groups)) {
+      if (cb) cb({ group, groupId, groupPath });
+      iterateData(data, `${groupPath}/${groupId}`, cb);
+    }
+  }
+  
+  if (notes) {
+    for (const [noteId, note] of Object.entries(notes)) {
+      if (cb) cb({ groupPath, note, noteId });
+    }
+  }
+}
+
+function updateTagsPaths({
+  allTags,
+  id,
+  newParentPath,
+  notesData,
+  oldParentPath,
+  type,
+}) {
+  const updatedTags = JSON.parse(JSON.stringify(allTags));
+  
+  const updatePaths = (oldNotePath, newNotePath) => {
+    Object.entries(updatedTags).forEach(([, paths]) => {    
+      paths.forEach((path, ndx) => {
+        if (path === oldNotePath) paths[ndx] = newNotePath;
+      });
+    });
+  };
+  
+  if (type === 'group') {
+    iterateData(notesData, oldParentPath, ({ note, noteId }) => {
+      if (note && note.tags) {
+        const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
+        const newNotePath = `${newParentPath}/${id}/${noteId}`;
+        updatePaths(oldNotePath, newNotePath);
+      }
+    });
+  }
+  else {
+    const oldNotePath = `${oldParentPath}/${id}`;
+    const newNotePath = `${newParentPath}/${id}`;
+    updatePaths(oldNotePath, newNotePath);
+  }
+  
+  return updatedTags;
+}
+
+function updateRecentlyViewed({
+  id,
+  oldParentPath,
+  newParentPath,
+  notesData,
+  recent,
+  type,
+}) {
+  const updated = [...recent];
+  
+  const updatePath = (oldNotePath, newNotePath) => {
+    const pathNdx = updated.indexOf(oldNotePath);
+    if (pathNdx > -1) updated.splice(pathNdx, 1, newNotePath);
+  };
+  
+  if (type === 'group') {
+    iterateData(notesData, oldParentPath, ({ note, noteId }) => {
+      if (note) {
+        const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
+        const newNotePath = `${newParentPath}/${id}/${noteId}`;
+        updatePath(oldNotePath, newNotePath);
+      }
+    });
+  }
+  else {
+    const oldNotePath = `${oldParentPath}/${id}`;
+    const newNotePath = `${newParentPath}/${id}`;
+    updatePath(oldNotePath, newNotePath);
+  }
+  
+  return updated;
+}
 
 module.exports = async function modifyUserData({
   loadCurrentData,
@@ -101,8 +192,10 @@ module.exports = async function modifyUserData({
     id,
     importedData,
     name,
+    newParentPath,
     offlineChanges,
     oldName,
+    oldParentPath,
     oldTitle,
     password,
     path,
@@ -122,6 +215,7 @@ module.exports = async function modifyUserData({
     'edit', 
     'delete',
     'importData',
+    'move',
   ].includes(action)) return { error: { code: 400, msg: `The \`action\` "${action}" is unknown` } };
   else if (!type) return { error: { code: 400, msg: 'Missing `type`' } };
   else if (!username && !password) return { error: { code: 400, msg: 'Missing `username` and `password`' } };
@@ -136,15 +230,41 @@ module.exports = async function modifyUserData({
   ].includes(type)) return { error: { code: 400, msg: `The \`type\` "${type}" is unknown` } };
   else if (type === 'note') {
     let required = ['path', 'title'];
-    if (action === 'edit') required.push('oldTitle');
-    else if (action === 'delete') required = ['id', 'path'];
+    
+    switch (action) {
+      case 'edit': {
+        required.push('oldTitle');
+        break;
+      }
+      case 'delete': {
+        required = ['id', 'path'];
+        break;
+      }
+      case 'move': {
+        required = ['id', 'oldParentPath', 'newParentPath', 'type'];
+        break;
+      }
+    }
     
     missingRequiredItems = getMissingRequiredItems(required, reqBody);
   }
   else if (type === 'group') {
     let required = ['path', 'name'];
-    if (action === 'edit') required.push('oldName');
-    else if (action === 'delete') required = ['id', 'path'];
+    
+    switch (action) {
+      case 'edit': {
+        required.push('oldName');
+        break;
+      }
+      case 'delete': {
+        required = ['id', 'path'];
+        break;
+      }
+      case 'move': {
+        required = ['id', 'oldParentPath', 'newParentPath', 'type'];
+        break;
+      }
+    }
     
     missingRequiredItems = getMissingRequiredItems(required, reqBody);
   }
@@ -160,7 +280,8 @@ module.exports = async function modifyUserData({
   if (missingRequiredItems) return { error: { code: 400, msg: `Missing ${missingRequiredItems}` } };
   
   let data = await loadCurrentData();
-  const notesData = data.notesData;
+  let allTags = JSON.parse(JSON.stringify(data.allTags));
+  const notesData = JSON.parse(JSON.stringify(data.notesData));
   let logMsg = 'Data set';
   
   switch (action) {
@@ -181,7 +302,7 @@ module.exports = async function modifyUserData({
             title,
           };
           
-          mergeTags(data, fTags, `${path}/${nodeId}`);
+          allTags = mergeTags(allTags, fTags, `${path}/${nodeId}`);
           
           logMsg = `Created note "${title}" in "${path}"`;
         }
@@ -231,7 +352,7 @@ module.exports = async function modifyUserData({
           title,
         };
         
-        mergeTags(data, fTags, `${path}/${nodeId}`);
+        allTags = mergeTags(allTags, fTags, `${path}/${nodeId}`);
         
         logMsg = `Updated note "${title}" in "${path}"`;
       }
@@ -390,7 +511,52 @@ module.exports = async function modifyUserData({
       logMsg = `Imported data for "${username}"`;
       break;
     }
+    case 'move': {
+      const oldNode = getPathNode(notesData, oldParentPath);
+      const newNode = getPathNode(notesData, newParentPath);
+      const nodeType = `${type}s`;
+      const node = oldNode[nodeType][id];
+      const exists = !!newNode[nodeType][id];
+    
+      if (exists) {
+        return { error: { code: 400, msg: `${type} "${id}" already exists, move aborted.` } };
+      }
+      
+      // update old cached paths first, before the node structure is updated for
+      // simplicity.
+      allTags = updateTagsPaths({
+        allTags,
+        id,
+        newParentPath,
+        notesData,
+        oldParentPath,
+        type,
+      });
+      
+      data.recentlyViewed = updateRecentlyViewed({
+        id,
+        newParentPath,
+        notesData,
+        oldParentPath,
+        recent: data.recentlyViewed,
+        type,
+      });
+      
+      // move to new group
+      newNode[nodeType][id] = node;
+      // delete old note
+      delete oldNode[nodeType][id];
+      
+      logMsg = `Moved ${type} from "${oldParentPath}/${id}" to "${newParentPath}/${id}"`;
+      
+      break;
+    }
   }
+  
+  // NOTE: Comment out the below lines when testing new/fragile code that could
+  // corrupt the data in some way.
+  data.allTags = allTags;
+  data.notesData = notesData;
   
   data = sortObjByKeys(data);
   

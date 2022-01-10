@@ -20,6 +20,7 @@
   import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import LoginDialog from './LoginDialog.svelte';
+  import MoveDialog from './MoveDialog.svelte';
   import NoteDialog from './NoteDialog.svelte';
   import NotesMenuBtn from './NotesMenuBtn.svelte';
   import NotesNavFlyout from './NotesNavFlyout.svelte';
@@ -237,6 +238,7 @@
     <NoteDialog />
     <GroupDialog />
     <DeleteDialog />
+    <MoveDialog />
     
     <!-- {#if $dialogDataForDiff}
       <DiffDialog

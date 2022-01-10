@@ -7,6 +7,7 @@ import {
 } from '../constants';
 import getPathNode from '../utils/getPathNode';
 import logger from '../utils/logger';
+import getParams from './utils/getParams';
 import postData from './utils/postData';
 import {
 	getStorageType,
@@ -19,6 +20,7 @@ export const allTags = writable([]);
 export const dialogDataForDelete = writable();
 export const dialogDataForDiff = writable();
 export const dialogDataForGroup = writable();
+export const dialogDataForMove = writable();
 export const dialogDataForNote = writable();
 export const initialUserDataLoaded = writable(false);
 export const noteGroups = writable();
@@ -303,14 +305,60 @@ export function loadTaggedNotes(tag) {
 export function getNoteBlurbs(notePaths) {
 	const nG = getStoreValue(noteGroups);
 	
-	return notePaths.map((path) => {
+	return notePaths.reduce((arr, path) => {
 		const { id, notes } = getPathNode(nG, path);
-		const { content, title } = notes[id];
-		return {
-			content,
-			path,
-			subTitle: path.replace(BASE_DATA_NODE, ''),
-			title,
-		};
-	});
+		const note = notes[id];
+		
+		// in case something goes wrong updating paths, only return payloads for
+		// notes that can be found.
+		if (note) {
+			const { content, title } = note
+			arr.push({
+				content,
+				path,
+				subTitle: path.replace(BASE_DATA_NODE, ''),
+				title,
+			});
+		}
+		
+		return arr;
+	}, []);
+}
+
+export async function updateItemPath(payload) {
+	try {
+		const cN = getStoreValue(currentNote);
+		const tL = getStoreValue(tagsList);
+		const {
+			allTags: tags,
+			notesData,
+			recentlyViewed: recent,
+		} = await postData(ROUTE__API__USER__DATA__SET, {
+			...getStoreValue(userData),
+			...payload,
+			action: 'move',
+		});
+		
+		allTags.set(tags);
+		noteGroups.set(notesData);
+		recentlyViewed.set(recent);
+		
+		// If a Note is open, update the URL
+		if (cN) {
+			const { id, newParentPath } = payload;
+			updateHistory({
+				params: { note: encodeURIComponent(`${newParentPath}/${id}`) },
+			});
+		}
+		// If the TagsList is open, update paths
+		else if (tL) {
+			const { tag } = getParams(window.location.href);
+			tagsList.set(tags[tag]);
+		}
+		
+		dialogDataForMove.set();
+	}
+	catch ({ message }) {
+		alert(`Error during move:\n${message}`);
+	}
 }

@@ -16,7 +16,7 @@ Feat:
   - The note area could be 'flex' column.
   - Each note could have a Close button
   - The query param may have to be updated to 'notes' instead of 'note'. Maybe separate each note by a '|'.
-- [ ] Ability to move note to a different group.
+- [x] Ability to move note to a different group.
 - [x] Sort groups and notes alphabetically in notes nav.
 - [x] While editing a note, if newline after a line that is part of a list, continue the previous list type to the next line. If ENTER again with an empty list item line, cancel (remove) the last empty list line.
 - [x] tags
