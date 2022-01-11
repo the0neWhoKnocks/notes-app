@@ -35,7 +35,7 @@
 </script>
 
 <nav class="notes-nav">
-  {#if $recentlyViewed}
+  {#if $recentlyViewed && $recentlyViewed.length}
     <section class="recent">
       <NotesNavItemsToggle>
         <svelte:fragment slot="toggleLabel">
