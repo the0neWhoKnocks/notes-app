@@ -3,9 +3,10 @@
     ROUTE__API__USER__DATA__SET,
   } from '../../constants';
   import {
-    currentNote,
+    allTags,
     dialogDataForDelete,
     noteGroups,
+    recentlyViewed,
     updateCurrNote,
     userData,
   } from '../stores';
@@ -24,8 +25,15 @@
   
   async function handleSubmit() {
     try {
-      const { notesData } = await postData(formRef.getAttribute('action'), formRef);
+      const {
+        allTags: tags,
+        notesData,
+        recentlyViewed: recent,
+      } = await postData(formRef.getAttribute('action'), formRef);
+      
+      allTags.set(tags);
       noteGroups.set(notesData);
+      recentlyViewed.set(recent);
       
       updateCurrNote({ id: $dialogDataForDelete.id });
       closeDialog();

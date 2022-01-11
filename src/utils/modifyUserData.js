@@ -115,6 +115,7 @@ function iterateData(data, groupPath, cb) {
 
 function updateTagsPaths({
   allTags,
+  deletePath,
   id,
   newParentPath,
   notesData,
@@ -124,32 +125,45 @@ function updateTagsPaths({
   const updatedTags = JSON.parse(JSON.stringify(allTags));
   
   const updatePaths = (oldNotePath, newNotePath) => {
-    Object.entries(updatedTags).forEach(([, paths]) => {    
-      paths.forEach((path, ndx) => {
-        if (path === oldNotePath) paths[ndx] = newNotePath;
-      });
+    Object.keys(updatedTags).forEach((tag) => {
+      updatedTags[tag] = updatedTags[tag].reduce((arr, path) => {
+        // for deletions, 'newNotePath' will be 'undefined'
+        if (newNotePath && path === oldNotePath) arr.push(newNotePath);
+        return arr;
+      }, []);
+      
+      if (!updatedTags[tag].length) delete updatedTags[tag];
     });
   };
   
   if (type === 'group') {
-    iterateData(notesData, oldParentPath, ({ note, noteId }) => {
+    const _path = deletePath || oldParentPath;
+    
+    iterateData(notesData, _path, ({ note, noteId }) => {
       if (note && note.tags) {
-        const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
-        const newNotePath = `${newParentPath}/${id}/${noteId}`;
-        updatePaths(oldNotePath, newNotePath);
+        if (deletePath) updatePaths(deletePath);
+        else {
+          const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
+          const newNotePath = `${newParentPath}/${id}/${noteId}`;
+          updatePaths(oldNotePath, newNotePath);
+        }
       }
     });
   }
   else {
-    const oldNotePath = `${oldParentPath}/${id}`;
-    const newNotePath = `${newParentPath}/${id}`;
-    updatePaths(oldNotePath, newNotePath);
+    if (deletePath) updatePaths(deletePath);
+    else {
+      const oldNotePath = `${oldParentPath}/${id}`;
+      const newNotePath = `${newParentPath}/${id}`;
+      updatePaths(oldNotePath, newNotePath);
+    }
   }
   
   return updatedTags;
 }
 
 function updateRecentlyViewed({
+  deletePath,
   id,
   oldParentPath,
   newParentPath,
@@ -157,26 +171,38 @@ function updateRecentlyViewed({
   recent,
   type,
 }) {
-  const updated = [...recent];
+  let updated = [...recent];
   
   const updatePath = (oldNotePath, newNotePath) => {
-    const pathNdx = updated.indexOf(oldNotePath);
-    if (pathNdx > -1) updated.splice(pathNdx, 1, newNotePath);
+    // chances of duplicate paths should be zero, iterating all just in case
+    updated = updated.reduce((arr, path) => {
+      // for deletions, 'newNotePath' will be 'undefined'
+      if (newNotePath && path === oldNotePath) arr.push(newNotePath);
+      return arr;
+    }, []);
   };
   
   if (type === 'group') {
-    iterateData(notesData, oldParentPath, ({ note, noteId }) => {
+    const _path = deletePath || oldParentPath;
+    
+    iterateData(notesData, _path, ({ note, noteId }) => {
       if (note) {
-        const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
-        const newNotePath = `${newParentPath}/${id}/${noteId}`;
-        updatePath(oldNotePath, newNotePath);
+        if (deletePath) updatePath(deletePath);
+        else {
+          const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
+          const newNotePath = `${newParentPath}/${id}/${noteId}`;
+          updatePath(oldNotePath, newNotePath);
+        }
       }
     });
   }
   else {
-    const oldNotePath = `${oldParentPath}/${id}`;
-    const newNotePath = `${newParentPath}/${id}`;
-    updatePath(oldNotePath, newNotePath);
+    if (deletePath) updatePath(deletePath);
+    else {
+      const oldNotePath = `${oldParentPath}/${id}`;
+      const newNotePath = `${newParentPath}/${id}`;
+      updatePath(oldNotePath, newNotePath);
+    }
   }
   
   return updated;
@@ -394,18 +420,27 @@ module.exports = async function modifyUserData({
       break;
     }
     case 'delete': {
-      if (type === 'note') {
-        const { notes } = getPathNode(notesData, path);
-        delete notes[id];
-        
-        logMsg = `Removed note "${id}" from "${path}"`;
-      }
-      else if (type === 'group') {
-        const { groups } = getPathNode(notesData, path);
-        delete groups[id];
-        
-        logMsg = `Removed group "${id}" from "${path}"`;
-      }
+      const node = getPathNode(notesData, path);
+      const nodeType = `${type}s`; // groups or notes
+      
+      allTags = updateTagsPaths({
+        allTags,
+        deletePath: path,
+        id,
+        notesData,
+        type,
+      });
+      
+      data.recentlyViewed = updateRecentlyViewed({
+        deletePath: path,
+        id,
+        notesData,
+        recent: data.recentlyViewed,
+        type,
+      });
+      
+      delete node[nodeType][id];
+      logMsg = `Removed ${type} "${id}" from "${path}"`;
       
       break;
     }
