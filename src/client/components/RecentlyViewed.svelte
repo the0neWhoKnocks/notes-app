@@ -36,7 +36,7 @@
   $: if (
     $initialUserDataLoaded
     && (!$currentNote && !$tagsList)
-    && $recentlyViewed
+    && $recentlyViewed && $recentlyViewed.length
   ) {
     recentItems = getNoteBlurbs($recentlyViewed);
     recentlyViewedOpen.set(true);
