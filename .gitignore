@@ -12,3 +12,4 @@ node_modules
 *.patch
 .DS_STORE
 notes-backup*.json
+.creds-docker
