@@ -4,7 +4,7 @@
     "build": "./bin/prep-dist.sh && webpack",
     "lint": "eslint ./*.js \"{bin,src}/**/*.{js,svelte}\"",
     "start": "NODE_EXTRA_CA_CERTS=\"./certs.localhost/localhost.crt\" node ./dist/server",
-    "start:dev": "npm run build & NODE_EXTRA_CA_CERTS=\"./certs.localhost/localhost.crt\" ./watcher.js \"./bin/prep-dist.sh\" \"./dist/public/manifest.json\"",
+    "start:dev": "./bin/prep-dist.sh && webpack & NODE_EXTRA_CA_CERTS=\"./certs.localhost/localhost.crt\" ./watcher.js \"./bin/prep-dist.sh\" \"./dist/public/manifest.json\"",
     "release": "./bin/release.js",
     "release:dryrun": "./bin/release.js -dr",
     "release:update": "sh -c \"$(curl -fsSL https://raw.githubusercontent.com/the0neWhoKnocks/release-script/master/js/tools/install.sh) --update --install-dir \\\"bin\\\"\""
