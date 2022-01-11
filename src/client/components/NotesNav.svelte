@@ -8,6 +8,7 @@
     notesNavFlyoutOpen,
     recentlyViewed,
   } from '../stores.js';
+  import getParams from '../utils/getParams';
   import transformNoteData from '../utils/transformNoteData';
   import Icon, { ICON__EYE } from './Icon.svelte';
   import GroupList from './GroupList.svelte';
@@ -19,11 +20,10 @@
   let groupsData;
   
   function handleNoteClick(el) {
-    const { dataset: { path } } = el;
-    const _path = `${BASE_DATA_NODE}${path}`;
+    const { note } = getParams(el.href);
     
     notesNavFlyoutOpen.set(false);
-    loadNote(_path);
+    loadNote(note);
   }
   
   noteGroups.subscribe((data = {}) => {
