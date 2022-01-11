@@ -4,6 +4,7 @@
   } from '../../constants';
   import {
     allTags,
+    currentNote,
     dialogDataForDelete,
     noteGroups,
     recentlyViewed,
@@ -25,6 +26,7 @@
   
   async function handleSubmit() {
     try {
+      const { id, path, type } = $dialogDataForDelete;
       const {
         allTags: tags,
         notesData,
@@ -35,7 +37,15 @@
       noteGroups.set(notesData);
       recentlyViewed.set(recent);
       
-      updateCurrNote({ id: $dialogDataForDelete.id });
+      if (
+        type === 'group'
+        && $currentNote
+        && $currentNote.path.startsWith(`${path}/${id}/`)
+      ) {
+        updateCurrNote({ id: $currentNote.id });
+      }
+      else updateCurrNote({ id: $dialogDataForDelete.id });
+      
       closeDialog();
     }
     catch (err) {
