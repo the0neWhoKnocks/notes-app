@@ -15,5 +15,8 @@
 <style>
   .notes-menu-btn {
     padding: 0.25em 1em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
   }
 </style>
