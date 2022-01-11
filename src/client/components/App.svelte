@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { BASE_DATA_NODE } from '../../constants';
   import logger from '../../utils/logger';
   import initMarked from '../marked/init';
   import {
@@ -7,6 +8,7 @@
     initialUserDataLoaded,
     loadNote,
     loadTaggedNotes,
+    noteGroups,
     offline,
     syncOfflineData,
     trackNetworkStatus,
@@ -228,6 +230,19 @@
       </nav>
       <section class="user-content">
         <section class="user-content__body">
+          {#if (
+            $noteGroups 
+            && $noteGroups[BASE_DATA_NODE]
+            && (
+              !Object.keys($noteGroups[BASE_DATA_NODE].groups).length
+              && !Object.keys($noteGroups[BASE_DATA_NODE].notes).length
+            )
+          )}
+            <div class="start-msg">
+              Looks like you haven't added any notes yet. You can do so through
+              the <NotesMenuBtn /> menu above.
+            </div>
+          {/if}
           <RecentlyViewed />
           <FullNote />
           <TaggedNotes />
@@ -303,6 +318,18 @@
     margin: auto;
     box-shadow: 0 0 3em 2em;
     position: relative;
+  }
+  
+  .start-msg {
+    color: var(--color--app--fg);
+    font-size: 1.25rem;
+    padding: 1.5em;
+  }
+  :global(.start-msg .notes-menu-btn) {
+    font-size: 0.8em;
+    vertical-align: bottom;
+    padding: 0.25em 0.5em;
+    display: inline-flex;
   }
   
   .status-msg {
