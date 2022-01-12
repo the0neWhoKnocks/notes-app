@@ -73,9 +73,9 @@ const shell = ({
       <link rel="manifest" href="/imgs/favicons/site.webmanifest">
       <link rel="mask-icon" href="/imgs/favicons/safari-pinned-tab.svg" color="#5bbad5">
       <link rel="shortcut icon" href="/imgs/favicons/favicon.ico">
-      <meta name="msapplication-TileColor" content="#ffc40d">
+      <meta name="msapplication-TileColor" content="#2d89ef">
       <meta name="msapplication-config" content="/imgs/favicons/browserconfig.xml">
-      <meta name="theme-color" content="#fffcc6">
+      <meta name="theme-color" content="#f7e19a">
       
       <style>
         *, *::after, *::before {
