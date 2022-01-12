@@ -1,6 +1,23 @@
 # Changelog
 ---
 
+## v1.1.0
+
+**Bugfixes**
+- [a2ec5a2](https://github.com/the0neWhoKnocks/notes-app/commit/a2ec5a2): Nested note still displayed after parent group deleted
+- [fbe06cb](https://github.com/the0neWhoKnocks/notes-app/commit/fbe06cb): Not all notes accessible from nav
+- [2b8534e](https://github.com/the0neWhoKnocks/notes-app/commit/2b8534e): Tags and Recent not updated after a Group/Note deletion
+- [988f7e3](https://github.com/the0neWhoKnocks/notes-app/commit/988f7e3): Blank 'Recent Items' displayed on fresh install
+
+**Dev-Ops**
+- [6611e07](https://github.com/the0neWhoKnocks/notes-app/commit/6611e07): Dev command not running in order
+
+**Features**
+- [e3b31d0](https://github.com/the0neWhoKnocks/notes-app/commit/e3b31d0): Updated logo
+- [fe8ba6f](https://github.com/the0neWhoKnocks/notes-app/commit/fe8ba6f): First-run message
+
+---
+
 ## v1.0.0
 
 **Bugfixes**
