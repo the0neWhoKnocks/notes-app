@@ -23,9 +23,26 @@ Feat:
   - [x] add/delete tags
   - [x] auto-complete from previously added tags
   - [x] diff check when tags change
+- [ ] Add number of items next to group title
+- [ ] Note formatting
+  - [ ] Make h<num> in notes Bold
+  - [ ] Tables have no borders
+  - [ ] blockquotes need vertical spacing
+- [ ] Anchor dialog
+- [ ] Wysiwyg icons
+- [ ] Theme colors
+- [ ] print note (button?), or will print CSS media query be enough.
 
 Fix:
 - [x] Notes dialog toolbar overflows on small screens
+- [ ] note blurbs need ellipsis for long lines
+- [ ] Preview needs to be disabled after dialog closed
+- [ ] Tabs need to be 3 in order for nested lists to work
+- [ ] Disable all other buttons while previewing
+- [ ] Randomly can't add note to group after I've just added/edited another note. It's `preview` related. It's still true from a previous note, so this `window.marked.parse(contentText)` tries to run on a new note.
+- [ ] allTags, preferences, and recentlyViewed, being reset their defaults.
+  - instead of trying to be smart, just iterate all items and compile tags
+  - if recent items exist, it should never return an empty Array
 
 In order to ensure all assets are cached, refactor how scripts and styles are
 loaded into the shell. Use something like
