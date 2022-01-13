@@ -383,7 +383,7 @@
   
   async function handleToolClick({ target }) {
     if (target.dataset) {
-      const INDENT = '  ';
+      const INDENT = '   '; // needs to be 3 for MD nested lists
       
       switch (target.dataset.type) {
         case 'heading':
