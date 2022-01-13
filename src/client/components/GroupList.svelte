@@ -54,7 +54,7 @@
   }
   
   function handleClick(ev) {
-    const { target } = ev;
+    const { ctrlKey, target } = ev;
     
     if (target.classList.contains('group__name')) {
       const group = target.closest('.group');
@@ -64,7 +64,7 @@
       }
     }
     else if (target.classList.contains('item__label')) {
-      if (onItemClick) {
+      if (onItemClick && !ctrlKey) {
         ev.preventDefault();
         onItemClick(target);
       }
