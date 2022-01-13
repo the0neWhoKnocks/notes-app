@@ -28,6 +28,7 @@
   
   function closeDialog() {
     dialogDataForNote.set();
+    previewing = false;
   }
   
   function handleCloseClick() {
