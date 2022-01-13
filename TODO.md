@@ -39,7 +39,7 @@ Fix:
 - [x] Importing data not always working
 - [x] note blurbs need ellipsis for long lines
 - [x] Tabs need to be 3 in order for nested lists to work
-- [ ] Disable all other buttons while previewing
+- [x] Disable all other buttons while previewing
 - [x] Preview needs to be disabled after dialog closed
 - [x] Randomly can't add note to group after I've just added/edited another note. It's `preview` related. It's still true from a previous note, so this `window.marked.parse(contentText)` tries to run on a new note.
 - [x] allTags, preferences, and recentlyViewed, being reset to their defaults.
