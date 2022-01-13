@@ -35,7 +35,7 @@ Feat:
 
 Fix:
 - [x] Notes dialog toolbar overflows on small screens
-- [ ] Importing data not always working
+- [x] Importing data not always working
 - [x] note blurbs need ellipsis for long lines
 - [ ] Preview needs to be disabled after dialog closed
 - [ ] Tabs need to be 3 in order for nested lists to work
