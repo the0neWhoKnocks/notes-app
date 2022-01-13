@@ -47,6 +47,8 @@
   .note-blurb > * {
     width: 100%;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
     pointer-events: none;
   }
   
