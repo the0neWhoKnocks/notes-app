@@ -1,5 +1,16 @@
 const { BASE_DATA_NODE } = require('../../constants');
 
+const tallyGroupNotes = (group) => {
+  let count = 0;
+  
+  group.forEach(({ subGroup }) => {
+    if (subGroup) count += tallyGroupNotes(subGroup);
+    else count += 1;
+  });
+  
+  return count;
+};
+
 module.exports = function transformNoteData(
   data,
   nodeProps,
@@ -8,6 +19,7 @@ module.exports = function transformNoteData(
   const ret = [];
   const { groups, notes } = data || {};
   const {
+    addCount,
     groupComponent,
     itemComponent,
     omitNotes,
@@ -18,13 +30,21 @@ module.exports = function transformNoteData(
     if (groups) {
       for (const [groupId, group] of Object.entries(groups)) {
         const path = `${parent}/${groupId}`;
+        const subGroup = transformNoteData(group, nodeProps, path);
+        let groupName = group.groupName;
+        
+        if (addCount) {
+          const count = tallyGroupNotes(subGroup);
+          if (count) groupName = `${groupName} (${count})`;
+        }
+        
         ret.push({
           ...extraProps,
-          groupName: group.groupName,
+          groupName,
           id: groupId,
           nameComponent: groupComponent,
           path,
-          subGroup: transformNoteData(group, nodeProps, path),
+          subGroup,
         });
       }
     }

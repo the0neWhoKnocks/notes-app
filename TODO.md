@@ -35,6 +35,7 @@ Feat:
 - [ ] print note (button?), or will print CSS media query be enough.
 
 Fix:
+- [ ] NotesNav grouped item navs overflowing
 - [x] Notes dialog toolbar overflows on small screens
 - [x] Importing data not always working
 - [x] note blurbs need ellipsis for long lines

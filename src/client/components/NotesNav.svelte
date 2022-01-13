@@ -29,7 +29,11 @@
   noteGroups.subscribe((data = {}) => {
 		groupsData = transformNoteData(
       data[BASE_DATA_NODE],
-      { groupComponent: NotesNavSubNav, itemComponent: NotesNavSubNav }
+      {
+        addCount: true,
+        groupComponent: NotesNavSubNav,
+        itemComponent: NotesNavSubNav,
+      }
     );
 	});
 </script>
