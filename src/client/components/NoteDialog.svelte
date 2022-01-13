@@ -491,6 +491,7 @@
     <form
       bind:this={formRef}
       class="note-form"
+      class:previewing={previewing}
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >
@@ -516,21 +517,60 @@
       />
       <div class="note-form__content-area">
         <nav class="note-form__toolbar" on:click={handleToolClick}>
-          <button type="button" title="Heading" data-type="heading" tabindex="-1">#</button>
-          <button type="button" title="Bold" data-type="bold" tabindex="-1">B</button>
-          <button type="button" title="Italic" data-type="italic" tabindex="-1">I</button>
-          <button type="button" title="Strike Through" data-type="strikethrough" tabindex="-1">S</button>
-          <button type="button" title="Inline Code" data-type="inlineCode" tabindex="-1">`</button>
-          <button type="button" title="Link" data-type="anchor" tabindex="-1">A</button>
-          <button type="button" title="Unordered List" data-type="ul" tabindex="-1">ul</button>
-          <button type="button" title="Ordered List" data-type="ol" tabindex="-1">ol</button>
-          <button type="button" title="Indent" data-type="indent" tabindex="-1">_&gt;</button>
-          <button type="button" title="Outdent" data-type="outdent" tabindex="-1">&lt;_</button>
+          <button
+            type="button" title="Heading" data-type="heading" tabindex="-1"
+            disabled={previewing}
+          >#</button>
+          <button
+            type="button" title="Bold" data-type="bold" tabindex="-1"
+            disabled={previewing}
+          >B</button>
+          <button
+            type="button" title="Italic" data-type="italic" tabindex="-1"
+            disabled={previewing}
+          >I</button>
+          <button 
+            type="button" title="Strike Through" data-type="strikethrough" tabindex="-1"
+            disabled={previewing}
+          >S</button>
+          <button
+            type="button" title="Inline Code" data-type="inlineCode" tabindex="-1"
+            disabled={previewing}
+          >`</button>
+          <button
+            type="button" title="Link" data-type="anchor" tabindex="-1"
+            disabled={previewing}
+          >A</button>
+          <button
+            type="button" title="Unordered List" data-type="ul" tabindex="-1"
+            disabled={previewing}
+          >ul</button>
+          <button
+            type="button" title="Ordered List" data-type="ol" tabindex="-1"
+            disabled={previewing}
+          >ol</button>
+          <button
+            type="button" title="Indent" data-type="indent" tabindex="-1"
+            disabled={previewing}
+          >_&gt;</button>
+          <button
+            type="button" title="Outdent" data-type="outdent" tabindex="-1"
+            disabled={previewing}
+          >&lt;_</button>
           <div class="note-form__sep"></div>
-          <button type="button" title="Code Block" data-type="codeBlock" tabindex="-1">```</button>
-          <button type="button" title="Block Quote" data-type="blockquote" tabindex="-1">"</button>
+          <button
+            type="button" title="Code Block" data-type="codeBlock" tabindex="-1"
+            disabled={previewing}
+          >```</button>
+          <button
+            type="button" title="Block Quote" data-type="blockquote" tabindex="-1"
+            disabled={previewing}
+          >"</button>
           <div class="note-form__sep"></div>
-          <button type="button" title="Table of Contents" data-type="toc" tabindex="-1">TOC</button>
+          <button
+            type="button" title="Table of Contents" data-type="toc" tabindex="-1"
+            disabled={previewing}
+          >TOC</button>
           <div class="note-form__sep"></div>
           <button type="button" data-type="preview" tabindex="-1">Preview</button>
         </nav>
@@ -637,8 +677,11 @@
   }
   
   .note-form button:disabled {
-    opacity: 0.5;
-    cursor: default;
+    opacity: 0.35;
+  }
+  .note-form.previewing button[data-type="preview"] {
+    color: var(--color--app--bg);
+    background: var(--color--app--fg);
   }
   
   :global(.note-form .tags-input__container) {
