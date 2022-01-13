@@ -1,14 +1,9 @@
 <script>
   import {
-    ROUTE__API__USER__DATA__SET,
-  } from '../../constants';
-  import {
     dialogDataForDiff,
-    noteGroups,
+    setUserData,
     userData,
-    userPreferences,
   } from '../stores';
-  import postData from '../utils/postData';
   import serializeForm from '../utils/serializeForm';
   import Dialog from './Dialog.svelte';
   import Diffs from './Diffs.svelte';
@@ -54,12 +49,7 @@
     if (prefs) payload.offlineChanges.prefs = buildChosenDiffsObj(prefs, prefsDiff);
     
     try {
-      const {
-        notesData,
-        preferences,
-      } = await postData(formRef.getAttribute('action'), payload);
-      noteGroups.set(notesData);
-      userPreferences.set(preferences);
+      await setUserData(payload);
       closeDialog();
     }
     catch (err) {
@@ -104,10 +94,8 @@
     title="Offline Changes"
   >
     <form
-      action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
       class="diff-form"
-      method="POST"
       on:submit|preventDefault={handleSubmit}
     >
       <input type="hidden" name="username" value={$userData.username} />

@@ -1,17 +1,9 @@
 <script>
   import {
-    ROUTE__API__USER__DATA__SET,
-  } from '../../constants';
-  import {
-    allTags,
-    currentNote,
+    deleteNoteData,
     dialogDataForDelete,
-    noteGroups,
-    recentlyViewed,
-    updateCurrNote,
     userData,
   } from '../stores';
-  import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   
   let formRef;
@@ -26,26 +18,7 @@
   
   async function handleSubmit() {
     try {
-      const { id, path, type } = $dialogDataForDelete;
-      const {
-        allTags: tags,
-        notesData,
-        recentlyViewed: recent,
-      } = await postData(formRef.getAttribute('action'), formRef);
-      
-      allTags.set(tags);
-      noteGroups.set(notesData);
-      recentlyViewed.set(recent);
-      
-      if (
-        type === 'group'
-        && $currentNote
-        && $currentNote.path.startsWith(`${path}/${id}/`)
-      ) {
-        updateCurrNote({ id: $currentNote.id });
-      }
-      else updateCurrNote({ id: $dialogDataForDelete.id });
-      
+      await deleteNoteData(formRef);
       closeDialog();
     }
     catch (err) {
@@ -60,10 +33,8 @@
     onCloseClick={handleCloseClick}
   >
     <form
-      action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
       class="delete-form"
-      method="POST"
       on:submit|preventDefault={handleSubmit}
     >
       <input type="hidden" name="username" value={$userData.username} />

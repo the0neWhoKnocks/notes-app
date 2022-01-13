@@ -1,19 +1,15 @@
 <script>
   import { tick } from 'svelte';
-  import {
-    ROUTE__API__USER__DATA__SET,
-  } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
   import parseTags from '../../utils/parseTags';
   import {
     allTags,
     currentNote,
     dialogDataForNote,
-    noteGroups,
+    setUserData,
     updateCurrNote,
     userData,
   } from '../stores';
-  import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   import GroupNoteNameInput from './GroupNoteNameInput.svelte';
   import TagsInput from './TagsInput.svelte';
@@ -117,11 +113,7 @@
   
   async function handleSubmit() {
     try {
-      const {
-        allTags: _allTags,
-        newData,
-        notesData,
-      } = await postData(formRef.getAttribute('action'), formRef);
+      const { newData } = await setUserData(formRef);
       const { id } = $dialogDataForNote;
       
       updateCurrNote({
@@ -135,8 +127,6 @@
         },
         params: queryParams,
       });
-      allTags.set(_allTags);
-      noteGroups.set(notesData);
       closeDialog();
     }
     catch (err) {
@@ -498,10 +488,8 @@
       {#if editingNote}Edit{:else}Add{/if} Note
     </svelte:fragment>
     <form
-      action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
       class="note-form"
-      method="POST"
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >

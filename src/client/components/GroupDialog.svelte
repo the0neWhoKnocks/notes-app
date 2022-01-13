@@ -1,13 +1,9 @@
 <script>
   import {
-    ROUTE__API__USER__DATA__SET,
-  } from '../../constants';
-  import {
     dialogDataForGroup,
-    noteGroups,
+    setUserData,
     userData,
   } from '../stores';
-  import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   import GroupNoteNameInput from './GroupNoteNameInput.svelte';  
   
@@ -31,8 +27,7 @@
   
   async function handleSubmit() {
     try {
-      const { notesData } = await postData(formRef.getAttribute('action'), formRef);
-      noteGroups.set(notesData);
+      await setUserData(formRef);
       closeDialog();
     }
     catch (err) {
@@ -55,10 +50,8 @@
       {#if editingGroup}Edit{:else}Add{/if} Group
     </svelte:fragment>
     <form
-      action={ROUTE__API__USER__DATA__SET}
       bind:this={formRef}
       class="group-form"
-      method="POST"
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >
