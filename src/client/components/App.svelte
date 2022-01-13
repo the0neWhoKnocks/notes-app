@@ -21,6 +21,7 @@
   // import DiffDialog from './DiffDialog.svelte';
   import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
+  import ImportButton from './ImportButton.svelte';
   import LoginDialog from './LoginDialog.svelte';
   import MoveDialog from './MoveDialog.svelte';
   import NoteDialog from './NoteDialog.svelte';
@@ -240,7 +241,8 @@
           )}
             <div class="start-msg">
               Looks like you haven't added any notes yet. You can do so through
-              the <NotesMenuBtn /> menu above.
+              the <NotesMenuBtn /> menu or <ImportButton /> old data from the User menu in
+              the top menu.
             </div>
           {/if}
           <RecentlyViewed />
@@ -325,6 +327,7 @@
     font-size: 1.25rem;
     padding: 1.5em;
   }
+  :global(.start-msg .import-btn),
   :global(.start-msg .notes-menu-btn) {
     font-size: 0.8em;
     vertical-align: bottom;
