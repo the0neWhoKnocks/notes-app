@@ -35,4 +35,4 @@
   }
 </script>
 
-<button on:click={importData}>Import</button>
+<button class="import-btn" on:click={importData}>Import</button>
