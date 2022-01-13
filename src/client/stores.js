@@ -37,6 +37,40 @@ export const userNavOpen = writable(false);
 export const userProfileOpened = writable(false);
 export const userStorageType = writable();
 
+export async function setUserData(payload) {
+	const oldNotes = JSON.stringify(getStoreValue(noteGroups));
+	const oldPrefs = JSON.stringify(getStoreValue(userPreferences));
+	const oldRecent = JSON.stringify(getStoreValue(recentlyViewed));
+	const oldTags = JSON.stringify(getStoreValue(allTags));
+	
+	const newData = await postData(ROUTE__API__USER__DATA__SET, payload);
+	const {
+		allTags: tags,
+		notesData,
+		preferences,
+		recentlyViewed: recent,
+	} = newData;
+	
+	if (
+		notesData
+		&& JSON.stringify(notesData) !== oldNotes
+	) noteGroups.set(notesData);
+	if (
+		preferences
+		&& JSON.stringify(preferences) !== oldPrefs
+	) userPreferences.set(preferences);
+	if (
+		recent
+		&& JSON.stringify(recent) !== oldRecent
+	) recentlyViewed.set(recent);
+	if (
+		tags
+		&& JSON.stringify(tags) !== oldTags
+	) allTags.set(tags);
+	
+	return newData;
+}
+
 export const currentNote = (function curentNoteStore() {
 	const store = writable();
 	const MAX_ITEMS = 10;
@@ -69,14 +103,12 @@ export const currentNote = (function curentNoteStore() {
 				}
 				
 				if (changed) {
-					await postData(ROUTE__API__USER__DATA__SET, {
+					await setUserData({
 						...getStoreValue(userData),
 						action: 'edit',
 						recent,
 						type: 'recentlyViewed',
 					});
-					
-					recentlyViewed.set(recent);
 				}
 			}
 		},
@@ -93,14 +125,12 @@ export const userPreferences = (function createPrefsStore() {
 		set,
 		setPreference: async (prop, value) => {
 			try {
-				const { preferences } = await postData(ROUTE__API__USER__DATA__SET, {
+				await setUserData({
 					...getStoreValue(userData),
 					action: 'edit',
 					prefs: { [prop]: value },
 					type: 'preferences',
 				});
-				
-				update(() => preferences);
 			}
 			catch ({ message }) { alert(`Error saving preference for "${prop}"\n${message}`); }
 		},
@@ -329,19 +359,11 @@ export async function updateItemPath(payload) {
 	try {
 		const cN = getStoreValue(currentNote);
 		const tL = getStoreValue(tagsList);
-		const {
-			allTags: tags,
-			notesData,
-			recentlyViewed: recent,
-		} = await postData(ROUTE__API__USER__DATA__SET, {
+		const { allTags: tags } = await setUserData({
 			...getStoreValue(userData),
 			...payload,
 			action: 'move',
 		});
-		
-		allTags.set(tags);
-		noteGroups.set(notesData);
-		recentlyViewed.set(recent);
 		
 		// If a Note is open, update the URL
 		if (cN) {
@@ -361,4 +383,20 @@ export async function updateItemPath(payload) {
 	catch ({ message }) {
 		alert(`Error during move:\n${message}`);
 	}
+}
+
+export async function deleteNoteData(data) {
+	const cN = getStoreValue(currentNote);
+	const { id, path, type } = getStoreValue(dialogDataForDelete);
+	
+	await setUserData(data);
+	
+	if (
+		type === 'group'
+		&& cN
+		&& cN.path.startsWith(`${path}/${id}/`)
+	) {
+		updateCurrNote({ id: cN.id });
+	}
+	else updateCurrNote({ id });
 }

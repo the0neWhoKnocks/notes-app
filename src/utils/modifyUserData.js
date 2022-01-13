@@ -208,6 +208,11 @@ function updateRecentlyViewed({
   return updated;
 }
 
+const finalizeData = (data, logMsg) => ({
+  data: sortObjByKeys(data),
+  logMsg,
+});
+
 module.exports = async function modifyUserData({
   loadCurrentData,
   reqBody,
@@ -542,9 +547,10 @@ module.exports = async function modifyUserData({
       break;
     }
     case 'importData': {
-      data = { ...importedData.data };
-      logMsg = `Imported data for "${username}"`;
-      break;
+      return finalizeData(
+        importedData.data,
+        `Imported data for "${username}"`
+      );
     }
     case 'move': {
       const oldNode = getPathNode(notesData, oldParentPath);
@@ -593,7 +599,5 @@ module.exports = async function modifyUserData({
   data.allTags = allTags;
   data.notesData = notesData;
   
-  data = sortObjByKeys(data);
-  
-  return { data, logMsg };
+  return finalizeData(data, logMsg);
 };
