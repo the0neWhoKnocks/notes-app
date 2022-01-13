@@ -1,6 +1,7 @@
 // NOTE: Since this file is used by the SW as well as the Server, NodeJS built-ins
 // can't be utilized (since WP may package up a huge chunk of code).
 
+const { BASE_DATA_NODE } = require('../constants');
 const groupNodeShape = require('../utils/groupNodeShape');
 const parseTags = require('../utils/parseTags');
 const getPathNode = require('./getPathNode');
@@ -70,32 +71,6 @@ const sortObjByKeys = (obj) => {
   }, {});
 };
 
-function mergeTags(allTags, tags, path) {
-  const tagsObj = tags
-    .filter(tag => !!tag)
-    .reduce((obj, tag) => {
-      if (!obj[tag]) obj[tag] = [];
-      if (!obj[tag].includes(path)) obj[tag].push(path);
-      return obj;
-    }, allTags);
-  
-  const remainingTags = Object.entries(tagsObj)
-    .filter(([tag]) => !tags.includes(tag))
-  
-  if (remainingTags.length) {
-    // if tags still contain note association, remove association
-    remainingTags.forEach(([, paths]) => {
-      if (paths.includes(path)) paths.splice(paths.indexOf(path), 1);
-    })
-    // if tag isn't associated with any notes, remove it
-    remainingTags.forEach(([tag, paths]) => {
-      if (!paths.length) delete tagsObj[tag];
-    });
-  }
-  
-  return tagsObj;
-}
-
 function iterateData(data, groupPath, cb) {
   const { groups, notes } = getPathNode(data, groupPath);
   
@@ -113,53 +88,20 @@ function iterateData(data, groupPath, cb) {
   }
 }
 
-function updateTagsPaths({
-  allTags,
-  deletePath,
-  id,
-  newParentPath,
-  notesData,
-  oldParentPath,
-  type,
-}) {
-  const updatedTags = JSON.parse(JSON.stringify(allTags));
+function compileTags(notesData) {
+  const tagsObj = {};
   
-  const updatePaths = (oldNotePath, newNotePath) => {
-    Object.keys(updatedTags).forEach((tag) => {
-      updatedTags[tag] = updatedTags[tag].reduce((arr, path) => {
-        // for deletions, 'newNotePath' will be 'undefined'
-        if (newNotePath && path === oldNotePath) arr.push(newNotePath);
-        return arr;
-      }, []);
-      
-      if (!updatedTags[tag].length) delete updatedTags[tag];
-    });
-  };
-  
-  if (type === 'group') {
-    const _path = deletePath || oldParentPath;
-    
-    iterateData(notesData, _path, ({ note, noteId }) => {
-      if (note && note.tags) {
-        if (deletePath) updatePaths(deletePath);
-        else {
-          const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
-          const newNotePath = `${newParentPath}/${id}/${noteId}`;
-          updatePaths(oldNotePath, newNotePath);
-        }
-      }
-    });
-  }
-  else {
-    if (deletePath) updatePaths(deletePath);
-    else {
-      const oldNotePath = `${oldParentPath}/${id}`;
-      const newNotePath = `${newParentPath}/${id}`;
-      updatePaths(oldNotePath, newNotePath);
+  iterateData(notesData, BASE_DATA_NODE, ({ groupPath, note, noteId }) => {
+    if (note && note.tags) {
+      note.tags.forEach((tag) => {
+        const path = `${groupPath}/${noteId}`;
+        if (!tagsObj[tag]) tagsObj[tag] = [];
+        if (!tagsObj[tag].includes(path)) tagsObj[tag].push(path);
+      });
     }
-  }
+  });
   
-  return updatedTags;
+  return tagsObj;
 }
 
 function updateRecentlyViewed({
@@ -217,387 +159,378 @@ module.exports = async function modifyUserData({
   loadCurrentData,
   reqBody,
 }) {
-  const {
-    action,
-    content,
-    id,
-    importedData,
-    name,
-    newParentPath,
-    offlineChanges,
-    oldName,
-    oldParentPath,
-    oldTitle,
-    password,
-    path,
-    prefs,
-    recent,
-    tags,
-    title,
-    type,
-    username,
-  } = reqBody;
-  let missingRequiredItems;
-  
-  if (!action) return { error: { code: 400, msg: 'Missing `action`' } };
-  else if (![
-    'add', 
-    'applyOfflineChanges', 
-    'edit', 
-    'delete',
-    'importData',
-    'move',
-  ].includes(action)) return { error: { code: 400, msg: `The \`action\` "${action}" is unknown` } };
-  else if (!type) return { error: { code: 400, msg: 'Missing `type`' } };
-  else if (!username && !password) return { error: { code: 400, msg: 'Missing `username` and `password`' } };
-  else if (!username) return { error: { code: 400, msg: 'Missing `username`' } };
-  else if (!password) return { error: { code: 400, msg: 'Missing `password`' } };
-  else if (![
-    'all',
-    'group', 
-    'note',
-    'preferences',
-    'recentlyViewed',
-  ].includes(type)) return { error: { code: 400, msg: `The \`type\` "${type}" is unknown` } };
-  else if (type === 'note') {
-    let required = ['path', 'title'];
+  try {
+    const {
+      action,
+      content,
+      id,
+      importedData,
+      name,
+      newParentPath,
+      offlineChanges,
+      oldName,
+      oldParentPath,
+      oldTitle,
+      password,
+      path,
+      prefs,
+      recent,
+      tags,
+      title,
+      type,
+      username,
+    } = reqBody;
+    let missingRequiredItems;
     
-    switch (action) {
-      case 'edit': {
-        required.push('oldTitle');
-        break;
-      }
-      case 'delete': {
-        required = ['id', 'path'];
-        break;
-      }
-      case 'move': {
-        required = ['id', 'oldParentPath', 'newParentPath', 'type'];
-        break;
-      }
-    }
-    
-    missingRequiredItems = getMissingRequiredItems(required, reqBody);
-  }
-  else if (type === 'group') {
-    let required = ['path', 'name'];
-    
-    switch (action) {
-      case 'edit': {
-        required.push('oldName');
-        break;
-      }
-      case 'delete': {
-        required = ['id', 'path'];
-        break;
-      }
-      case 'move': {
-        required = ['id', 'oldParentPath', 'newParentPath', 'type'];
-        break;
-      }
-    }
-    
-    missingRequiredItems = getMissingRequiredItems(required, reqBody);
-  }
-  else if (type === 'preferences') {
-    const required = ['prefs'];
-    missingRequiredItems = getMissingRequiredItems(required, reqBody);
-  }
-  else if (type === 'all') {
-    const required = ['?importedData?', '?offlineChanges?'];
-    missingRequiredItems = getMissingRequiredItems(required, reqBody);
-  }
-  
-  if (missingRequiredItems) return { error: { code: 400, msg: `Missing ${missingRequiredItems}` } };
-  
-  let data = await loadCurrentData();
-  let allTags = JSON.parse(JSON.stringify(data.allTags));
-  const notesData = JSON.parse(JSON.stringify(data.notesData));
-  let logMsg = 'Data set';
-  
-  switch (action) {
-    case 'add': {
-      const creationDate = Date.now();
+    if (!action) return { error: { code: 400, msg: 'Missing `action`' } };
+    else if (![
+      'add', 
+      'applyOfflineChanges', 
+      'edit', 
+      'delete',
+      'importData',
+      'move',
+    ].includes(action)) return { error: { code: 400, msg: `The \`action\` "${action}" is unknown` } };
+    else if (!type) return { error: { code: 400, msg: 'Missing `type`' } };
+    else if (!username && !password) return { error: { code: 400, msg: 'Missing `username` and `password`' } };
+    else if (!username) return { error: { code: 400, msg: 'Missing `username`' } };
+    else if (!password) return { error: { code: 400, msg: 'Missing `password`' } };
+    else if (![
+      'all',
+      'group', 
+      'note',
+      'preferences',
+      'recentlyViewed',
+    ].includes(type)) return { error: { code: 400, msg: `The \`type\` "${type}" is unknown` } };
+    else if (type === 'note') {
+      let required = ['path', 'title'];
       
-      if (type === 'note') {
-        const { notes } = getPathNode(notesData, path);
-        const nodeId = kebabCase(title);
+      switch (action) {
+        case 'edit': {
+          required.push('oldTitle');
+          break;
+        }
+        case 'delete': {
+          required = ['id', 'path'];
+          break;
+        }
+        case 'move': {
+          required = ['id', 'oldParentPath', 'newParentPath', 'type'];
+          break;
+        }
+      }
+      
+      missingRequiredItems = getMissingRequiredItems(required, reqBody);
+    }
+    else if (type === 'group') {
+      let required = ['path', 'name'];
+      
+      switch (action) {
+        case 'edit': {
+          required.push('oldName');
+          break;
+        }
+        case 'delete': {
+          required = ['id', 'path'];
+          break;
+        }
+        case 'move': {
+          required = ['id', 'oldParentPath', 'newParentPath', 'type'];
+          break;
+        }
+      }
+      
+      missingRequiredItems = getMissingRequiredItems(required, reqBody);
+    }
+    else if (type === 'preferences') {
+      const required = ['prefs'];
+      missingRequiredItems = getMissingRequiredItems(required, reqBody);
+    }
+    else if (type === 'all') {
+      const required = ['?importedData?', '?offlineChanges?'];
+      missingRequiredItems = getMissingRequiredItems(required, reqBody);
+    }
+    
+    if (missingRequiredItems) return { error: { code: 400, msg: `Missing ${missingRequiredItems}` } };
+    
+    let data = await loadCurrentData();
+    let allTags = JSON.parse(JSON.stringify(data.allTags));
+    const notesData = JSON.parse(JSON.stringify(data.notesData));
+    let logMsg = 'Data set';
+    
+    switch (action) {
+      case 'add': {
+        const creationDate = Date.now();
         
-        if (!notes[nodeId]) {
+        if (type === 'note') {
+          const { notes } = getPathNode(notesData, path);
+          const nodeId = kebabCase(title);
+          
+          if (!notes[nodeId]) {
+            const fTags = parseTags(tags);
+            
+            notes[nodeId] = {
+              content: sanitizeContent(content) || '',
+              created: creationDate,
+              tags: fTags,
+              title,
+            };
+            
+            allTags = compileTags(notesData);
+            
+            logMsg = `Created note "${title}" in "${path}"`;
+          }
+          else return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
+        }
+        else if (type === 'group') {
+          const { groups } = getPathNode(notesData, path);
+          const nodeId = kebabCase(name);
+          
+          if (!groups[nodeId]) {
+            groups[nodeId] = { 
+              ...groupNodeShape(),
+              created: creationDate,
+              groupName: name,
+            };
+            
+            logMsg = `Created group "${name}" in "${path}"`;
+          }
+          else return { error: { code: 400, msg: `The group "${name}" already exists in "${path}"` } };
+        }
+        
+        break;
+      }
+      case 'edit': {
+        if (type === 'note') {
+          const { notes } = getPathNode(notesData, path);
+          let nodeId = kebabCase(oldTitle);
+          const oldNote = { ...notes[nodeId] };
           const fTags = parseTags(tags);
           
+          // could have just changed the casing of a title
+          if (oldTitle.toLowerCase() !== title.toLowerCase()) {
+            const newNodeId = kebabCase(title);
+            if (notes[newNodeId]) {
+              return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
+            }
+            
+            delete notes[nodeId];
+            nodeId = newNodeId;
+          }
+          
           notes[nodeId] = {
+            ...oldNote,
             content: sanitizeContent(content) || '',
-            created: creationDate,
+            modified: Date.now(),
             tags: fTags,
             title,
           };
           
-          allTags = mergeTags(allTags, fTags, `${path}/${nodeId}`);
+          allTags = compileTags(notesData);
           
-          logMsg = `Created note "${title}" in "${path}"`;
+          logMsg = `Updated note "${title}" in "${path}"`;
         }
-        else return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
-      }
-      else if (type === 'group') {
-        const { groups } = getPathNode(notesData, path);
-        const nodeId = kebabCase(name);
-        
-        if (!groups[nodeId]) {
-          groups[nodeId] = { 
-            ...groupNodeShape(),
-            created: creationDate,
+        else if (type === 'group') {
+          const { groups } = getPathNode(notesData, path);
+          let nodeId = kebabCase(oldName);
+          const groupCopy = { ...groups[nodeId] };
+          
+          if (oldName !== name) {
+            const newNodeId = kebabCase(name);
+            if (groups[newNodeId]) {
+              return { error: { code: 400, msg: `Group "${name}" already exists in "${path}"` } };
+            }
+            
+            delete groups[nodeId];
+            nodeId = newNodeId;
+          }
+          
+          groups[nodeId] = {
+            ...groupCopy,
             groupName: name,
           };
           
-          logMsg = `Created group "${name}" in "${path}"`;
+          logMsg = `Renamed group from "${oldName}" to "${name}" in "${path}"`;
         }
-        else return { error: { code: 400, msg: `The group "${name}" already exists in "${path}"` } };
-      }
-      
-      break;
-    }
-    case 'edit': {
-      if (type === 'note') {
-        const { notes } = getPathNode(notesData, path);
-        let nodeId = kebabCase(oldTitle);
-        const oldNote = { ...notes[nodeId] };
-        const fTags = parseTags(tags);
-        
-        // could have just changed the casing of a title
-        if (oldTitle.toLowerCase() !== title.toLowerCase()) {
-          const newNodeId = kebabCase(title);
-          if (notes[newNodeId]) {
-            return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
-          }
+        else if (type === 'preferences') {
+          data.preferences = {
+            ...data.preferences,
+            ...prefs,
+          };
           
-          delete notes[nodeId];
-          nodeId = newNodeId;
+          logMsg = `Updated preferences for ${Object.keys(prefs).map(pref => `"${pref}"`).join(', ')}`;
+        }
+        else if (type === 'recentlyViewed') {
+          data.recentlyViewed = recent;
+          logMsg = 'Updated recentlyViewed';
         }
         
-        notes[nodeId] = {
-          ...oldNote,
-          content: sanitizeContent(content) || '',
-          modified: Date.now(),
-          tags: fTags,
-          title,
-        };
-        
-        allTags = mergeTags(allTags, fTags, `${path}/${nodeId}`);
-        
-        logMsg = `Updated note "${title}" in "${path}"`;
+        break;
       }
-      else if (type === 'group') {
-        const { groups } = getPathNode(notesData, path);
-        let nodeId = kebabCase(oldName);
-        const groupCopy = { ...groups[nodeId] };
+      case 'delete': {
+        const node = getPathNode(notesData, path);
+        const nodeType = `${type}s`; // groups or notes
         
-        if (oldName !== name) {
-          const newNodeId = kebabCase(name);
-          if (groups[newNodeId]) {
-            return { error: { code: 400, msg: `Group "${name}" already exists in "${path}"` } };
-          }
+        data.recentlyViewed = updateRecentlyViewed({
+          deletePath: path,
+          id,
+          notesData,
+          recent: data.recentlyViewed,
+          type,
+        });
+        
+        delete node[nodeType][id];
+        
+        allTags = compileTags(notesData);
+        
+        logMsg = `Removed ${type} "${id}" from "${path}"`;
+        
+        break;
+      }
+      case 'applyOfflineChanges': {
+        try {
+          const msgLines = [];
           
-          delete groups[nodeId];
-          nodeId = newNodeId;
-        }
-        
-        groups[nodeId] = {
-          ...groupCopy,
-          groupName: name,
-        };
-        
-        logMsg = `Renamed group from "${oldName}" to "${name}" in "${path}"`;
-      }
-      else if (type === 'preferences') {
-        data.preferences = {
-          ...data.preferences,
-          ...prefs,
-        };
-        
-        logMsg = `Updated preferences for ${Object.keys(prefs).map(pref => `"${pref}"`).join(', ')}`;
-      }
-      else if (type === 'recentlyViewed') {
-        data.recentlyViewed = recent;
-        logMsg = 'Updated recentlyViewed';
-      }
-      
-      break;
-    }
-    case 'delete': {
-      const node = getPathNode(notesData, path);
-      const nodeType = `${type}s`; // groups or notes
-      
-      allTags = updateTagsPaths({
-        allTags,
-        deletePath: path,
-        id,
-        notesData,
-        type,
-      });
-      
-      data.recentlyViewed = updateRecentlyViewed({
-        deletePath: path,
-        id,
-        notesData,
-        recent: data.recentlyViewed,
-        type,
-      });
-      
-      delete node[nodeType][id];
-      logMsg = `Removed ${type} "${id}" from "${path}"`;
-      
-      break;
-    }
-    case 'applyOfflineChanges': {
-      try {
-        const msgLines = [];
-        
-        Object.keys(offlineChanges).forEach((dataType) => {
-          Object.keys(offlineChanges[dataType]).forEach((changeType) => {
-            let orderedChanges = offlineChanges[dataType][changeType];
-            
-            if (changeType === 'modified') {
-              // Any title changes need to come first to rename any existing 
-              // notes, otherwise any further updates will fail.
-              orderedChanges = sortArrayByPropVal(orderedChanges, [['prop', 'title']]);
-            }
-            
-            orderedChanges.forEach(({ path: _path, ...changeData }) => {
-              const objPath = _path.split('/');
-              const item = objPath.pop();
+          Object.keys(offlineChanges).forEach((dataType) => {
+            Object.keys(offlineChanges[dataType]).forEach((changeType) => {
+              let orderedChanges = offlineChanges[dataType][changeType];
               
-              switch (dataType) {
-                case 'notes': {
-                  const objNode = objPath.reduce((obj, key) => obj[key], notesData);
+              if (changeType === 'modified') {
+                // Any title changes need to come first to rename any existing 
+                // notes, otherwise any further updates will fail.
+                orderedChanges = sortArrayByPropVal(orderedChanges, [['prop', 'title']]);
+              }
+              
+              orderedChanges.forEach(({ path: _path, ...changeData }) => {
+                const objPath = _path.split('/');
+                const item = objPath.pop();
+                
+                switch (dataType) {
+                  case 'notes': {
+                    const objNode = objPath.reduce((obj, key) => obj[key], notesData);
 
-                  switch (changeType) {
-                    case 'added': {
-                      if (objNode[item]) {
-                        return {
-                          error: {
-                            code: 500,
-                            msg: `Could not add "${item}", it already exists.`,
-                          },
-                        };
-                      }
-                      
-                      objNode[item] = changeData.obj;
-                      msgLines.push(`Added "${item}"`);
-                      break;
-                    }
-                    case 'modified': {
-                      const { from, prop, to } = changeData;
-                      let nodeId = (prop === 'title')
-                        ? kebabCase(from)
-                        : kebabCase(item);
-                      
-                      objNode[nodeId][prop] = to;
-                      
-                      if (prop === 'title') {
-                        const newNodeId = kebabCase(to);
-                        
-                        if (objNode[newNodeId]) {
+                    switch (changeType) {
+                      case 'added': {
+                        if (objNode[item]) {
                           return {
                             error: {
                               code: 500,
-                              msg: `Could not rename "${from}" to "${to}", "${to}" already exists.`,
+                              msg: `Could not add "${item}", it already exists.`,
                             },
                           };
                         }
                         
-                        objNode[newNodeId] = objNode[nodeId];
-                        delete objNode[nodeId];
-                        msgLines.push(`Renamed "${from}" to "${to}"`);
+                        objNode[item] = changeData.obj;
+                        msgLines.push(`Added "${item}"`);
+                        break;
                       }
-                      else msgLines.push(`Updated "${item}.${prop}"`);
-                      
-                      break;
+                      case 'modified': {
+                        const { from, prop, to } = changeData;
+                        let nodeId = (prop === 'title')
+                          ? kebabCase(from)
+                          : kebabCase(item);
+                        
+                        objNode[nodeId][prop] = to;
+                        
+                        if (prop === 'title') {
+                          const newNodeId = kebabCase(to);
+                          
+                          if (objNode[newNodeId]) {
+                            return {
+                              error: {
+                                code: 500,
+                                msg: `Could not rename "${from}" to "${to}", "${to}" already exists.`,
+                              },
+                            };
+                          }
+                          
+                          objNode[newNodeId] = objNode[nodeId];
+                          delete objNode[nodeId];
+                          msgLines.push(`Renamed "${from}" to "${to}"`);
+                        }
+                        else msgLines.push(`Updated "${item}.${prop}"`);
+                        
+                        break;
+                      }
+                      case 'removed': { 
+                        delete objNode[item];
+                        msgLines.push(`Removed "${item}"`);
+                        break;
+                      }
                     }
-                    case 'removed': { 
-                      delete objNode[item];
-                      msgLines.push(`Removed "${item}"`);
-                      break;
-                    }
-                  }
 
-                  break;
-                }
-                case 'prefs': {
-                  switch (changeType) {
-                    case 'modified': {
-                      const { from, prop, to } = changeData;
-                      data.preferences[prop] = to;
-                      msgLines.push(`Updated preference "${prop}" from "${from}" to "${to}"`);
-                      break;
+                    break;
+                  }
+                  case 'prefs': {
+                    switch (changeType) {
+                      case 'modified': {
+                        const { from, prop, to } = changeData;
+                        data.preferences[prop] = to;
+                        msgLines.push(`Updated preference "${prop}" from "${from}" to "${to}"`);
+                        break;
+                      }
                     }
                   }
                 }
-              }
+              });
             });
           });
+          
+          logMsg = `Applied offline changes:\n  - ${msgLines.join('\n  - ')}`;
+        }
+        catch (err) {
+          return { error: { code: 500, msg: err.stack } };
+        }
+        
+        break;
+      }
+      case 'importData': {
+        return finalizeData(
+          importedData.data,
+          `Imported data for "${username}"`
+        );
+      }
+      case 'move': {
+        const oldNode = getPathNode(notesData, oldParentPath);
+        const newNode = getPathNode(notesData, newParentPath);
+        const nodeType = `${type}s`;
+        const node = oldNode[nodeType][id];
+        const exists = !!newNode[nodeType][id];
+      
+        if (exists) {
+          return { error: { code: 400, msg: `${type} "${id}" already exists, move aborted.` } };
+        }
+        
+        data.recentlyViewed = updateRecentlyViewed({
+          id,
+          newParentPath,
+          notesData,
+          oldParentPath,
+          recent: data.recentlyViewed,
+          type,
         });
         
-        logMsg = `Applied offline changes:\n  - ${msgLines.join('\n  - ')}`;
+        // move to new group
+        newNode[nodeType][id] = node;
+        // delete old note
+        delete oldNode[nodeType][id];
+        
+        allTags = compileTags(notesData);
+        
+        logMsg = `Moved ${type} from "${oldParentPath}/${id}" to "${newParentPath}/${id}"`;
+        
+        break;
       }
-      catch (err) {
-        return { error: { code: 500, msg: err.stack } };
-      }
-      
-      break;
     }
-    case 'importData': {
-      return finalizeData(
-        importedData.data,
-        `Imported data for "${username}"`
-      );
-    }
-    case 'move': {
-      const oldNode = getPathNode(notesData, oldParentPath);
-      const newNode = getPathNode(notesData, newParentPath);
-      const nodeType = `${type}s`;
-      const node = oldNode[nodeType][id];
-      const exists = !!newNode[nodeType][id];
     
-      if (exists) {
-        return { error: { code: 400, msg: `${type} "${id}" already exists, move aborted.` } };
-      }
-      
-      // update old cached paths first, before the node structure is updated for
-      // simplicity.
-      allTags = updateTagsPaths({
-        allTags,
-        id,
-        newParentPath,
-        notesData,
-        oldParentPath,
-        type,
-      });
-      
-      data.recentlyViewed = updateRecentlyViewed({
-        id,
-        newParentPath,
-        notesData,
-        oldParentPath,
-        recent: data.recentlyViewed,
-        type,
-      });
-      
-      // move to new group
-      newNode[nodeType][id] = node;
-      // delete old note
-      delete oldNode[nodeType][id];
-      
-      logMsg = `Moved ${type} from "${oldParentPath}/${id}" to "${newParentPath}/${id}"`;
-      
-      break;
-    }
+    // NOTE: Comment out the below lines when testing new/fragile code that could
+    // corrupt the data in some way.
+    data.allTags = allTags;
+    data.notesData = notesData;
+    
+    return finalizeData(data, logMsg);
   }
-  
-  // NOTE: Comment out the below lines when testing new/fragile code that could
-  // corrupt the data in some way.
-  data.allTags = allTags;
-  data.notesData = notesData;
-  
-  return finalizeData(data, logMsg);
+  catch (err) {
+    return { error: { code: 500, msg: err.stack } };
+  }
 };
