@@ -1,4 +1,5 @@
 <script>
+  import { BASE_DATA_NODE } from '../../constants';
   import {
     deleteNoteData,
     dialogDataForDelete,
@@ -26,6 +27,10 @@
       if (err.stack) throw (err);
     }
   }
+  
+  $: groupPath = ($dialogDataForDelete)
+    ? ($dialogDataForDelete.path.replace(BASE_DATA_NODE, '') || '/')
+    : undefined;
 </script>
 
 {#if $dialogDataForDelete}
@@ -46,11 +51,11 @@
       
       {#if $dialogDataForDelete.type === 'note'}
         <div class="delete-form__msg">
-          Delete note "{$dialogDataForDelete.title}" from "{$dialogDataForDelete.path}"?
+          Delete note "{$dialogDataForDelete.title}" from "{groupPath}"?
         </div>
       {:else}
         <div class="delete-form__msg">
-          Delete group "{$dialogDataForDelete.groupName}" and all the notes in "{$dialogDataForDelete.path}/{$dialogDataForDelete.id}"?
+          Delete group "{$dialogDataForDelete.groupName}" and all the notes in "{groupPath}/{$dialogDataForDelete.id}"?
         </div>
       {/if}
       <nav class="delete-form__btm-nav">
