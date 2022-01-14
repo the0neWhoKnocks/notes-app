@@ -98,9 +98,13 @@ const shell = ({
         }
 
         h1, h2, h3, h4, h5, h6 {
-          margin: 0 0 0.5em 0;
-          font-weight: 400;
+          font-weight: bold;
           line-height: 1.2;
+          border-bottom: dashed 1px;
+          margin: 0 0 0.25em 0;
+        }
+        :where(h1, h2, h3, h4, h5, h6):not(:first-of-type) {
+          margin-top: 1em;
         }
 
         h1 {
