@@ -28,7 +28,7 @@ Feat:
 - [ ] Note formatting
   - [x] Make h<num> in notes Bold
   - [x] Tables have no borders
-  - [ ] blockquotes need vertical spacing
+  - [x] blockquotes need vertical spacing
 - [ ] Anchor dialog
 - [ ] Change '+ Group' and '+ Note' buttons to icons, for more space
 - [ ] Wysiwyg icons
