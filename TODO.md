@@ -27,7 +27,7 @@ Feat:
 - [x] Display tag name on TaggedNotes page
 - [ ] Note formatting
   - [x] Make h<num> in notes Bold
-  - [ ] Tables have no borders
+  - [x] Tables have no borders
   - [ ] blockquotes need vertical spacing
 - [ ] Anchor dialog
 - [ ] Change '+ Group' and '+ Note' buttons to icons, for more space
