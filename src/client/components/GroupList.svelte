@@ -236,6 +236,9 @@
     line-height: 1em;
     display: flex;
   }
+  .item__label > * {
+    pointer-events: none;
+  }
   
   :global(.item .svg-icon) {
     margin-right: 0.25em;
