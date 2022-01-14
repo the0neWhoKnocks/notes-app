@@ -7,7 +7,6 @@ import {
 } from '../constants';
 import getPathNode from '../utils/getPathNode';
 import logger from '../utils/logger';
-import getParams from './utils/getParams';
 import postData from './utils/postData';
 import {
 	getStorageType,
@@ -17,6 +16,7 @@ import {
 const log = logger('stores');
 
 export const allTags = writable([]);
+export const currentTag = writable();
 export const dialogDataForDelete = writable();
 export const dialogDataForDiff = writable();
 export const dialogDataForGroup = writable();
@@ -29,7 +29,6 @@ export const offline = writable(false);
 export const recentlyViewed = writable();
 export const recentlyViewedOpen = writable(false);
 export const searchFlyoutOpen = writable(false);
-export const tagsList = writable();
 export const themeSelectorOpen = writable(false);
 export const userData = writable();
 export const userIsLoggedIn = writable(false);
@@ -55,18 +54,29 @@ export async function setUserData(payload) {
 		notesData
 		&& JSON.stringify(notesData) !== oldNotes
 	) noteGroups.set(notesData);
+	
 	if (
 		preferences
 		&& JSON.stringify(preferences) !== oldPrefs
 	) userPreferences.set(preferences);
+	
 	if (
 		recent
 		&& JSON.stringify(recent) !== oldRecent
 	) recentlyViewed.set(recent);
+	
 	if (
 		tags
 		&& JSON.stringify(tags) !== oldTags
-	) allTags.set(tags);
+	) {
+		allTags.set(tags);
+		
+		const cT = getStoreValue(currentTag);
+		if (cT && !tags[cT]) {
+			currentTag.set();
+			updateHistory();
+		}
+	}
 	
 	return newData;
 }
@@ -270,6 +280,7 @@ export function updateHistory({ params, path } = {}) {
 	
 	if (_url.pathname === '/' && !_url.search) {
 		currentNote.set();
+		currentTag.set();
 	}
 	
 	window.history.replaceState({}, '', _url);
@@ -280,12 +291,12 @@ export async function loadNote(notePath) {
 		const nG = getStoreValue(noteGroups);
 		const nNFO = getStoreValue(notesNavFlyoutOpen);
 		const sFO = getStoreValue(searchFlyoutOpen);
-		const tL = getStoreValue(tagsList);
+		const cT = getStoreValue(currentTag);
 		const path = decodeURIComponent(notePath);
 		const { id, notes } = getPathNode(nG, path);
 		const note = notes[id];
 		
-		if (tL) tagsList.set();
+		if (cT) currentTag.set();
 		
 		if (nNFO) notesNavFlyoutOpen.set(false);
 		else if (sFO) searchFlyoutOpen.set(false);
@@ -325,7 +336,7 @@ export function loadTaggedNotes(tag) {
 	
 	// could be 'undefined' if a User hits up a dead URL
 	if (tag && aT && aT[tag]) {
-		tagsList.set(aT[tag]);
+		currentTag.set(tag);
 		updateHistory({ params: { tag: encodeURIComponent(tag) } });
 	}
 	// no note found, so update URL
@@ -358,8 +369,8 @@ export function getNoteBlurbs(notePaths) {
 export async function updateItemPath(payload) {
 	try {
 		const cN = getStoreValue(currentNote);
-		const tL = getStoreValue(tagsList);
-		const { allTags: tags } = await setUserData({
+		
+		await setUserData({
 			...getStoreValue(userData),
 			...payload,
 			action: 'move',
@@ -371,11 +382,6 @@ export async function updateItemPath(payload) {
 			updateHistory({
 				params: { note: encodeURIComponent(`${newParentPath}/${id}`) },
 			});
-		}
-		// If the TagsList is open, update paths
-		else if (tL) {
-			const { tag } = getParams(window.location.href);
-			tagsList.set(tags[tag]);
 		}
 		
 		dialogDataForMove.set();

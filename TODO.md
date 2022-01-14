@@ -23,8 +23,8 @@ Feat:
   - [x] add/delete tags
   - [x] auto-complete from previously added tags
   - [x] diff check when tags change
-- [ ] Add number of items next to group title
-- [ ] Display tag name on TaggedNotes page
+- [x] Add number of items next to group title
+- [x] Display tag name on TaggedNotes page
 - [ ] Note formatting
   - [ ] Make h<num> in notes Bold
   - [ ] Tables have no borders

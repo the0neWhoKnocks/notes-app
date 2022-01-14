@@ -2,11 +2,11 @@
   import { cubicOut } from 'svelte/easing';
   import {
     currentNote,
+    currentTag,
     getNoteBlurbs,
     initialUserDataLoaded,
     recentlyViewed,
     recentlyViewedOpen,
-    tagsList,
   } from '../stores';
   import NoteBlurb from './NoteBlurb.svelte';
   
@@ -35,7 +35,7 @@
   
   $: if (
     $initialUserDataLoaded
-    && (!$currentNote && !$tagsList)
+    && (!$currentNote && !$currentTag)
     && $recentlyViewed && $recentlyViewed.length
   ) {
     recentItems = getNoteBlurbs($recentlyViewed);
