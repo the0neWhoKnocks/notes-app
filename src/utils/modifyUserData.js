@@ -133,7 +133,7 @@ function updateRecentlyViewed({
     
     iterateData(notesData, _path, ({ note, noteId }) => {
       if (note) {
-        if (deletePath) updatePath(deletePath);
+        if (deletePath) updatePath(`${deletePath}/${id}/${noteId}`);
         else {
           const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
           const newNotePath = `${newParentPath}/${id}/${noteId}`;
