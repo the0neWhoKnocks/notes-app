@@ -1,5 +1,6 @@
 <script>
   import { BASE_DATA_NODE } from '../../constants';
+  import parsePath from '../../utils/parsePath';
   import {
     deleteNoteData,
     dialogDataForDelete,
@@ -28,9 +29,19 @@
     }
   }
   
-  $: groupPath = ($dialogDataForDelete)
-    ? ($dialogDataForDelete.path.replace(BASE_DATA_NODE, '') || '/')
-    : undefined;
+  let groupPath;
+  $: if ($dialogDataForDelete) {
+    const { path, type } = $dialogDataForDelete;
+    
+    if (type === 'group') {
+      groupPath = (path.replace(BASE_DATA_NODE, '') || '/');
+    }
+    else {
+      const { rawPrefix } = parsePath(path);
+      groupPath = (rawPrefix.replace(BASE_DATA_NODE, '') || '/');
+    }
+  }
+  else groupPath = undefined;
 </script>
 
 {#if $dialogDataForDelete}
@@ -51,11 +62,11 @@
       
       {#if $dialogDataForDelete.type === 'note'}
         <div class="delete-form__msg">
-          Delete note "{$dialogDataForDelete.title}" from "{groupPath}"?
+          Delete note <code>{$dialogDataForDelete.title}</code> from <code>{groupPath}</code>?
         </div>
       {:else}
         <div class="delete-form__msg">
-          Delete group "{$dialogDataForDelete.groupName}" and all the notes in "{groupPath}{$dialogDataForDelete.id}"?
+          Delete group <code>{$dialogDataForDelete.groupName}</code> and all the notes in <code>{groupPath}</code>?
         </div>
       {/if}
       <nav class="delete-form__btm-nav">
@@ -74,6 +85,15 @@
     padding: 1em;
     display: flex;
     flex-direction: column;
+  }
+  
+  code {
+    line-height: 1em;
+    padding: 0.1em 0.25em;
+    border: solid 1px;
+    border-radius: 0.25em;
+    margin: 0 3px;
+    display: inline-block;
   }
   
   .delete-form__msg {

@@ -1,7 +1,9 @@
 <script>
-  import getPathNode from '../../utils/getPathNode';
+  import {
+    getGroupNode,
+    getNoteNode,
+  } from '../../utils/dataNodeUtils';
   import logger from '../../utils/logger';
-  import parsePath from '../../utils/parsePath';
   import {
     dialogDataForDelete,
     dialogDataForGroup,
@@ -17,23 +19,31 @@
   const log = logger('ModifyNav');
   
   function deleteItem() {
-    const { rawPrefix } = parsePath(path);
-    const { groupName, title } = getPathNode($noteGroups, rawPrefix)[`${type}s`][id];
+    let groupName, title;
+    
+    if (type === 'group') {
+      ({ groupName, title } = getGroupNode($noteGroups, path).group);
+    }
+    else {
+      ({ groupName, title } = getNoteNode($noteGroups, path).note);
+    }
+    
     log.info(`Delete ${type} "${id}"`);
-    dialogDataForDelete.set({ groupName, id, path: rawPrefix, title, type });
+    dialogDataForDelete.set({ groupName, id, path, title, type });
   }
   
   function editItem() {
-    const { rawPrefix } = parsePath(path);
-    const { content, groupName, tags, title } = getPathNode($noteGroups, rawPrefix)[`${type}s`][id];
+    const base = { action: 'edit', path };
     
     log.info(`Edit ${type} "${id}"`);
     
-    if (type === 'note') {
-      dialogDataForNote.set({ action: 'edit', content, id, path: rawPrefix, tags, title });
+    if (type === 'group') {
+      const { groupName } = getGroupNode($noteGroups, path).group;
+      dialogDataForGroup.set({ ...base, id, name: groupName });
     }
-    else if (type === 'group') {
-      dialogDataForGroup.set({ action: 'edit', content, id, name: groupName, path: rawPrefix });
+    else {
+      const { content, tags, title } = getNoteNode($noteGroups, path).note;
+      dialogDataForNote.set({ ...base, content, id, tags, title });
     }
   }
   

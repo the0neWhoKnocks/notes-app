@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import kebabCase from '../../utils/kebabCase';
+  import parsePath from '../../utils/parsePath';
   import LabeledInput from './LabeledInput.svelte';
 
   export let editing = false;
@@ -14,10 +15,13 @@
   let query = '';
   
   const genQuery = (str = '') => {
-    let val = path;
     const id = kebabCase(str);
+    let val = path;
     
-    if (str) val += `/${id}`;
+    if (str) {
+      const { rawPrefix } = parsePath(path);
+      val = `${rawPrefix}/${id}`;
+    }
     const queryParams = { note: val }; // has to happen before encode
     
     val = encodeURIComponent(val);

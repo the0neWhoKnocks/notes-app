@@ -80,7 +80,7 @@
   style={addFileStyles(itemStyles)}
   on:click={isRoot && handleClick}
 >
-  {#each data as item}
+  {#each data as item (`${groupPath}/${item.groupName}`)}
     {#if item.groupName}
       {#each getGroupData(item, expanded) as {empty, groupName, hasItems, nameComponent, open, subGroup}}
         <div class="group" {empty} {open}>

@@ -101,4 +101,8 @@
   .group-form__btm-nav button {
     width: 49%;
   }
+  
+  :global(.group-form .query) {
+    padding-left: 4em;
+  }
 </style>
