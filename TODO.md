@@ -30,12 +30,13 @@ Feat:
   - [ ] Tables have no borders
   - [ ] blockquotes need vertical spacing
 - [ ] Anchor dialog
+- [ ] Change '+ Group' and '+ Note' buttons to icons, for more space
 - [ ] Wysiwyg icons
 - [ ] Theme colors
 - [ ] print note (button?), or will print CSS media query be enough.
 
 Fix:
-- [ ] NotesNav grouped item navs overflowing
+- [x] NotesNav grouped item navs overflowing
 - [x] Notes dialog toolbar overflows on small screens
 - [x] Importing data not always working
 - [x] note blurbs need ellipsis for long lines

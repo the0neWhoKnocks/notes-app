@@ -89,7 +89,7 @@
               {#if hasItems}
                 <span class="indicator"></span>
               {/if}
-              <Icon type={ICON__FOLDER} />{groupName}
+              <Icon type={ICON__FOLDER} /><span class="group__name-text">{groupName}</span>
             </div>
             {#if nameComponent}
               <svelte:component this={nameComponent} {...item} />
@@ -108,11 +108,11 @@
         <div class="item">
           {#if link}
             <a class="item__label" href={link} {...dataAttrs}>
-              <Icon type={ICON__FILE} />{name}
+              <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
             </a>
           {:else}
             <div class="item__label" {...dataAttrs}>
-              <Icon type={ICON__FILE} />{name}
+              <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
             </div>
           {/if}
           {#if nameComponent}
