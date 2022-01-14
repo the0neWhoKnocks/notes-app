@@ -29,7 +29,7 @@ Feat:
   - [x] Make h<num> in notes Bold
   - [x] Tables have no borders
   - [x] blockquotes need vertical spacing
-- [ ] Anchor dialog
+- [x] Anchor dialog
 - [x] Change '+ Group' and '+ Note' buttons to icons, for more space
 - [ ] Wysiwyg icons
 - [ ] Theme colors

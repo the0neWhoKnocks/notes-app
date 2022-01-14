@@ -12,8 +12,10 @@
   } from '../stores';
   import Dialog from './Dialog.svelte';
   import GroupNoteNameInput from './GroupNoteNameInput.svelte';
+  import LabeledInput from './LabeledInput.svelte';
   import TagsInput from './TagsInput.svelte';
   
+  let anchorDialogData;
   let previewing = false;
   let contentText = '';
   let editingNote;
@@ -136,6 +138,11 @@
     }
   }
   
+  function selectText(startPos, endPos) {
+    textareaRef.focus();
+    textareaRef.setSelectionRange(startPos, endPos);
+  }
+  
   function updateEditorValue(newSelStart, newSelEnd, newValue) {
     const scrollPos = textareaRef.scrollTop;
     
@@ -143,9 +150,8 @@
     
     // wait a tick for the render
     setTimeout(() => {
-      textareaRef.focus();
+      selectText(newSelStart, newSelEnd);
       textareaRef.scrollTop = scrollPos;
-      textareaRef.setSelectionRange(newSelStart, newSelEnd);
       
       diffCheck();
     }, 0);
@@ -382,6 +388,42 @@
     updateEditorValue(selStart, selEnd, updatedText);
   }
   
+  function openAnchorDialog() {
+    const selStart = textareaRef.selectionStart;
+    const selEnd = textareaRef.selectionEnd;
+    
+    anchorDialogData = {
+      selEnd,
+      selStart,
+      text: contentText.substring(selStart, selEnd),
+    };
+  }
+  
+  function closeAnchorDialog() {
+    const { selEnd, selStart } = anchorDialogData;
+    anchorDialogData = undefined;
+    selectText(selStart, selEnd);
+  }
+  
+  function addAnchor(ev) {
+    ev.preventDefault();
+    
+    const { currentTarget: form } = ev;
+    const { selEnd, selStart } = anchorDialogData;
+    const data = [...(new FormData(form)).entries()].reduce((obj, [prop, val]) => {
+      obj[prop] = val;
+      return obj;
+    }, {});
+    const link = `[${data.text}](${data.url})`;
+    
+    selectText(selStart, selEnd);
+    insertText(link);
+    
+    anchorDialogData.selEnd = selStart + link.length;
+    
+    closeAnchorDialog();
+  }
+  
   async function handleToolClick({ target }) {
     if (target.dataset) {
       const INDENT = '   '; // needs to be 3 for MD nested lists
@@ -416,7 +458,7 @@
           break;
         
         case 'anchor':
-          insertText(`[%s](LINK_HERE)`, 'wrap');
+          openAnchorDialog();
           break;
         
         case 'ul':
@@ -599,8 +641,32 @@
     </form>
   </Dialog>
 {/if}
+{#if anchorDialogData}
+  <Dialog for="anchor" onCloseClick={closeAnchorDialog}>
+    <form on:submit={addAnchor}>
+      <LabeledInput
+        autoFocus={!anchorDialogData.text}
+        label="Text"
+        name="text"
+        required
+        value={anchorDialogData.text}
+      />
+      <LabeledInput
+        autoFocus={anchorDialogData.text}
+        label="URL"
+        name="url"
+        required
+      />
+      <button>Add</button>
+    </form>
+  </Dialog>
+{/if}
 
 <style>
+  :global([dialog-for="anchor"] .dialog__body) {
+    padding: 1em;
+  }
+  
   .note-form {
     --labeled-input__input-width: 100%;
     
