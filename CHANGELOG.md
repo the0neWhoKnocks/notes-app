@@ -1,6 +1,42 @@
 # Changelog
 ---
 
+## v1.2.0
+
+**Bugfixes**
+- [d1d7272](https://github.com/the0neWhoKnocks/notes-app/commit/d1d7272): Items overflowing in the MoveDialog list
+- [d5f0fe6](https://github.com/the0neWhoKnocks/notes-app/commit/d5f0fe6): Collision when Note and Group share names at the same level
+- [d54f855](https://github.com/the0neWhoKnocks/notes-app/commit/d54f855): Recently viewed items not maintained when group deleted
+- [8885157](https://github.com/the0neWhoKnocks/notes-app/commit/8885157): Deleting group displays 2 slashes in path
+- [1682511](https://github.com/the0neWhoKnocks/notes-app/commit/1682511): Recently viewed items not maintained
+- [67436ad](https://github.com/the0neWhoKnocks/notes-app/commit/67436ad): Page fully loads on NotesNav Note click
+- [520bf25](https://github.com/the0neWhoKnocks/notes-app/commit/520bf25): NotesNav text and navs overflowing
+- [f3a2bac](https://github.com/the0neWhoKnocks/notes-app/commit/f3a2bac): WYSIWYG don't do anything while previewing
+- [bf85b03](https://github.com/the0neWhoKnocks/notes-app/commit/bf85b03): Randomly can't add note to group after add/edit
+- [cdc7133](https://github.com/the0neWhoKnocks/notes-app/commit/cdc7133): Nested list items aren't rendered correctly
+- [8951735](https://github.com/the0neWhoKnocks/notes-app/commit/8951735): Tags not always accurate
+- [cb270c4](https://github.com/the0neWhoKnocks/notes-app/commit/cb270c4): Can't always import notes data
+- [c708007](https://github.com/the0neWhoKnocks/notes-app/commit/c708007): NoteBlurbs text overflowing container
+
+**Features**
+- [ec8d942](https://github.com/the0neWhoKnocks/notes-app/commit/ec8d942): Anchor Dialog
+- [2826175](https://github.com/the0neWhoKnocks/notes-app/commit/2826175): Use Icons for '+ Group' and '+ Note'
+- [34af1c3](https://github.com/the0neWhoKnocks/notes-app/commit/34af1c3): Add styling for blockquotes
+- [b8bf8da](https://github.com/the0neWhoKnocks/notes-app/commit/b8bf8da): Added styling for tables
+- [848a2d4](https://github.com/the0neWhoKnocks/notes-app/commit/848a2d4): Added styling for H tags
+- [8024bca](https://github.com/the0neWhoKnocks/notes-app/commit/8024bca): Make searches case insensitive
+- [1e2e65b](https://github.com/the0neWhoKnocks/notes-app/commit/1e2e65b): Display a clearer top message on TaggedNotes
+- [ef3ae5b](https://github.com/the0neWhoKnocks/notes-app/commit/ef3ae5b): Remove the 'BASE_DATA_NODE' from displayed deletion path
+- [6fd0a46](https://github.com/the0neWhoKnocks/notes-app/commit/6fd0a46): Display number of notes in each group in the NotesNav
+- [d649e08](https://github.com/the0neWhoKnocks/notes-app/commit/d649e08): Allow for CTRL clicking notes from NotesNav
+- [0fa9ec6](https://github.com/the0neWhoKnocks/notes-app/commit/0fa9ec6): Normalize how User data is updated
+- [dacca43](https://github.com/the0neWhoKnocks/notes-app/commit/dacca43): Add 'Import' option to start message
+
+**Uncategorized**
+- [3839a00](https://github.com/the0neWhoKnocks/notes-app/commit/3839a00) doc: Added TODOs
+
+---
+
 ## v1.1.0
 
 **Bugfixes**
