@@ -55,7 +55,7 @@
         </div>
       {:else}
         <div class="delete-form__msg">
-          Delete group "{$dialogDataForDelete.groupName}" and all the notes in "{groupPath}/{$dialogDataForDelete.id}"?
+          Delete group "{$dialogDataForDelete.groupName}" and all the notes in "{groupPath}{$dialogDataForDelete.id}"?
         </div>
       {/if}
       <nav class="delete-form__btm-nav">
