@@ -35,7 +35,7 @@ module.exports = function transformNoteData(
         
         if (addCount) {
           const count = tallyGroupNotes(subGroup);
-          if (count) groupName = `${groupName} (${count})`;
+          if (count) groupName = `(${count}) ${groupName}`;
         }
         
         ret.push({

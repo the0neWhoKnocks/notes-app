@@ -132,13 +132,29 @@
   }
   :global(.notes-nav .group__name .sub-nav),
   :global(.notes-nav .item .sub-nav) {
+    margin-left: 0.5em;
     opacity: 0.3;
+    flex-shrink: 0;
   }
   :global(.notes-nav .group-list .item) {
     padding: 0.3em var(--nav-spacing) 0;
   }
   :global(.notes-nav .group-list .item__label) {
     width: 100%;
+  }
+  :global(.notes-nav .group__name-wrapper),
+  :global(.notes-nav .item__label) {
+    overflow: hidden;
+  }
+  :global(.notes-nav .group__name-wrapper .svg-icon),
+  :global(.notes-nav .item__label .svg-icon) {
+    flex-shrink: 0;
+  }
+  :global(.notes-nav .group__name-text),
+  :global(.notes-nav .item__label-text) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
   :global(.notes-nav .item .modify-nav button) {
     padding: 0.6em 0.5em;
