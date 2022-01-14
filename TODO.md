@@ -25,12 +25,12 @@ Feat:
   - [x] diff check when tags change
 - [x] Add number of items next to group title
 - [x] Display tag name on TaggedNotes page
-- [ ] Note formatting
+- [x] Note formatting
   - [x] Make h<num> in notes Bold
   - [x] Tables have no borders
   - [x] blockquotes need vertical spacing
 - [ ] Anchor dialog
-- [ ] Change '+ Group' and '+ Note' buttons to icons, for more space
+- [x] Change '+ Group' and '+ Note' buttons to icons, for more space
 - [ ] Wysiwyg icons
 - [ ] Theme colors
 - [ ] print note (button?), or will print CSS media query be enough.

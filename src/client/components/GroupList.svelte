@@ -176,7 +176,7 @@
   }
   
   .group__name .indicator,
-  :global(.group__name .svg-icon) {
+  :global(.group__name-wrapper .svg-icon) {
     display: inline-block;
   }
   
@@ -200,7 +200,7 @@
     content: '\2212'; /* minus */
   }
   
-  :global(.group__name .svg-icon) {
+  :global(.group__name-wrapper .svg-icon) {
     margin-right: 0.25em;
   }
   
