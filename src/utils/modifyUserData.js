@@ -116,12 +116,16 @@ function updateRecentlyViewed({
   let updated = [...recent];
   
   const updatePath = (oldNotePath, newNotePath) => {
-    // chances of duplicate paths should be zero, iterating all just in case
-    updated = updated.reduce((arr, path) => {
-      // for deletions, 'newNotePath' will be 'undefined'
-      if (newNotePath && path === oldNotePath) arr.push(newNotePath);
-      return arr;
-    }, []);
+    if (deletePath) {
+      updated = updated.filter(path => path !== oldNotePath);
+    }
+    else {
+      // chances of duplicate paths should be zero, iterating all just in case
+      updated = updated.reduce((arr, path) => {
+        if (path === oldNotePath) arr.push(newNotePath);
+        return arr;
+      }, []);
+    }
   };
   
   if (type === 'group') {
@@ -139,7 +143,7 @@ function updateRecentlyViewed({
     });
   }
   else {
-    if (deletePath) updatePath(deletePath);
+    if (deletePath) updatePath(`${deletePath}/${id}`);
     else {
       const oldNotePath = `${oldParentPath}/${id}`;
       const newNotePath = `${newParentPath}/${id}`;
