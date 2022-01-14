@@ -143,6 +143,21 @@
     opacity: 0.5;
   }
   
+  :global([dialog-for="moveTo"] .group__name-wrapper) {
+    overflow: hidden;
+  }
+  :global([dialog-for="moveTo"] .group__name-wrapper .svg-icon) {
+    flex-shrink: 0;
+  }
+  :global([dialog-for="moveTo"] .group__name-text) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  :global([dialog-for="moveTo"] .group__name .move-nav) {
+    margin-left: 0.5em;
+  }
+  
   :global([dialog-for="moveTo"] .group__name:hover) {
     background: rgba(0, 0, 0, 0.1);
   }
