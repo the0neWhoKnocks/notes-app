@@ -5,6 +5,10 @@
     dialogDataForGroup,
     dialogDataForNote,
   } from '../stores.js';
+  import Icon, {
+    ICON__FILE,
+    ICON__FOLDER,
+  } from './Icon.svelte';
   import ModifyNav from './ModifyNav.svelte';
   
   export let id = undefined;
@@ -33,11 +37,15 @@
     <button
       title="Add Group"
       on:click={addGroup}
-    >+ Group</button>
+    >
+      <Icon type={ICON__FOLDER} />
+    </button>
     <button
       title="Add Note"
       on:click={addNote}
-    >+ Note</button>
+    >
+      <Icon type={ICON__FILE} />
+    </button>
   {/if}
 </nav>
 
@@ -51,5 +59,17 @@
   
   .sub-nav button {
     padding: 0.25em 0.5em;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .sub-nav > button::after {
+    content: '+';
+    color: var(--color--app--bg);
+    font-size: 0.75em;
+    position: absolute;
+    top: 61%;
+    left: 54%;
+    transform: translate(-50%, -50%);
   }
 </style>
