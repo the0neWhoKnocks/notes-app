@@ -4,8 +4,9 @@
 const { BASE_DATA_NODE } = require('../constants');
 const groupNodeShape = require('../utils/groupNodeShape');
 const parseTags = require('../utils/parseTags');
-const getPathNode = require('./getPathNode');
+const { getGroupNode, getNoteNode } = require('./dataNodeUtils');
 const kebabCase = require('./kebabCase');
+const parsePath = require('./parsePath');
 
 const getMissingRequiredItems = (required, propObj) => {
   const groupedProps = required.reduce((obj, prop) => {
@@ -72,7 +73,7 @@ const sortObjByKeys = (obj) => {
 };
 
 function iterateData(data, groupPath, cb) {
-  const { groups, notes } = getPathNode(data, groupPath);
+  const { groups, notes } = getGroupNode(data, groupPath);
   
   if (groups) {
     for (const [groupId, group] of Object.entries(groups)) {
@@ -104,6 +105,18 @@ function compileTags(notesData) {
   return tagsObj;
 }
 
+const updateRecentPath = ({ arr, newPath, oldPath }) => {
+  let _arr = [...arr];
+  
+  if (!newPath) _arr = _arr.filter(path => path !== oldPath);
+  else {
+    const ndx = _arr.indexOf(oldPath);
+    if (ndx > -1) _arr.splice(ndx, 1, newPath);
+  }
+  
+  return _arr;
+};
+
 function updateRecentlyViewed({
   deletePath,
   id,
@@ -115,39 +128,40 @@ function updateRecentlyViewed({
 }) {
   let updated = [...recent];
   
-  const updatePath = (oldNotePath, newNotePath) => {
-    if (deletePath) {
-      updated = updated.filter(path => path !== oldNotePath);
-    }
-    else {
-      // chances of duplicate paths should be zero, iterating all just in case
-      updated = updated.reduce((arr, path) => {
-        if (path === oldNotePath) arr.push(newNotePath);
-        return arr;
-      }, []);
-    }
-  };
-  
   if (type === 'group') {
     const _path = deletePath || oldParentPath;
     
     iterateData(notesData, _path, ({ note, noteId }) => {
       if (note) {
-        if (deletePath) updatePath(`${deletePath}/${id}/${noteId}`);
+        if (deletePath) {
+          updated = updateRecentPath({
+            arr: updated,
+            oldPath: `${deletePath}/${id}/${noteId}`,
+          });
+        }
         else {
-          const oldNotePath = `${oldParentPath}/${id}/${noteId}`;
-          const newNotePath = `${newParentPath}/${id}/${noteId}`;
-          updatePath(oldNotePath, newNotePath);
+          updated = updateRecentPath({
+            arr: updated,
+            newPath: `${newParentPath}/${id}/${noteId}`,
+            oldPath: `${oldParentPath}/${id}/${noteId}`,
+          });
         }
       }
     });
   }
   else {
-    if (deletePath) updatePath(`${deletePath}/${id}`);
+    if (deletePath) {
+      updated = updateRecentPath({
+        arr: updated,
+        oldPath: `${deletePath}/${id}`,
+      });
+    }
     else {
-      const oldNotePath = `${oldParentPath}/${id}`;
-      const newNotePath = `${newParentPath}/${id}`;
-      updatePath(oldNotePath, newNotePath);
+      updated = updateRecentPath({
+        arr: updated,
+        newPath: `${newParentPath}/${id}`,
+        oldPath: `${oldParentPath}/${id}`,
+      });
     }
   }
   
@@ -267,7 +281,7 @@ module.exports = async function modifyUserData({
         const creationDate = Date.now();
         
         if (type === 'note') {
-          const { notes } = getPathNode(notesData, path);
+          const { notes } = getNoteNode(notesData, `${path}/${id}`);
           const nodeId = kebabCase(title);
           
           if (!notes[nodeId]) {
@@ -287,7 +301,7 @@ module.exports = async function modifyUserData({
           else return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
         }
         else if (type === 'group') {
-          const { groups } = getPathNode(notesData, path);
+          const { groups } = getGroupNode(notesData, path);
           const nodeId = kebabCase(name);
           
           if (!groups[nodeId]) {
@@ -306,17 +320,24 @@ module.exports = async function modifyUserData({
       }
       case 'edit': {
         if (type === 'note') {
-          const { notes } = getPathNode(notesData, path);
+          const { rawPrefix: groupPath } = parsePath(path);
+          const { note, notes } = getNoteNode(notesData, path);
           let nodeId = kebabCase(oldTitle);
-          const oldNote = { ...notes[nodeId] };
+          const oldNote = { ...note };
           const fTags = parseTags(tags);
           
-          // could have just changed the casing of a title
+          // if the only thing that changed in the title was the casing, no need to update
           if (oldTitle.toLowerCase() !== title.toLowerCase()) {
             const newNodeId = kebabCase(title);
             if (notes[newNodeId]) {
               return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
             }
+            
+            data.recentlyViewed = updateRecentPath({
+              arr: data.recentlyViewed,
+              newPath: `${groupPath}/${newNodeId}`,
+              oldPath: path,
+            });
             
             delete notes[nodeId];
             nodeId = newNodeId;
@@ -332,18 +353,29 @@ module.exports = async function modifyUserData({
           
           allTags = compileTags(notesData);
           
-          logMsg = `Updated note "${title}" in "${path}"`;
+          logMsg = `Updated note "${title}" in "${groupPath}"`;
         }
         else if (type === 'group') {
-          const { groups } = getPathNode(notesData, path);
+          const { rawPrefix: parentPath } = parsePath(path)
+          const { groups } = getGroupNode(notesData, parentPath);
           let nodeId = kebabCase(oldName);
-          const groupCopy = { ...groups[nodeId] };
+          const groupCopy = JSON.parse(JSON.stringify(groups[nodeId]));
           
-          if (oldName !== name) {
+          if (oldName.toLowerCase() !== name.toLowerCase()) {
             const newNodeId = kebabCase(name);
             if (groups[newNodeId]) {
               return { error: { code: 400, msg: `Group "${name}" already exists in "${path}"` } };
             }
+            
+            data.recentlyViewed = data.recentlyViewed.map((notePath) => {
+              const oldGroupPath = `${path}/`;
+              if (notePath.startsWith(oldGroupPath)) {
+                const [,remainingPath] = notePath.split(oldGroupPath);
+                return `${parentPath}/${newNodeId}/${remainingPath}`;
+              }
+              
+              return notePath;
+            });
             
             delete groups[nodeId];
             nodeId = newNodeId;
@@ -354,7 +386,9 @@ module.exports = async function modifyUserData({
             groupName: name,
           };
           
-          logMsg = `Renamed group from "${oldName}" to "${name}" in "${path}"`;
+          allTags = compileTags(notesData);
+          
+          logMsg = `Renamed group from "${oldName}" to "${name}" in "${parentPath}"`;
         }
         else if (type === 'preferences') {
           data.preferences = {
@@ -372,22 +406,24 @@ module.exports = async function modifyUserData({
         break;
       }
       case 'delete': {
-        const node = getPathNode(notesData, path);
-        const nodeType = `${type}s`; // groups or notes
+        const { rawPrefix: parentPath } = parsePath(path);
+        const nodeItems = (type === 'group')
+          ? getGroupNode(notesData, parentPath).groups
+          : getNoteNode(notesData, path).notes;
         
         data.recentlyViewed = updateRecentlyViewed({
-          deletePath: path,
+          deletePath: parentPath,
           id,
           notesData,
           recent: data.recentlyViewed,
           type,
         });
         
-        delete node[nodeType][id];
+        delete nodeItems[id];
         
         allTags = compileTags(notesData);
         
-        logMsg = `Removed ${type} "${id}" from "${path}"`;
+        logMsg = `Removed ${type} "${id}" from "${parentPath}"`;
         
         break;
       }
@@ -495,11 +531,18 @@ module.exports = async function modifyUserData({
         );
       }
       case 'move': {
-        const oldNode = getPathNode(notesData, oldParentPath);
-        const newNode = getPathNode(notesData, newParentPath);
-        const nodeType = `${type}s`;
-        const node = oldNode[nodeType][id];
-        const exists = !!newNode[nodeType][id];
+        let oldNodeItems, newNodeItems;
+        if (type === 'group') {
+          oldNodeItems = getGroupNode(notesData, oldParentPath).groups;
+          newNodeItems = getGroupNode(notesData, newParentPath).groups;
+        }
+        else {
+          oldNodeItems = getNoteNode(notesData, `${oldParentPath}/${id}`).notes;
+          newNodeItems = getNoteNode(notesData, `${newParentPath}/${id}`).notes;
+        }
+        
+        const node = oldNodeItems[id];
+        const exists = !!newNodeItems[id];
       
         if (exists) {
           return { error: { code: 400, msg: `${type} "${id}" already exists, move aborted.` } };
@@ -515,9 +558,9 @@ module.exports = async function modifyUserData({
         });
         
         // move to new group
-        newNode[nodeType][id] = node;
-        // delete old note
-        delete oldNode[nodeType][id];
+        newNodeItems[id] = node;
+        // delete old reference
+        delete oldNodeItems[id];
         
         allTags = compileTags(notesData);
         

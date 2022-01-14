@@ -5,7 +5,7 @@ import {
 	ROUTE__API__USER__DATA__GET,
 	ROUTE__API__USER__DATA__SET,
 } from '../constants';
-import getPathNode from '../utils/getPathNode';
+import { getNoteNode } from '../utils/dataNodeUtils';
 import logger from '../utils/logger';
 import postData from './utils/postData';
 import {
@@ -293,8 +293,7 @@ export async function loadNote(notePath) {
 		const sFO = getStoreValue(searchFlyoutOpen);
 		const cT = getStoreValue(currentTag);
 		const path = decodeURIComponent(notePath);
-		const { id, notes } = getPathNode(nG, path);
-		const note = notes[id];
+		const { id, note } = getNoteNode(nG, path);
 		
 		if (cT) currentTag.set();
 		
@@ -347,8 +346,7 @@ export function getNoteBlurbs(notePaths) {
 	const nG = getStoreValue(noteGroups);
 	
 	return notePaths.reduce((arr, path) => {
-		const { id, notes } = getPathNode(nG, path);
-		const note = notes[id];
+		const { note } = getNoteNode(nG, path);
 		
 		// in case something goes wrong updating paths, only return payloads for
 		// notes that can be found.
