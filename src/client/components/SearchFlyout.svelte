@@ -21,8 +21,8 @@
       query = query.toLowerCase();
       
       Object.keys($allTags).forEach((tag) => {
-        if (tag.includes(query)) {
-          const title = tag.replace(new RegExp(`(${tag})`, 'gi'), '<mark>$1</mark>');
+        if (tag.toLowerCase().includes(query.toLowerCase())) {
+          const title = tag.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
           matches.tags.push({ type: 'tag', tag, title });
         }
       });
