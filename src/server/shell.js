@@ -116,10 +116,16 @@ const shell = ({
         }
         
         blockquote {
-          padding: 0.5em;
-          border-left: solid 4px;
+          font-size: 1.1em;
+          line-height: 1.3em;
+          padding: 0.5em 0.75em;
+          border-left: solid 0.5em;
+          border-radius: 0.25em;
           margin: 0;
           background: rgba(255, 255, 255, 0.15);
+        }
+        blockquote:not(:first-of-type) {
+          margin-top: 1em;
         }
         
         ol, ul {
