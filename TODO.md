@@ -26,7 +26,7 @@ Feat:
 - [x] Add number of items next to group title
 - [x] Display tag name on TaggedNotes page
 - [ ] Note formatting
-  - [ ] Make h<num> in notes Bold
+  - [x] Make h<num> in notes Bold
   - [ ] Tables have no borders
   - [ ] blockquotes need vertical spacing
 - [ ] Anchor dialog
