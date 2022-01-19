@@ -82,6 +82,16 @@
     }
   }
   
+  function getLeadingSpace(line) {
+    if (line === undefined) {
+      const { lines } = getSelectedLines();
+      // since multiple lines could be selected, only process the last line
+      line = lines.pop();
+    }
+    
+    return (line.match(/^\s+/) || [''])[0];
+  }
+  
   function handleContentKeyDown(ev) {
     const { keyCode, shiftKey } = ev;
     
@@ -92,12 +102,7 @@
       // Only reference of the issue I could find: https://stackoverflow.com/questions/56329625/preventing-textarea-scroll-behaviour-in-chrome-after-newline-added
       ev.preventDefault();
       
-      if (shiftKey) {
-        const { lines } = getSelectedLines();
-        // since multiple lines could be selected, only process the last line
-        const leadingSpace = (lines.pop().match(/^\s+/) || '');
-        insertText(`\n${leadingSpace}`);
-      }
+      if (shiftKey) insertText(`\n${getLeadingSpace()}`);
       else {
         const liAdded = listItemCheck();
         if (!liAdded) insertText('\n');
@@ -264,6 +269,7 @@
     if (contentText.includes(char)) {
       // gather all blocks
       const lines = contentText.split('\n');
+      const charRegEx = new RegExp(`(\\s+)?${char}`);
       let currBlock = {};
       let lineNdx = 0;
       
@@ -271,12 +277,12 @@
         const line = lines[i];
         const newline = 1;
         
-        if (line.startsWith(char)) {
+        if (charRegEx.test(line)) {
           if (currBlock.start === undefined) {
             currBlock.start = lineNdx;
           }
           else {
-            currBlock.end = lineNdx + char.length + newline;
+            currBlock.end = lineNdx + getLeadingSpace(line).length + char.length;
             
             if (
               selStart >= currBlock.start
@@ -299,6 +305,8 @@
   
   function wrapSelectionWithBlock(char) {
     const block = blockCheck(char);
+    let leadingSpace = '';
+    let indexes;
     
     let startIndex, endIndex, wrapper, nl;
     if (block) {
@@ -308,7 +316,8 @@
       nl = '';
     }
     else {
-      const indexes = getCharIndex('\n', '\n');
+      indexes = getCharIndex('\n', '\n');
+      leadingSpace = getLeadingSpace();
       startIndex = indexes.start;
       endIndex = indexes.end;
       wrapper = char;
@@ -323,16 +332,20 @@
     const s = contentText.substring(0, startIndex);
     let selection = contentText.substring(startIndex, endIndex);
     const e = contentText.substring(endIndex, contentText.length);
+    const endChunk = `${nl}${leadingSpace}${wrapper}`;
     
     if (block) {
       selection = selection
-        .replace(new RegExp(`^${char}\n`, 'm'), '')
-        .replace(new RegExp(`\n${char}\n$`, 'm'), '');
+        .replace(new RegExp(`^(\\s+)?${char}\n`, 'm'), '')
+        .replace(new RegExp(`\n(\\s+)?${char}$`, 'm'), '');
+    }
+    else {
+      newSelEnd = indexes.end + endChunk.length;
     }
     
-    newValue = `${s}${firstNL}${wrapper}${nl}${selection}${nl}${wrapper}${nl}${e}`;
+    newValue = `${s}${firstNL}${leadingSpace}${wrapper}${selection}${endChunk}${e}`;
     
-    updateEditorValue(newSelStart, newSelEnd, newValue);
+    updateEditorValue(newSelEnd, newSelEnd, newValue);
   }
   
   function toggleCharAtLineStart(transformOrChar) {
@@ -340,9 +353,11 @@
       ? transformOrChar
       : (line) => {
         const char = transformOrChar;
-        return (line.startsWith(char))
-          ? line.replace(new RegExp(`^${char}`), '')
-          : `${char}${line}`;
+        const leadingSpace = getLeadingSpace(line);
+        
+        return (line.startsWith(`${leadingSpace}${char}`))
+          ? line.replace(new RegExp(`^${leadingSpace}${char}`), leadingSpace)
+          : `${leadingSpace}${char}${line.replace(new RegExp(`^${leadingSpace}`), '')}`;
       };
     const selStart = textareaRef.selectionStart;
     const selEnd = textareaRef.selectionEnd;
