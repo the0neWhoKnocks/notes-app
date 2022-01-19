@@ -83,7 +83,7 @@
   }
   
   function handleContentKeyDown(ev) {
-    const { keyCode } = ev;
+    const { keyCode, shiftKey } = ev;
     
     if (keyCode === 13) { // ENTER
       // NOTE: Prevent the textarea from randomly scrolling to the top after a
@@ -92,10 +92,18 @@
       // Only reference of the issue I could find: https://stackoverflow.com/questions/56329625/preventing-textarea-scroll-behaviour-in-chrome-after-newline-added
       ev.preventDefault();
       
-      const liAdded = listItemCheck();
-      
-      if (!liAdded) insertText('\n');
+      if (shiftKey) {
+        const { lines } = getSelectedLines();
+        // since multiple lines could be selected, only process the last line
+        const leadingSpace = (lines.pop().match(/^\s+/) || '');
+        insertText(`\n${leadingSpace}`);
+      }
+      else {
+        const liAdded = listItemCheck();
+        if (!liAdded) insertText('\n');
+      }
     }
+    else handleToolClick(ev);
   }
   
   function handleChange({ target }) {
@@ -424,89 +432,101 @@
     closeAnchorDialog();
   }
   
-  async function handleToolClick({ target }) {
-    if (target.dataset) {
-      const INDENT = '   '; // needs to be 3 for MD nested lists
-      
-      switch (target.dataset.type) {
-        case 'heading':
-          toggleCharAtLineStart((line) => {
-            let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
-            if (hashes > 6) hashes = 1;
-            
-            return line.replace(
-              /^(\n?)([#]+\s)?(.)?/,
-              `$1${Array(hashes).fill('#').join('')} $3`
-            );
-          });
-          break;
-        
-        case 'bold':
-          wrapSelectionWithChar('**');
-          break;
-        
-        case 'italic':
-          wrapSelectionWithChar('*');
-          break;
-        
-        case 'strikethrough':
-          wrapSelectionWithChar('~~');
-          break;
-        
-        case 'inlineCode':
-          wrapSelectionWithChar('`');
-          break;
-        
-        case 'anchor':
-          openAnchorDialog();
-          break;
-        
-        case 'ul':
-          toggleCharAtLineStart('- ');
-          break;
-        
-        case 'ol':
-          toggleCharAtLineStart('1. ');
-          break;
-        
-        case 'indent':
-          toggleCharAtLineStart(line => `${INDENT}${line}`);
-          break;
-        
-        case 'outdent':
-          toggleCharAtLineStart(line => {
-            return (line.startsWith(INDENT))
-              ? line.replace(new RegExp(`^${INDENT}`), '')
-              : line;
-          });
-          break;
-        
-        case 'codeBlock':
-          wrapSelectionWithBlock('```');
-          break;
-        
-        case 'blockquote':
-          toggleCharAtLineStart('> ');
-          break;
-        
-        case 'toc':
-          toggleCharAtLineStart('::TOC::');
-          break;
-        
-        case 'preview': {
-          previewing = !previewing;
-          
-          // keep scroll positions in sync'ish
-          if (previewRef) textareaRef.scrollTop = previewRef.scrollTop;
-          await tick();
-          if (previewRef) previewRef.scrollTop = textareaRef.scrollTop;
-          
-          break;
-        }
+  async function handleToolClick(ev) {
+    const INDENT = '   '; // needs to be 3 for MD nested lists
+    const { ctrlKey, key, target, type: keyType } = ev;
+    let toolType;
+    
+    if (ctrlKey && keyType === 'keydown') {
+      switch (key) {
+        case ']': { toolType = 'indent'; break; }
+        case '[': { toolType = 'outdent'; break; }
+        case 'b': { toolType = 'bold'; break; }
+        case 'i': { toolType = 'italic'; break; }
       }
-      
-      handleChange({ target: textareaRef });
     }
+    else if (target.dataset && target.dataset.type) {
+      toolType = target.dataset.type;
+    }
+    
+    switch (toolType) {
+      case 'heading':
+        toggleCharAtLineStart((line) => {
+          let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
+          if (hashes > 6) hashes = 1;
+          
+          return line.replace(
+            /^(\n?)([#]+\s)?(.)?/,
+            `$1${Array(hashes).fill('#').join('')} $3`
+          );
+        });
+        break;
+      
+      case 'bold':
+        wrapSelectionWithChar('**');
+        break;
+      
+      case 'italic':
+        wrapSelectionWithChar('__');
+        break;
+      
+      case 'strikethrough':
+        wrapSelectionWithChar('~~');
+        break;
+      
+      case 'inlineCode':
+        wrapSelectionWithChar('`');
+        break;
+      
+      case 'anchor':
+        openAnchorDialog();
+        break;
+      
+      case 'ul':
+        toggleCharAtLineStart('- ');
+        break;
+      
+      case 'ol':
+        toggleCharAtLineStart('1. ');
+        break;
+      
+      case 'indent':
+        toggleCharAtLineStart(line => `${INDENT}${line}`);
+        break;
+      
+      case 'outdent':
+        toggleCharAtLineStart(line => {
+          return (line.startsWith(INDENT))
+            ? line.replace(new RegExp(`^${INDENT}`), '')
+            : line;
+        });
+        break;
+      
+      case 'codeBlock':
+        wrapSelectionWithBlock('```');
+        break;
+      
+      case 'blockquote':
+        toggleCharAtLineStart('> ');
+        break;
+      
+      case 'toc':
+        toggleCharAtLineStart('::TOC::');
+        break;
+      
+      case 'preview': {
+        previewing = !previewing;
+        
+        // keep scroll positions in sync'ish
+        if (previewRef) textareaRef.scrollTop = previewRef.scrollTop;
+        await tick();
+        if (previewRef) previewRef.scrollTop = textareaRef.scrollTop;
+        
+        break;
+      }
+    }
+    
+    handleChange({ target: textareaRef });
   }
   
   function deriveNoteData() {
@@ -564,11 +584,11 @@
             disabled={previewing}
           >#</button>
           <button
-            type="button" title="Bold" data-type="bold" tabindex="-1"
+            type="button" title="Bold &#013; CTRL + B" data-type="bold" tabindex="-1"
             disabled={previewing}
           >B</button>
           <button
-            type="button" title="Italic" data-type="italic" tabindex="-1"
+            type="button" title="Italic &#013; CTRL + I" data-type="italic" tabindex="-1"
             disabled={previewing}
           >I</button>
           <button 
@@ -592,11 +612,11 @@
             disabled={previewing}
           >ol</button>
           <button
-            type="button" title="Indent" data-type="indent" tabindex="-1"
+            type="button" title="Indent &#013; CTRL + ]" data-type="indent" tabindex="-1"
             disabled={previewing}
           >_&gt;</button>
           <button
-            type="button" title="Outdent" data-type="outdent" tabindex="-1"
+            type="button" title="Outdent &#013; CTRL + [" data-type="outdent" tabindex="-1"
             disabled={previewing}
           >&lt;_</button>
           <div class="note-form__sep"></div>
