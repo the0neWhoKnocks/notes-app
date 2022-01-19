@@ -100,11 +100,13 @@ const shell = ({
         h1, h2, h3, h4, h5, h6 {
           font-weight: bold;
           line-height: 1.2;
-          border-bottom: dashed 1px;
-          margin: 0 0 0.25em 0;
+          margin: 0 0 0.5em 0;
         }
         :where(h1, h2, h3, h4, h5, h6):not(:first-of-type) {
           margin-top: 1em;
+        }
+        :where(h1, h2) {
+          border-bottom: dashed 1px;
         }
 
         h1 {
@@ -159,7 +161,9 @@ const shell = ({
           right: 0.5em;
         }
         .app :not(pre) > code[class*="language-"] {          
+          line-height: 1em;
           padding: 0.2em 0.4em;
+          display: inline-block;
         }
         .app .code-toolbar {
           margin: .5em 0;
@@ -180,6 +184,7 @@ const shell = ({
         }
         .app .code-toolbar > .toolbar > .toolbar-item > button {
           font-family: revert;
+          font-size: 1em;
           padding: 0.35em 0.75em;
           border-radius: unset;
           box-shadow: none;
