@@ -10,6 +10,7 @@ const langAliases = {
   mathml: 'markup',
   py: 'python',
   rss: 'markup',
+  sh: 'bash',
   ssml: 'markup',
   svg: 'markup',
   xml: 'markup',
