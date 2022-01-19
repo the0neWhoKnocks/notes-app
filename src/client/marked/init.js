@@ -77,6 +77,7 @@ function loadLangs() {
         window.Prism.highlightAll();
       });
     }
+    else window.Prism.highlightAll();
   }, 100);
 }
 
