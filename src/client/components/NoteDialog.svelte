@@ -26,6 +26,7 @@
   let saveBtnDisabled;
   let tags = [];
   let textareaRef;
+  let textSelected = false;
   let titleValue;
   
   function closeDialog() {
@@ -109,6 +110,8 @@
       }
     }
     else handleToolClick(ev);
+    
+    handleSelection(ev);
   }
   
   function handleChange({ target }) {
@@ -324,7 +327,6 @@
       nl = '\n';
     }
     
-    let newSelStart = startIndex;
     let newSelEnd = endIndex;
     let newValue;
     const firstNL = startIndex === 0 ? '' : nl;
@@ -482,7 +484,7 @@
         break;
       
       case 'italic':
-        wrapSelectionWithChar('__');
+        wrapSelectionWithChar('_');
         break;
       
       case 'strikethrough':
@@ -544,6 +546,22 @@
     handleChange({ target: textareaRef });
   }
   
+  function handleSelection({ key, type }) {
+    clearTimeout(window.contentBlurTimeout);
+    
+    // NOTE: If text selected, and User presses SHIFT (and only SHIFT), the 
+    // buttons become disabled, so exit out before processing anything else.
+    if (type === 'keydown' && key === 'Shift') return;
+    
+    if (type === 'blur') {
+      // NOTE: Delay the blur in case a User hits a toolbar button
+      window.contentBlurTimeout = setTimeout(() => {
+        textSelected = false;
+      }, 100);
+    }
+    else textSelected = type === 'select';
+  }
+  
   function deriveNoteData() {
     const { action, content, tags: _tags, title } = $dialogDataForNote;
     
@@ -600,23 +618,23 @@
           >#</button>
           <button
             type="button" title="Bold &#013; CTRL + B" data-type="bold" tabindex="-1"
-            disabled={previewing}
+            disabled={previewing || !textSelected}
           >B</button>
           <button
             type="button" title="Italic &#013; CTRL + I" data-type="italic" tabindex="-1"
-            disabled={previewing}
+            disabled={previewing || !textSelected}
           >I</button>
           <button 
             type="button" title="Strike Through" data-type="strikethrough" tabindex="-1"
-            disabled={previewing}
+            disabled={previewing || !textSelected}
           >S</button>
           <button
             type="button" title="Inline Code" data-type="inlineCode" tabindex="-1"
-            disabled={previewing}
+            disabled={previewing || !textSelected}
           >`</button>
           <button
             type="button" title="Link" data-type="anchor" tabindex="-1"
-            disabled={previewing}
+            disabled={previewing || !textSelected}
           >A</button>
           <button
             type="button" title="Unordered List" data-type="ul" tabindex="-1"
@@ -656,7 +674,10 @@
             bind:this={textareaRef}
             class="note-form__content"
             name="content"
+            on:blur={handleSelection}
+            on:click={handleSelection}
             on:keydown={handleContentKeyDown}
+            on:select={handleSelection}
             bind:value={contentText}
           ></textarea>
           {#if previewing}
