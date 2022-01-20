@@ -1,6 +1,20 @@
 # Changelog
 ---
 
+## v1.3.0
+
+**Bugfixes**
+- [f5df64d](https://github.com/the0neWhoKnocks/notes-app/commit/f5df64d): Leading space not accounted for when toggling code
+- [1afe551](https://github.com/the0neWhoKnocks/notes-app/commit/1afe551): no-lang code blocks don't have plugins applied
+
+**Features**
+- [4611cbe](https://github.com/the0neWhoKnocks/notes-app/commit/4611cbe): Disable WYSIWYG buttons that require text selection
+- [622765d](https://github.com/the0neWhoKnocks/notes-app/commit/622765d): Add shortcut keys
+- [294aa63](https://github.com/the0neWhoKnocks/notes-app/commit/294aa63): Added lang support for 'sh'
+- [82a9268](https://github.com/the0neWhoKnocks/notes-app/commit/82a9268): Updated Note styling
+
+---
+
 ## v1.2.0
 
 **Bugfixes**
