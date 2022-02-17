@@ -106,7 +106,7 @@
     for="search"
     onCloseClick={handleClose}
   >
-    <SearchInput focused onSearch={handleSearch} />
+    <SearchInput focused onSearch={handleSearch} placeholder="Note, Group, or Tag name" />
     <div class="search-results">
       {#each results as {groups, notes, tags}}
         {#if tags.length}

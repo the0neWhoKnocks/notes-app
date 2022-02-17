@@ -3,6 +3,7 @@
   
   export let disabled = false;
   export let focused = false;
+  export let placeholder = 'Query';
   export let onInput = undefined;
   export let onSearch = undefined;
   
@@ -42,7 +43,7 @@
       bind:this={searchInputRef}
       bind:value={searchValue}
       type="text"
-      placeholder="Series Name"
+      {placeholder}
       disabled={disabled}
       on:focus={handleFocus}
       on:input={handleInput}
