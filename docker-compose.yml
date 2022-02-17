@@ -1,6 +1,36 @@
-version: "2" # using 2 because 3 doesn't support extending
+version: "3"
 
 services:
+  e2e-cypress:
+    # command: 'cypress run --browser chrome'
+    container_name: e2e-notes
+    depends_on:
+      - notes-4-tests
+    environment:
+      ## Cypress vars
+      CYPRESS_BASE_URL: "${CYPRESS_BASE_URL}"
+      # DEBUG: cypress:server:browsers:electron # view Electron internal logging
+      # ELECTRON_ENABLE_LOGGING: 1 # view console logs from Browser (headless)
+      ## Test vars
+      # CYPRESS__MOCK_TIME: "${MOCK_TIME}"
+      # CYPRESS__PATHS__MOCKS: /repo/e2e/cypress/fixtures
+    hostname: cypresstests
+    image: cypress/included:9.0.0
+    ipc: host # https://github.com/cypress-io/cypress/issues/350#issuecomment-267704772
+    ports:
+      - "9001:3000"
+    privileged: true
+    user: "${CURR_UID}:${CURR_GID}"
+    working_dir: /repo/e2e
+    volumes:
+      - "${PWD}/e2e:/repo/e2e"
+      - "${PWD}/e2e/mnt/data:/repo/e2e/cypress/fixtures"
+  
+  notes-4-tests:
+    extends: notes
+    volumes:
+      - "${PWD}/e2e/mnt/data:/home/node/app/data"
+  
   notes:
     build:
       context: ./
@@ -8,15 +38,16 @@ services:
     container_name: notes
     environment:
       DATA_PATH: /home/node/app/data
-      NODE_EXTRA_CA_CERTS: /home/node/app/server/certs/localhost.crt
+      NODE_EXTRA_CA_CERTS: /home/node/certs/localhost.crt
       NODE_ENV: production
       TZ: America/Los_Angeles
     image: theonewhoknocks/notes
     ports:
       # Map Local port to the Container's exposed port
       - "3000:3000"
+    user: "${CURR_UID}:${CURR_GID}"
     volumes:
-      - "${PWD}/certs.localhost:/home/node/app/server/certs"
+      - "${PWD}/certs:/home/node/certs"
       - "${PWD}/data:/home/node/app/data"
       # Uncomment to map Local assets
       # - "${PWD}/dist/public:/home/node/app/public"
