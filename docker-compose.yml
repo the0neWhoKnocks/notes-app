@@ -15,7 +15,7 @@ services:
       # CYPRESS__MOCK_TIME: "${MOCK_TIME}"
       # CYPRESS__PATHS__MOCKS: /repo/e2e/cypress/fixtures
     hostname: cypresstests
-    image: cypress/included:9.0.0
+    image: cypress/included:9.3.0
     ipc: host # https://github.com/cypress-io/cypress/issues/350#issuecomment-267704772
     ports:
       - "9001:3000"
@@ -23,6 +23,7 @@ services:
     user: "${CURR_UID}:${CURR_GID}"
     working_dir: /repo/e2e
     volumes:
+      - "${PWD}/dist/constants.js:/repo/e2e/mnt/constants.js"
       - "${PWD}/e2e:/repo/e2e"
       - "${PWD}/e2e/mnt/data:/repo/e2e/cypress/fixtures"
   
