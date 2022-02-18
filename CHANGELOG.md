@@ -1,6 +1,18 @@
 # Changelog
 ---
 
+## v1.4.0
+
+**Bugfixes**
+- [c6469f3](https://github.com/the0neWhoKnocks/notes-app/commit/c6469f3): Incorrect placeholder for Search input
+
+**Dev-Ops**
+- [8f177e7](https://github.com/the0neWhoKnocks/notes-app/commit/8f177e7): Added Import file input to DOM for tests
+- [bd1febb](https://github.com/the0neWhoKnocks/notes-app/commit/bd1febb): Added tests
+- [775b4c2](https://github.com/the0neWhoKnocks/notes-app/commit/775b4c2): Added test support
+
+---
+
 ## v1.3.0
 
 **Bugfixes**
