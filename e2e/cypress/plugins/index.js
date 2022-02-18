@@ -18,7 +18,7 @@ const { rename } = require('fs');
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on, config) => {
-  on('after:screenshot', ({ name, path }) => {
+  on('after:screenshot', ({ path }) => {
     // NOTE - Cypress doesn't overwrite files, so check if it appended a number
     // to a new screenshot, and handle it manually.
     const numberSuffixRegEx = /\s\(\d\)\.png$/;
