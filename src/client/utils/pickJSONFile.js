@@ -14,12 +14,25 @@ export default function pickJSONFile() {
     fileInput.type = 'file';
     fileInput.accept = '.json';
     
+    // NOTE: this is just for tests since it needs an element in the DOM
+    fileInput.id = 'tmpFileInput';
+    fileInput.style = 'position: absolute; top: -100%; left: 0;';
+    document.body.appendChild(fileInput);
+    const cancelHandler = () => {
+      window.removeEventListener('focus', cancelHandler);
+      resolve();
+    };
+    window.addEventListener('focus', cancelHandler);
+    
     fileInput.addEventListener('change', (ev) => {
+      window.removeEventListener('focus', cancelHandler);
+      
       const importedFile = ev.target.files[0];
       const reader = new FileReader();
       
       reader.addEventListener('load', (readEv) => {
         const content = JSON.parse(readEv.target.result);
+        fileInput.remove();
         resolve(content);
       });
       reader.readAsText(importedFile);

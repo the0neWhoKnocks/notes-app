@@ -11,12 +11,14 @@
     
     try {
       const data = await pickJSONFile();
-      await setUserData({
-        ...$userData,
-        action: 'importData',
-        importedData: data,
-        type: 'all',
-      });
+      if (data) {
+        await setUserData({
+          ...$userData,
+          action: 'importData',
+          importedData: data,
+          type: 'all',
+        });
+      }
     }
     catch ({ message }) { alert(message); }
   }
