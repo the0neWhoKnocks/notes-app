@@ -24,7 +24,7 @@
         {/each}
       </div>
     {/if}
-    <section>{@html window.marked.parse($currentNote.content)}</section>
+    <section class="full-note__body">{@html window.marked.parse($currentNote.content)}</section>
   </article>
 {/if}
 
@@ -32,9 +32,11 @@
   .full-note {
     width: 100%;
     color: var(--color--app--fg);
-    overflow-y: auto;
+    overflow: hidden;
     border: solid 1px;
     margin: 1em;
+    display: flex;
+    flex-direction: column;
   }
   
   .full-note header,
@@ -73,7 +75,12 @@
     stroke-width: 4px;
   }
   
-  .full-note section {
+  .full-note__body {
+    height: 100%;
+    overflow: auto;
     padding: 1em;
+  }
+  :global(.full-note__body a) {
+    word-break: break-word;
   }
 </style>
