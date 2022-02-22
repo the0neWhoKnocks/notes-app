@@ -1,6 +1,14 @@
 # Changelog
 ---
 
+## v1.4.1
+
+**Bugfixes**
+- [9863b82](https://github.com/the0neWhoKnocks/notes-app/commit/9863b82): Can't add Tag on Mobile
+- [272fd55](https://github.com/the0neWhoKnocks/notes-app/commit/272fd55): Can't view long links on Note
+
+---
+
 ## v1.4.0
 
 **Bugfixes**
