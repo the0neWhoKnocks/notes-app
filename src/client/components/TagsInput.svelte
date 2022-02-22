@@ -206,6 +206,7 @@
     class="tags-input__input"
     type="text"
     {placeholder}
+    enterkeyhint="enter"
     bind:this={inputRef}
     on:change={handleTagInput}
     on:input={handleTagInput}
