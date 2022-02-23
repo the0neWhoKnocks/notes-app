@@ -1,6 +1,14 @@
 # Changelog
 ---
 
+## v1.4.2
+
+**Bugfixes**
+- [3b038d6](https://github.com/the0neWhoKnocks/notes-app/commit/3b038d6): Initial touch selection doesn't enable certain WYSIWYG buttons
+- [d66c25c](https://github.com/the0neWhoKnocks/notes-app/commit/d66c25c): Mobile Soft Keyboard pops in and out when WYSIWYG button pressed
+
+---
+
 ## v1.4.1
 
 **Bugfixes**
