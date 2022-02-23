@@ -18,6 +18,7 @@
   let anchorDialogData;
   let previewing = false;
   let contentText = '';
+  let contentWrapperRef;
   let editingNote;
   let formRef;
   let oldTags = [];
@@ -557,14 +558,22 @@
     // NOTE: If text selected, and User presses SHIFT (and only SHIFT), the 
     // buttons become disabled, so exit out before processing anything else.
     if (type === 'keydown' && key === 'Shift') return;
-    
     if (type === 'blur') {
       // NOTE: Delay the blur in case a User hits a toolbar button
       window.contentBlurTimeout = setTimeout(() => {
         textSelected = false;
       }, 100);
     }
-    else textSelected = type === 'select';
+    else if (type === 'selectionchange') {
+      const { focusNode } = window.getSelection();
+      let selected = false;
+      
+      if (focusNode === contentWrapperRef) {
+        selected = textareaRef.selectionStart !== textareaRef.selectionEnd;
+      }
+      
+      textSelected = selected;
+    }
   }
   
   function deriveNoteData() {
@@ -578,7 +587,13 @@
     contentText = content;
   }
   
-  $: if ($dialogDataForNote) deriveNoteData();
+  $: if ($dialogDataForNote) {
+    deriveNoteData();
+    document.addEventListener('selectionchange', handleSelection);
+  }
+  else {
+    document.removeEventListener('selectionchange', handleSelection);
+  }
 </script>
 
 {#if $dialogDataForNote}
@@ -674,16 +689,18 @@
           <div class="note-form__sep"></div>
           <button type="button" data-type="preview" tabindex="-1">Preview</button>
         </nav>
-        <div class="note-form__content-wrapper">
+        <div
+          class="note-form__content-wrapper"
+          bind:this={contentWrapperRef}
+        >
           <textarea
-            bind:this={textareaRef}
             class="note-form__content"
             name="content"
+            bind:this={textareaRef}
+            bind:value={contentText}
             on:blur={handleSelection}
             on:click={handleSelection}
             on:keydown={handleContentKeyDown}
-            on:select={handleSelection}
-            bind:value={contentText}
           ></textarea>
           {#if previewing}
             <div
