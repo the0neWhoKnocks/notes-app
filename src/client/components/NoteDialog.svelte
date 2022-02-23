@@ -116,7 +116,12 @@
   
   function handleChange({ target }) {
     switch (target.name) {
-      case 'content': diffCheck(); break;
+      case 'content':
+        tick().then(() => {
+          textareaRef.focus(); // prevents Mobile Soft Keyboard from popping up and down when WYSIWYG button is clicked
+          diffCheck();
+        });
+        break;
       
       case 'title': {
         titleValue = target.value;
