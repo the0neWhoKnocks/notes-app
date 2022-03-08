@@ -365,9 +365,21 @@ context('Notes', () => {
     it('should move Note to Group', () => {
       cy.get('@TOP_NAV__NOTES').click();
       
+      // move note, verify the number of notes in the group is displayed
       cy.moveNote('.item', NOTE_NAME, GROUP_NAME);
       cy.get('.group__name-text').first().invoke('text').should('eq', `(1) ${GROUP_NAME}`);
+      
+      // open group to execute actions on note
       cy.get('.group').first().click();
+      
+      // verify query preview maintains group path(s)
+      cy.get('.group .item [title="Edit"]').click();
+      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note%2Ffull-test-note');
+      cy.get('.note-form [name="title"]').type(' update');
+      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note%2Ffull-test-note-update');
+      cy.get('.note-form__btm-nav button').contains('Cancel').click();
+      
+      // move the note back to the root
       cy.moveNote('.item', NOTE_NAME, '/');
       cy.get('.group__name-text').first().invoke('text').should('eq', GROUP_NAME);
       

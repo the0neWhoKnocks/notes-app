@@ -19,7 +19,8 @@
     let val = path;
     
     if (str) {
-      const { rawPrefix } = parsePath(path);
+      const _path = !path.endsWith('/') ? `${path}/` : path;
+      const { rawPrefix } = parsePath(_path);
       val = `${rawPrefix}/${id}`;
     }
     const queryParams = { note: val }; // has to happen before encode
