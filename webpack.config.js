@@ -58,35 +58,40 @@ class RemoveDupeCSSClassPlugin {
       
       files.forEach((f) => {
         const asset = assets[f];
-        const { _children } = asset;
-        let cssObj = asset;
+        let items;
         
-        // '_children' exists when source maps are enabled and are separate files
-        if (_children && _children.length) {
-          cssObj = _children[0]; // [1] is the line that references the sourceMap file
-        }
+        // normalize items to an Array to simplifiy processing
+        if (asset.constructor.name === 'CachedSource') items = asset._source._children;
+        else items = [asset];
         
-        const ruleMatches = (cssObj._value.match(this.SVELTE_RULE_REGEX) || []);
-        const rules = [...(new Set(ruleMatches)).values()];
-        const matchedDupes = rules.reduce((arr, rule) => {
-          const dupeRuleRegEx = new RegExp(`${rule}${rule}${Array(10).fill(`(?:${rule})?`).join('')}`, 'g');
-          const matches = cssObj._value.match(dupeRuleRegEx);
+        items.forEach((src) => {
+          let valKey;
           
-          if (matches) arr.push(...matches);
+          if (src.constructor.name === 'RawSource') valKey = '_value';
+          else if (src.constructor.name === 'SourceMapSource') valKey = '_valueAsString';
           
-          return arr;
-        }, []);
-        // sort and reverse so that the longer dupe rules get replaced first
-        const uniqueDupes = [...(new Set(matchedDupes)).values()].sort().reverse();
-        
-        uniqueDupes.forEach((dupeRule) => {
-          const singleRule = `.${dupeRule.split('.')[1]}`;
-          const regEx = new RegExp(dupeRule, 'g');
+          const ruleMatches = (src[valKey].match(this.SVELTE_RULE_REGEX) || []);
+          const rules = [...(new Set(ruleMatches)).values()];
+          const matchedDupes = rules.reduce((arr, rule) => {
+            const dupeRuleRegEx = new RegExp(`${rule}${rule}${Array(10).fill(`(?:${rule})?`).join('')}`, 'g');
+            const matches = src[valKey].match(dupeRuleRegEx);
+            
+            if (matches) arr.push(...matches);
+            
+            return arr;
+          }, []);
+          // sort and reverse so that the longer dupe rules get replaced first
+          const uniqueDupes = [...(new Set(matchedDupes)).values()].sort().reverse();
           
-          cssObj._valueAsBuffer = Buffer.from(
-            cssObj._valueAsBuffer.toString().replace(regEx, singleRule),
-            'utf8'
-          );
+          uniqueDupes.forEach((dupeRule) => {
+            const singleRule = `.${dupeRule.split('.')[1]}`;
+            const regEx = new RegExp(dupeRule, 'g');
+            
+            src._valueAsBuffer = Buffer.from(
+              src._valueAsBuffer.toString().replace(regEx, singleRule),
+              'utf8'
+            );
+          });
         });
       });
       
@@ -96,7 +101,7 @@ class RemoveDupeCSSClassPlugin {
 }
 
 const conf = {
-  devtool: dev && 'source-map',
+  devtool: dev && 'eval-source-map',
   entry: {
     'js/app': resolve(__dirname, './src/client/index.js'),
     'js/sw': resolve(__dirname, './src/client/serviceWorker/sw.js'),
