@@ -1,6 +1,16 @@
 # Changelog
 ---
 
+## v1.4.3
+
+**Bugfixes**
+- [a3caa62](https://github.com/the0neWhoKnocks/notes-app/commit/a3caa62): Query preview removes group name after typing
+
+**Dev-Ops**
+- [1423a36](https://github.com/the0neWhoKnocks/notes-app/commit/1423a36): Fix sourcemaps for debugging
+
+---
+
 ## v1.4.2
 
 **Bugfixes**
