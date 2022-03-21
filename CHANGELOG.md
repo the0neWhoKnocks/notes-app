@@ -1,6 +1,13 @@
 # Changelog
 ---
 
+## v1.4.4
+
+**Bugfixes**
+- [d31e950](https://github.com/the0neWhoKnocks/notes-app/commit/d31e950): Query preview duplicates note name as group name
+
+---
+
 ## v1.4.3
 
 **Bugfixes**
