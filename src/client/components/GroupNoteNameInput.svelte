@@ -19,7 +19,7 @@
     let val = path;
     
     if (str) {
-      const _path = !path.endsWith('/') ? `${path}/` : path;
+      const _path = (!editing && !path.endsWith('/')) ? `${path}/` : path;
       const { rawPrefix } = parsePath(_path);
       val = `${rawPrefix}/${id}`;
     }

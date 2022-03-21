@@ -374,9 +374,9 @@ context('Notes', () => {
       
       // verify query preview maintains group path(s)
       cy.get('.group .item [title="Edit"]').click();
-      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note%2Ffull-test-note');
+      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note');
       cy.get('.note-form [name="title"]').type(' update');
-      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note%2Ffull-test-note-update');
+      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note-update');
       cy.get('.note-form__btm-nav button').contains('Cancel').click();
       
       // move the note back to the root
