@@ -1,6 +1,23 @@
 # Changelog
 ---
 
+## v1.5.0
+
+**Bugfixes**
+- [fd8f92e](https://github.com/the0neWhoKnocks/notes-app/commit/fd8f92e): Line numbers in code blocks not lining up
+- [b7082b8](https://github.com/the0neWhoKnocks/notes-app/commit/b7082b8): Supported languages not loading
+- [8ce92c6](https://github.com/the0neWhoKnocks/notes-app/commit/8ce92c6): Note overflowing horizontally
+
+**Dev-Ops**
+- [178668c](https://github.com/the0neWhoKnocks/notes-app/commit/178668c): Added tests
+- [553d9bd](https://github.com/the0neWhoKnocks/notes-app/commit/553d9bd): Upgrade PrismJS
+
+**Features**
+- [718f7c0](https://github.com/the0neWhoKnocks/notes-app/commit/718f7c0): Add ability to toggle wrapping of text while editing a Note
+- [154c56f](https://github.com/the0neWhoKnocks/notes-app/commit/154c56f): Ensure User can't accidentally close Note dialog
+
+---
+
 ## v1.4.4
 
 **Bugfixes**
