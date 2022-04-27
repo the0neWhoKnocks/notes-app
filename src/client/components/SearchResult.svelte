@@ -7,7 +7,7 @@
     ICON__FILE,
     ICON__FOLDER,
   } from './Icon.svelte';
-  import Tag from './Tag.svelte';
+  import NoteTag from './NoteTag.svelte';
   
   export let content = undefined;
   export let path = undefined;
@@ -33,7 +33,7 @@
     {#if type === 'group'}
       <Icon type={ICON__FOLDER} />
     {:else if type === 'tag'}
-      <Tag rounded text="&nbsp;" />
+      <NoteTag rounded text="&nbsp;" />
     {:else}
       <Icon type={ICON__FILE} />
     {/if}
@@ -81,7 +81,7 @@
     grid-template-columns: 1em auto;
     align-items: center;
   }
-  :global(.search-result__header .tag) {
+  :global(.search-result__header .note-tag) {
     --tag--bg-color: #666;
     height: 0.5em;
     display: flex;

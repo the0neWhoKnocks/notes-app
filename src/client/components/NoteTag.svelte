@@ -16,7 +16,7 @@
   const edgeSpacing = 30;
   const addAnchor = text.replace(/&nbsp;/g, '').trim();
   const wrapperProps = {
-    class: 'tag',
+    class: 'note-tag',
     href: `?tag=${encodeURIComponent(text)}`,
     onClick: handleTagClick,
     type: (addAnchor) ? 'a' : undefined,
@@ -109,12 +109,12 @@
 </Wrap>
 
 <style>
-  :global(.tag) {
+  :global(.note-tag) { /* .tag is used by Prism's styles for HTML tags */
     height: 1.5em;
     font-size: 1.1em;
     display: inline-block;
   }
-  :global(.tag > *) {
+  :global(.note-tag > *) {
     pointer-events: none;
   }
   

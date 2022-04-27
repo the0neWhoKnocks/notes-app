@@ -4,7 +4,7 @@
     recentlyViewedOpen,
   } from '../stores'; 
   import ModifyNav from './ModifyNav.svelte';
-  import Tag from './Tag.svelte';
+  import NoteTag from './NoteTag.svelte';
 </script>
 
 {#if !$recentlyViewedOpen && $currentNote && $currentNote.content}
@@ -20,7 +20,7 @@
     {#if $currentNote.tags && $currentNote.tags.length}
       <div class="full-note__tags">
         {#each $currentNote.tags as tag}
-          <Tag rounded strokeWidth="2" text={tag} />
+          <NoteTag rounded strokeWidth="2" text={tag} />
         {/each}
       </div>
     {/if}
@@ -61,14 +61,14 @@
     gap: 0.5em;
     flex-wrap: wrap;
   }
-  :global(.full-note__tags .tag) {
+  :global(.full-note__tags .note-tag) {
     --tag--bg-color: #5c8c8c;
     --tag--border-color: #aec4d6;
     --tag--text-color: #fff;
     
     font-weight: bold;
   }
-  :global(.full-note__tags .tag text) {
+  :global(.full-note__tags .note-tag text) {
     text-shadow: 0 2px 2px #11242b;
     paint-order: stroke;
     stroke: #263e3e;
