@@ -265,6 +265,7 @@ context('Notes', () => {
       cy.get('@TOOLBAR').find('button[data-type="ol"]').as('WYSIWYG_BTN__OL');
       cy.get('@TOOLBAR').find('button[data-type="indent"]').as('WYSIWYG_BTN__INDENT');
       cy.get('@TOOLBAR').find('button[data-type="blockquote"]').as('WYSIWYG_BTN__QUOTE');
+      cy.get('@TOOLBAR').find('button[data-type="wrap"]').as('WYSIWYG_BTN__WRAP');
       cy.get('@TOOLBAR').find('button[data-type="toc"]').as('WYSIWYG_BTN__TOC');
       cy.get('@TOOLBAR').find('button[data-type="preview"]').as('WYSIWYG_BTN__PREVIEW');
       
@@ -325,9 +326,21 @@ context('Notes', () => {
       cy.get('@CONTENT').type('quote{enter}');
       cy.get('@CONTENT').scrollTo('bottom');
       
+      cy.get('@CONTENT').type('{enter}askdjlaksdjf;laksjdfla;skjdfla;ksdjflskajdfl;askjdfla;skdjfl;sakdjflsa;kdjfal;skdjfl;askjdf;adf {enter}');
+      cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(941); });
+      cy.get('@WYSIWYG_BTN__WRAP').click();
+      cy.get('@FORM').should('have.class', 'wrap');
+      cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(651); });
+      cy.get('@WYSIWYG_BTN__WRAP').click();
+      cy.get('@FORM').should('not.have.class', 'wrap');
+      
       cy.get('@WYSIWYG_BTN__PREVIEW').click();
       screenshot(null, 'previewing note');
       cy.get('@WYSIWYG_BTN__PREVIEW').click();
+      
+      // make sure no accidental loss of note occurs
+      cy.get('.dialog-mask').click({ force: true });
+      cy.get('@CONTENT').should('exist');
       
       cy.get('@FORM').find('button').contains('Save').click();
       
