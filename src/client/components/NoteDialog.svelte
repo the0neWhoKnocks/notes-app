@@ -29,6 +29,7 @@
   let textareaRef;
   let textSelected = false;
   let titleValue;
+  let wrap = false;
   
   function closeDialog() {
     dialogDataForNote.set();
@@ -533,6 +534,10 @@
         toggleCharAtLineStart('> ');
         break;
       
+      case 'wrap':
+        wrap = !wrap;
+        break;
+      
       case 'toc':
         toggleCharAtLineStart('::TOC::');
         break;
@@ -608,6 +613,7 @@
       bind:this={formRef}
       class="note-form"
       class:previewing={previewing}
+      class:wrap={wrap}
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >
@@ -673,6 +679,10 @@
             type="button" title="Outdent &#013; CTRL + [" data-type="outdent" tabindex="-1"
             disabled={previewing}
           >&lt;_</button>
+          <button
+            type="button" title="Wrap" data-type="wrap" tabindex="-1"
+            disabled={previewing}
+          >&crarr;</button>
           <div class="note-form__sep"></div>
           <button
             type="button" title="Code Block" data-type="codeBlock" tabindex="-1"
@@ -800,6 +810,9 @@
   .note-form__content:focus {
     outline: none;
   }
+  .note-form:not(.wrap) .note-form__content {
+    white-space: nowrap;
+  }
   
   .note-form__content-preview {
     overflow: auto;
@@ -824,7 +837,9 @@
   .note-form button:disabled {
     opacity: 0.35;
   }
-  .note-form.previewing button[data-type="preview"] {
+  
+  .note-form.previewing button[data-type="preview"],
+  .note-form.wrap button[data-type="wrap"] {
     color: var(--color--app--bg);
     background: var(--color--app--fg);
   }
@@ -842,7 +857,7 @@
     color: var(--color--app--fg); 
   }
   
-  @media (max-width: 700px) {
+  @media (max-width: 780px) {
     .note-form__toolbar {
       display: grid;
       grid-gap: 0.5em;
@@ -854,11 +869,8 @@
       padding: 0.25em 0;
       margin: 0;
     }
-    .note-form__toolbar button[data-type="toc"] {
-      grid-column: 5 / 7;
-    }
     .note-form__toolbar button[data-type="preview"] {
-      grid-column: 7 / 9;
+      grid-column: 7 / span 2;
     }
     
     .note-form__sep {
