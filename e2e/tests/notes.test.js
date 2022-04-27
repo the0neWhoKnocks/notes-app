@@ -333,7 +333,7 @@ context('Notes', () => {
       
       cy.get('.notes-nav .tags').as('TAGS');
       cy.get('@TAGS').find('.notes-nav-items-toggle__btn').click();
-      cy.get('@TAGS').find('.notes-nav-items-toggle__items .tag')
+      cy.get('@TAGS').find('.notes-nav-items-toggle__items .note-tag')
         .should('have.length', 1)
         .should('have.attr', 'href', '?tag=test');
         

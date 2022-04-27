@@ -13,9 +13,9 @@
   import Icon, { ICON__EYE } from './Icon.svelte';
   import GroupList from './GroupList.svelte';
   import NoteBlurb from './NoteBlurb.svelte';
+  import NoteTag from './NoteTag.svelte';
   import NotesNavItemsToggle from './NotesNavItemsToggle.svelte';
   import NotesNavSubNav from './NotesNavSubNav.svelte';
-  import Tag from './Tag.svelte';
   
   let groupsData;
   
@@ -57,11 +57,11 @@
     <section class="tags">
       <NotesNavItemsToggle>
         <svelte:fragment slot="toggleLabel">
-          <Tag rounded text="&nbsp;" />Tags
+          <NoteTag rounded text="&nbsp;" />Tags
         </svelte:fragment>
         <svelte:fragment slot="toggleItems">
           {#each Object.entries($allTags) as [tag, notePaths]}
-            <Tag count="({notePaths.length}) " rounded text={tag} />
+            <NoteTag count="({notePaths.length}) " rounded text={tag} />
           {/each}
         </svelte:fragment>
       </NotesNavItemsToggle>
@@ -105,14 +105,14 @@
     font-size: 0.8em;
   }
   
-  :global(.notes-nav-items-toggle__btn .tag) {
+  :global(.notes-nav-items-toggle__btn .note-tag) {
     height: 1em;
   }
-  :global(.notes-nav-items-toggle__items .tag) {
+  :global(.notes-nav-items-toggle__items .note-tag) {
     height: 1.2em;
   }
   
-  :global(.notes-nav .tag) {
+  :global(.notes-nav .note-tag) {
     --tag--bg-color: #eee;
   }
   
