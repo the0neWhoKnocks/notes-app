@@ -160,8 +160,10 @@ const shell = ({
           top: 0.1em;
           right: 0.5em;
         }
-        .app :not(pre) > code[class*="language-"] {          
+        .app :not(pre) > code[class*="language-"],        
+        .dialog :not(pre) > code[class*="language-"] {          
           line-height: 1em;
+          overflow-wrap: anywhere;
           padding: 0.2em 0.4em;
           display: inline-block;
         }
