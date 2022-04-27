@@ -598,6 +598,7 @@
 
 {#if $dialogDataForNote}
   <Dialog
+    modal
     onCloseClick={handleCloseClick}
   >
     <svelte:fragment slot="dialogTitle">
