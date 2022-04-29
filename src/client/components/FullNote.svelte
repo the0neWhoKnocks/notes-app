@@ -8,7 +8,7 @@
 </script>
 
 {#if !$recentlyViewedOpen && $currentNote && $currentNote.content}
-  <article class="full-note">
+  <article class="full-note" data-prismjs-copy="&#10697; Copy">
     <header>
       {$currentNote.title}
       <ModifyNav
