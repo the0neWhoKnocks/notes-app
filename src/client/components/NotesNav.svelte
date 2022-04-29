@@ -117,7 +117,7 @@
   }
   
   :global(.notes-nav .notes > .sub-nav) {
-    padding: 0 var(--nav-spacing);
+    padding: 0 0.3em;
   }
   
   :global(.notes-nav .group-list.is--root) {
@@ -155,9 +155,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-  }
-  :global(.notes-nav .item .modify-nav button) {
-    padding: 0.6em 0.5em;
   }
   :global(.notes-nav .group__name) {
     padding: var(--nav-spacing);

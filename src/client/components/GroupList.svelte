@@ -240,7 +240,7 @@
     pointer-events: none;
   }
   
-  :global(.item .svg-icon) {
+  :global(.item__label .svg-icon) {
     margin-right: 0.25em;
     display: inline-block;
   }
