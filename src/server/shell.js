@@ -187,8 +187,7 @@ const shell = ({
         .app .code-toolbar > .toolbar > .toolbar-item > button {
           font-family: revert;
           font-size: 1em;
-          padding: 0.35em 0.75em;
-          border-radius: unset;
+          padding: 0.5em 0.75em;
           box-shadow: none;
           background: transparent;
         }
