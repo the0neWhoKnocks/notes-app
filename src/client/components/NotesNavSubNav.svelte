@@ -57,11 +57,16 @@
     gap: 0.25em;
   }
   
-  .sub-nav button {
-    padding: 0.25em 0.5em;
+  .sub-nav button,
+  :global(.sub-nav .modify-nav button) {
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 1.2em;
+    padding: 0;
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
   }
   .sub-nav > button::after {
     content: '+';

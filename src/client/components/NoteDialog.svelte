@@ -12,6 +12,23 @@
   } from '../stores';
   import Dialog from './Dialog.svelte';
   import GroupNoteNameInput from './GroupNoteNameInput.svelte';
+  import Icon, {
+    ICON__BOLD,
+    ICON__CODE_BLOCK,
+    ICON__HEADING,
+    ICON__INDENT,
+    ICON__INLINE_CODE,
+    ICON__ITALIC,
+    ICON__LINK,
+    ICON__NON_BREAKING,
+    ICON__ORDERED_LIST,
+    ICON__OUTDENT,
+    ICON__PREVIEW,
+    ICON__QUOTE,
+    ICON__STRIKETHROUGH,
+    ICON__TOC,
+    ICON__UNORDERED_LIST,
+  } from './Icon.svelte';
   import LabeledInput from './LabeledInput.svelte';
   import TagsInput from './TagsInput.svelte';
   
@@ -29,7 +46,7 @@
   let textareaRef;
   let textSelected = false;
   let titleValue;
-  let wrap = false;
+  let wrap = true;
   
   function closeDialog() {
     dialogDataForNote.set();
@@ -642,63 +659,93 @@
           <button
             type="button" title="Heading" data-type="heading" tabindex="-1"
             disabled={previewing}
-          >#</button>
+          >
+            <Icon type="{ICON__HEADING}" />
+          </button>
           <button
             type="button" title="Bold &#013; CTRL + B" data-type="bold" tabindex="-1"
             disabled={previewing || !textSelected}
-          >B</button>
+          >
+            <Icon type="{ICON__BOLD}" />
+          </button>
           <button
             type="button" title="Italic &#013; CTRL + I" data-type="italic" tabindex="-1"
             disabled={previewing || !textSelected}
-          >I</button>
+          >
+            <Icon type="{ICON__ITALIC}" />
+          </button>
           <button 
             type="button" title="Strike Through" data-type="strikethrough" tabindex="-1"
             disabled={previewing || !textSelected}
-          >S</button>
+          >
+            <Icon type="{ICON__STRIKETHROUGH}" />
+          </button>
           <button
             type="button" title="Inline Code" data-type="inlineCode" tabindex="-1"
             disabled={previewing || !textSelected}
-          >`</button>
+          >
+            <Icon type="{ICON__INLINE_CODE}" />
+          </button>
           <button
             type="button" title="Link" data-type="anchor" tabindex="-1"
             disabled={previewing || !textSelected}
-          >A</button>
+          >
+            <Icon type="{ICON__LINK}" />
+          </button>
           <button
             type="button" title="Unordered List" data-type="ul" tabindex="-1"
             disabled={previewing}
-          >ul</button>
+          >
+            <Icon type="{ICON__UNORDERED_LIST}" />
+          </button>
           <button
             type="button" title="Ordered List" data-type="ol" tabindex="-1"
             disabled={previewing}
-          >ol</button>
+          >
+            <Icon type="{ICON__ORDERED_LIST}" />
+          </button>
           <button
             type="button" title="Indent &#013; CTRL + ]" data-type="indent" tabindex="-1"
             disabled={previewing}
-          >_&gt;</button>
+          >
+            <Icon type="{ICON__INDENT}" />
+          </button>
           <button
             type="button" title="Outdent &#013; CTRL + [" data-type="outdent" tabindex="-1"
             disabled={previewing}
-          >&lt;_</button>
+          >
+            <Icon type="{ICON__OUTDENT}" />
+          </button>
           <button
             type="button" title="Wrap" data-type="wrap" tabindex="-1"
             disabled={previewing}
-          >&crarr;</button>
+          >
+            <Icon type="{ICON__NON_BREAKING}" />
+          </button>
           <div class="note-form__sep"></div>
           <button
             type="button" title="Code Block" data-type="codeBlock" tabindex="-1"
             disabled={previewing}
-          >```</button>
+          >
+            <Icon type="{ICON__CODE_BLOCK}" />
+          </button>
           <button
             type="button" title="Block Quote" data-type="blockquote" tabindex="-1"
             disabled={previewing}
-          >"</button>
+          >
+            <Icon type="{ICON__QUOTE}" />
+          </button>
           <div class="note-form__sep"></div>
           <button
             type="button" title="Table of Contents" data-type="toc" tabindex="-1"
             disabled={previewing}
-          >TOC</button>
+          >
+            <Icon type="{ICON__TOC}" />
+          </button>
           <div class="note-form__sep"></div>
-          <button type="button" data-type="preview" tabindex="-1">Preview</button>
+          <button type="button" title="Preview" data-type="preview" tabindex="-1">
+            <Icon type="{ICON__PREVIEW}" />
+          </button>
         </nav>
         <div
           class="note-form__content-wrapper"
@@ -783,8 +830,16 @@
   .note-form__toolbar button {
     width: 100%;
     color: inherit;
+    font-size: 1.2em;
+    padding: 0.25em 0;
     border-radius: unset;
     margin: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  :global(.note-form__toolbar button *) {
+    pointer-events: none;
   }
   
   .note-form__sep {

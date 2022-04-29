@@ -11,6 +11,11 @@
     dialogDataForNote,
     noteGroups,
   } from '../stores.js';
+  import Icon, {
+    ICON__EDIT,
+    ICON__NEW_TAB,
+    ICON__TRASH,
+  } from './Icon.svelte';
   
   export let id = undefined;
   export let path = undefined;
@@ -53,9 +58,15 @@
 </script>
 
 <nav class="modify-nav">
-  <button type="button" title="Edit" on:click={editItem}>E</button>
-  <button type="button" title="Move" on:click={moveItem}>M</button>
-  <button type="button" title="Delete" on:click={deleteItem}>D</button>
+  <button type="button" title="Edit" on:click={editItem}>
+    <Icon type="{ICON__EDIT}" />
+  </button>
+  <button type="button" title="Move" on:click={moveItem}>
+    <Icon type="{ICON__NEW_TAB}" />
+  </button>
+  <button type="button" title="Delete" on:click={deleteItem}>
+    <Icon type="{ICON__TRASH}" />
+  </button>
 </nav>
 
 <style>
@@ -64,8 +75,8 @@
     gap: 0.25em;
   }
   
-  .modify-nav button {
-    font-size: 0.75em;
-    padding: 0.25em 0.5em;
+  :global(.modify-nav button) {
+    padding: 0.25em;
+    display: flex;
   }
 </style>
