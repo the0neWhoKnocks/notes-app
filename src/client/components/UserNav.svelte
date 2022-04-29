@@ -30,4 +30,9 @@
   :global(.user-nav .svg-icon.for--user) {
     font-size: 1.1em;
   }
+  
+  :global(.user-nav nav button) {
+    display: flex;
+    justify-content: space-around;
+  }
 </style>
