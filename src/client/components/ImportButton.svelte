@@ -5,6 +5,7 @@
     userNavOpen,
   } from '../stores.js';
   import pickJSONFile from '../utils/pickJSONFile';
+  import Icon, { ICON__UPLOAD } from './Icon.svelte';
 
   async function importData() {
     userNavOpen.set(false);
@@ -24,4 +25,6 @@
   }
 </script>
 
-<button class="import-btn" on:click={importData}>Import</button>
+<button class="import-btn" on:click={importData}>
+  <Icon type="{ICON__UPLOAD}" /> Import
+</button>
