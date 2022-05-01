@@ -87,9 +87,10 @@
   }
   
   :global(.full-note header .find-nav) {
+    border: solid 1px;
     position: absolute;
-    top: 0.25em;
-    right: 0.25em;
+    top: 3px;
+    right: 3px;
     z-index: 100;
   }
   
@@ -111,17 +112,7 @@
     flex-wrap: wrap;
   }
   :global(.full-note__tags .note-tag) {
-    --tag--bg-color: #5c8c8c;
-    --tag--border-color: #aec4d6;
-    --tag--text-color: #fff;
-    
     font-weight: bold;
-  }
-  :global(.full-note__tags .note-tag text) {
-    text-shadow: 0 2px 2px #11242b;
-    paint-order: stroke;
-    stroke: #263e3e;
-    stroke-width: 4px;
   }
   
   .full-note__body {

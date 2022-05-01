@@ -161,11 +161,14 @@ const shell = ({
           right: 0.5em;
         }
         .app :not(pre) > code[class*="language-"],        
-        .dialog :not(pre) > code[class*="language-"] {          
+        .dialog :not(pre) > code[class*="language-"] {
+          font-size: 0.9em;
           line-height: 1em;
           overflow-wrap: anywhere;
           padding: 0.2em 0.4em;
+          margin: 0;
           display: inline-block;
+          vertical-align: middle;
         }
         .app .code-toolbar {
           margin: .5em 0;
@@ -292,10 +295,15 @@ const shell = ({
           <polyline points="2,10 18,10" />
           <polyline points="2,16 18,16" />
         </symbol>
-        <symbol id="theme" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="70" cy="30" r="30" fill="rgba(255,255,255,0.75)"></circle>
-          <circle cx="70" cy="70" r="30" fill="rgba(255,255,255,0.5)"></circle>
-          <circle cx="30" cy="50" r="30" fill="rgba(255,255,255,0.25)"></circle>
+        <symbol
+          id="theme"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="currentColor"
+        >
+          <circle cx="70" cy="30" r="30" fill-opacity="0.75"></circle>
+          <circle cx="70" cy="70" r="30" fill-opacity="0.5"></circle>
+          <circle cx="30" cy="50" r="30" fill-opacity="0.25"></circle>
         </symbol>
         <symbol
           id="search"

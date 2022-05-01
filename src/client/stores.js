@@ -189,6 +189,9 @@ export function logout() {
 }
 
 export function loadThemeCSS(theme) {
+	document.body.className = document.body.className.replace(/theme-[\w]+/, '');
+	if (theme) document.body.classList.add(`theme-${theme}`);
+	
 	document.getElementById('prismTheme').href = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.css`;
 }
 

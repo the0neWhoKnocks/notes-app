@@ -35,7 +35,7 @@
       <button
         type="button"
         class="theme-opt"
-        class:current={$userPreferences.theme === value}
+        class:current={(!$userPreferences.theme && value === '') || $userPreferences.theme === value}
         {value}
       >{label}</button>
     {/each}
@@ -44,6 +44,6 @@
 
 <style>
   .theme-opt.current {
-    background: #13242a;
+    background: var(--color--app--highlight);
   }
 </style>

@@ -70,7 +70,7 @@
   }
   .sub-nav > button::after {
     content: '+';
-    color: var(--color--app--bg);
+    color: #000;
     font-size: 0.75em;
     position: absolute;
     top: 61%;
