@@ -1,6 +1,8 @@
 <script context="module">
   export const ICON__ANGLE_DOWN = 'angle-down';
   export const ICON__ANGLE_UP = 'angle-up';
+  export const ICON__ARROW_DOWN = 'arrow-down';
+  export const ICON__ARROW_UP = 'arrow-up';
   export const ICON__ASTERISK = 'asterisk';
   export const ICON__BOLD = 'bold';
   export const ICON__CODE_BLOCK = 'code-block';
