@@ -181,8 +181,9 @@ const shell = ({
           justify-content: flex-end;
           opacity: 1;
           position: relative;
-          top: 0;
-          right: 0;
+          z-index: unset;
+          top: unset;
+          right: unset;
         }
         .app .code-toolbar > .toolbar > .toolbar-item > button {
           font-family: revert;
