@@ -290,13 +290,82 @@
 </div>
 
 <style>
-  :root {
+  :global(body) {
+    --color--app--bg: #ffffff;
+    --color--app--fg: #000000;
+    --color--app--highlight: #dadada;
+    --color--prism--text: #626262;
+    --color--tag--bg: #dbdbdb;
+    --color--tag--border: #909090;
+    --color--tag--text: #000;
+    
+    background: #5b5959;
+  }
+  :global(body.theme-coy) {
+    --color--app--bg: #5e4b55;
+    --color--app--fg: #f6f9fb;
+    --color--app--highlight: #358ccb;
+    --color--prism--text: #806f77;
+    --color--tag--bg: #358ccb;
+    --color--tag--border: #6dc2ff;
+    --color--tag--text: #eaf6ff;
+    
+    background: #3e3238;
+  }
+  :global(body.theme-dark) {
+    --color--app--bg: #cebdac;
+    --color--app--fg: #4d4033;
+    --color--app--highlight: #bea387;
+    --color--prism--text: #4e4740;
+    --color--tag--bg: #ead7c3;
+    --color--tag--border: #9d846b;
+    --color--tag--text: #826f5b;
+    
+    background: #887d73;
+  }
+  :global(body.theme-okaidia) {
+    --color--app--bg: #4b4d41;
+    --color--app--fg: #edf9d9;
+    --color--app--highlight: #272822;
+    --color--prism--text: #7b7d6f;
+    --color--tag--bg: #272822;
+    --color--tag--border: #71775c;
+    --color--tag--text: #d3dcc4;
+    
+    background: #33342c;
+  }
+  :global(body.theme-solarizedlight) {
+    --color--app--bg: #e9e5db;
+    --color--app--fg: #433a34;
+    --color--app--highlight: #cfc9bc;
+    --color--prism--text: #646158;
+    --color--tag--bg: #b0aa9f;
+    --color--tag--border: #9d988d;
+    --color--tag--text: #524e46;
+    
+    background: #887d62;
+  }
+  :global(body.theme-tomorrow) {
+    --color--app--bg: #43464f;
+    --color--app--fg: #ccc;
+    --color--app--highlight: #303238;
+    --color--prism--text: #6d7079;
+    --color--tag--bg: #33353d;
+    --color--tag--border: #656977;
+    --color--tag--text: #e1e1e1;
+    
+    background: #292b33;
+  }
+  :global(body.theme-twilight) {
     --color--app--bg: #333;
     --color--app--fg: #eee;
-  }
-  
-  :global(body) {
-    background: #666;
+    --color--app--highlight: #141414;
+    --color--prism--text: #bbb;
+    --color--tag--bg: #232323;
+    --color--tag--border: #919191;
+    --color--tag--text: #dcdcdc;
+    
+    background: #1d1d1d;
   }
   
   :global(button) {
@@ -318,7 +387,7 @@
     width: 100vw;
     max-width: 800px;
     margin: auto;
-    box-shadow: 0 0 3em 2em;
+    box-shadow: 0 0 3em 2em rgb(0, 0, 0, 0.35);
     position: relative;
   }
   
@@ -424,5 +493,9 @@
     width: 100%;
     height: 100%;
     display: flex;
+  }
+  
+  :global(.app .code-toolbar > .toolbar > .toolbar-item > button) {
+    color: var(--color--prism--text);
   }
 </style>

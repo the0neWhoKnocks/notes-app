@@ -113,7 +113,7 @@
   }
   
   :global(.notes-nav .note-tag) {
-    --tag--bg-color: #eee;
+    --color--tag--bg: #eee;
   }
   
   :global(.notes-nav .notes > .sub-nav) {

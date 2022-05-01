@@ -123,11 +123,11 @@
   }
   
   svg path {
-    fill: var(--tag--bg-color, maroon);
-    stroke: var(--tag--border-color, currentColor);
+    fill: var(--color--tag--bg, maroon);
+    stroke: var(--color--tag--border, currentColor);
   }
   svg text {
     font-family: monospace;
-    fill: var(--tag--text-color, currentColor);
+    fill: var(--color--tag--text, currentColor);
   }
 </style>
