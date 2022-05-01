@@ -206,6 +206,7 @@ context('Notes', () => {
     function setTopNavAliases() {
       cy.get('.top-nav .search-btn').as('TOP_NAV__SEARCH');
       cy.get('.top-nav .notes-menu-btn').as('TOP_NAV__NOTES');
+      cy.get('.top-nav button').contains('Theme').as('TOP_NAV__THEME');
       cy.get('.top-nav .user-nav .drop-down__toggle').as('TOP_NAV__USER');
     }
     
@@ -327,12 +328,12 @@ context('Notes', () => {
       cy.get('@CONTENT').scrollTo('bottom');
       
       cy.get('@CONTENT').type('{enter}askdjlaksdjf;laksjdfla;skjdfla;ksdjflskajdfl;askjdfla;skdjfl;sakdjflsa;kdjfal;skdjfl;askjdf;adf {enter}');
-      cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(941); });
-      cy.get('@WYSIWYG_BTN__WRAP').click();
-      cy.get('@FORM').should('have.class', 'wrap');
       cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(651); });
+      cy.get('@FORM').should('have.class', 'wrap');
       cy.get('@WYSIWYG_BTN__WRAP').click();
+      cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(941); });
       cy.get('@FORM').should('not.have.class', 'wrap');
+      cy.get('@WYSIWYG_BTN__WRAP').click();
       
       cy.get('@WYSIWYG_BTN__PREVIEW').click();
       screenshot(null, 'previewing note');
@@ -449,6 +450,22 @@ context('Notes', () => {
         
         cy.get('.start-msg').should('not.exist');
       });
+    });
+    
+    it('should switch themes', () => {
+      cy.get('@TOP_NAV__THEME').click();
+      cy.get('.theme-opt.current').contains('default');
+      cy.get('body[class*="theme-"]').should('not.exist');
+      
+      cy.get('.theme-opt:not(.current)').each(($opt) => {
+        const theme = $opt[0].value;
+        cy.wrap($opt).click();
+        cy.get(`body.theme-${theme}`).should('exist');
+        screenshot(null, `theme '${theme}' applied`);
+      });
+      
+      cy.get('.theme-opt').contains('default').click();
+      cy.get('@TOP_NAV__THEME').click();
     });
   });
 });
