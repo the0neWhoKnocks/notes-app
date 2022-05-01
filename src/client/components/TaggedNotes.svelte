@@ -12,9 +12,11 @@
 {#if list}
   <div class="tagged-notes">
     <h3>{list.length} {#if list.length === 1}Note{:else}Notes{/if} Tagged with "{$currentTag}"</h3>
-    {#each list as item}
-      <NoteBlurb {...item} />
-    {/each}
+    <div class="tagged-notes__blurbs">
+      {#each list as item}
+        <NoteBlurb {...item} />
+      {/each}
+    </div>
   </div>
 {/if}
 
@@ -30,5 +32,13 @@
   
   .tagged-notes h3 {
     margin: 0;
+  }
+  
+  .tagged-notes__blurbs {
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
   }
 </style>
