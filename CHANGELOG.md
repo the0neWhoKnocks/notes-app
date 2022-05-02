@@ -1,6 +1,18 @@
 # Changelog
 ---
 
+## v1.7.0
+
+**Bugfixes**
+- [eee5495](https://github.com/the0neWhoKnocks/notes-app/commit/eee5495): Code items not themed in MoveDialog
+- [d71d11a](https://github.com/the0neWhoKnocks/notes-app/commit/d71d11a): Textarea doesn't scroll when list items added
+- [258da4b](https://github.com/the0neWhoKnocks/notes-app/commit/258da4b): Tags in NotesNav not styled properly
+
+**Features**
+- [a0574d1](https://github.com/the0neWhoKnocks/notes-app/commit/a0574d1): Heading toolbar button can reset
+
+---
+
 ## v1.6.0
 
 **Bugfixes**
