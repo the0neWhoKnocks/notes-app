@@ -112,8 +112,13 @@
     height: 1.2em;
   }
   
-  :global(.notes-nav .note-tag) {
-    --color--tag--bg: #eee;
+  :global(.notes-nav) {
+    --color--tag--bg: #222;
+    --color--tag--border: #222;
+    --color--tag--text: #eee;
+  }
+  :global(.tags .notes-nav-items-toggle__btn::after) {
+    color: var(--color--tag--text);
   }
   
   :global(.notes-nav .notes > .sub-nav) {
