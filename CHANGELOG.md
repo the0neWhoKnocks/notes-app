@@ -1,6 +1,24 @@
 # Changelog
 ---
 
+## v1.6.0
+
+**Bugfixes**
+- [a6ecf00](https://github.com/the0neWhoKnocks/notes-app/commit/a6ecf00): Prism toolbars overlap top nav drop-downs
+- [68cd68a](https://github.com/the0neWhoKnocks/notes-app/commit/68cd68a): Long list of Tagged Notes isn't scrollable
+
+**Dev-Ops**
+- [8b84c65](https://github.com/the0neWhoKnocks/notes-app/commit/8b84c65): Added tests
+
+**Features**
+- [c66e718](https://github.com/the0neWhoKnocks/notes-app/commit/c66e718): Added theming
+- [17cc01b](https://github.com/the0neWhoKnocks/notes-app/commit/17cc01b): Add 'Find' capabilities for Note
+- [0f9e99d](https://github.com/the0neWhoKnocks/notes-app/commit/0f9e99d): Icon for Copy button
+- [3bdc3a3](https://github.com/the0neWhoKnocks/notes-app/commit/3bdc3a3): Icons for User menu
+- [ba0ace4](https://github.com/the0neWhoKnocks/notes-app/commit/ba0ace4): Icons for Note WYSIWYG toolbar
+
+---
+
 ## v1.5.0
 
 **Bugfixes**
