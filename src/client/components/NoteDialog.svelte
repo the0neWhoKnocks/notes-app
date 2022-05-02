@@ -38,6 +38,7 @@
   let contentWrapperRef;
   let editingNote;
   let formRef;
+  let keyDownContentData;
   let oldTags = [];
   let previewRef;
   let queryParams;
@@ -69,8 +70,8 @@
     }
   }
   
-  function listItemCheck() {
-    const { indexes: { end, start }, lines } = getSelectedLines();
+  function listItemCheck(lineData) {
+    const { indexes: { end, start }, lines } = lineData;
     const newline = 1;
     const [prevLine] = lines;
     const nextLine = contentText.substring(end + newline).split('\n').shift();
@@ -89,7 +90,7 @@
         || liRegEx.test(nextLine)
       )
     ) {
-      insertText(`\n${leadingSpace}${type}`);
+      insertText(`${leadingSpace}${type}`);
       return true;
     }
     // previous line is a blank list item, User probably want to exit out of list
@@ -97,8 +98,8 @@
       const s = contentText.substring(0, start);
       const e = contentText.substring(end, contentText.length);
       // update text, minus the empty list item
-      updateEditorValue(start + newline, start + newline, `${s}\n${e}`);
-      return true;
+      updateEditorValue(start + newline, start + newline, `${s}${e}`);
+      return false;
     }
   }
   
@@ -113,24 +114,23 @@
   }
   
   function handleContentKeyDown(ev) {
-    const { keyCode, shiftKey } = ev;
+    const { key, shiftKey } = ev;
     
-    if (keyCode === 13) { // ENTER
-      // NOTE: Prevent the textarea from randomly scrolling to the top after a
-      // newline is added. There's still a flicker during the adjustment, but
-      // it's better than all the content suddenly shifting to the top.
-      // Only reference of the issue I could find: https://stackoverflow.com/questions/56329625/preventing-textarea-scroll-behaviour-in-chrome-after-newline-added
-      ev.preventDefault();
-      
+    if (key === 'Enter') {
       if (shiftKey) insertText(`\n${getLeadingSpace()}`);
-      else {
-        const liAdded = listItemCheck();
-        if (!liAdded) insertText('\n');
-      }
+      else keyDownContentData = getSelectedLines();
     }
     else handleToolClick(ev);
     
     handleSelection(ev);
+  }
+  
+  function handleContentKeyUp(ev) {
+    const { key, shiftKey } = ev;
+    
+    if (key === 'Enter' && !shiftKey) listItemCheck(keyDownContentData);
+    
+    keyDownContentData = undefined;
   }
   
   function handleChange({ target }) {
@@ -183,18 +183,17 @@
     textareaRef.setSelectionRange(startPos, endPos);
   }
   
-  function updateEditorValue(newSelStart, newSelEnd, newValue) {
+  async function updateEditorValue(newSelStart, newSelEnd, newValue) {
     const scrollPos = textareaRef.scrollTop;
     
     if (newValue && newValue !== contentText) contentText = newValue;
     
     // wait a tick for the render
-    setTimeout(() => {
-      selectText(newSelStart, newSelEnd);
-      textareaRef.scrollTop = scrollPos;
-      
-      diffCheck();
-    }, 0);
+    await tick();
+    
+    selectText(newSelStart, newSelEnd);
+    if (textareaRef.scrollTop !== scrollPos) textareaRef.scrollTop = scrollPos;
+    diffCheck();
   }
   
   function selectionIsSurroundedBy(char) {
@@ -759,6 +758,7 @@
             on:blur={handleSelection}
             on:click={handleSelection}
             on:keydown={handleContentKeyDown}
+            on:keyup={handleContentKeyUp}
           ></textarea>
           {#if previewing}
             <div
