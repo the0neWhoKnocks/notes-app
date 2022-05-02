@@ -115,16 +115,19 @@
   
   .move-to__title {
     font-size: 0.8em;
+    margin: 0.5em 0;
   }
   .move-to__title code {
     color: var(--color--app--fg);
-    padding: 0.2em 0.5em;
+    padding: 0.25em 0.5em;
+    border: solid 1px var(--color--app--fg);
     border-radius: 0.25em;
     background: var(--color--app--bg);
   }
   :global(.move-to__title mark) {
-    color: #7af0fd;
+    color: var(--color--app--fg);
     font-weight: bold;
+    text-decoration: underline;
     background: transparent;
   }
   
