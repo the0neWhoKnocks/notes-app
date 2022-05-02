@@ -493,11 +493,14 @@
       case 'heading':
         toggleCharAtLineStart((line) => {
           let hashes = (line.match(/[#]+/) || [''])[0].length + 1;
-          if (hashes > 6) hashes = 1;
+          if (hashes > 6) hashes = 0;
+          
+          hashes = Array(hashes).fill('#').join('');
+          if (hashes.length) hashes = `${hashes} `;
           
           return line.replace(
             /^(\n?)([#]+\s)?(.)?/,
-            `$1${Array(hashes).fill('#').join('')} $3`
+            `$1${hashes}$3`
           );
         });
         break;
