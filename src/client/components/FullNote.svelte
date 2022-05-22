@@ -1,4 +1,5 @@
 <script>
+  import { beforeUpdate } from 'svelte';
   import {
     currentNote,
     recentlyViewedOpen,
@@ -9,34 +10,42 @@
   import NoteTag from './NoteTag.svelte';
   
   let findNavOpen = false;
-  let searchedNote = '';
+  let prevNotePath;
+  let searchedNote;
   
   function handleFindClick() {
     findNavOpen = true;
+    prevNotePath = $currentNote.path;
   }
   
   function handleFindClose() {
     findNavOpen = false;
+    prevNotePath = undefined;
+    searchedNote = undefined;
   }
   
   function handleSearch(matchedText) {
     searchedNote = matchedText;
   }
+  
+  beforeUpdate(() => {
+    if (findNavOpen && prevNotePath !== $currentNote?.path) handleFindClose();
+  });
 </script>
 
-{#if !$recentlyViewedOpen && $currentNote && $currentNote.content}
+{#if !$recentlyViewedOpen && $currentNote?.content}
   <article class="full-note" data-prismjs-copy="&#10697; Copy">
     <header>
       {$currentNote.title}
       <nav class="full-note__nav">
-        <button on:click={handleFindClick}>
-          <Icon type="{ICON__SEARCH}" />
-        </button>
         <ModifyNav
           id={$currentNote.id}
           path={$currentNote.path}
           type="note"
         />
+        <button on:click={handleFindClick}>
+          <Icon type="{ICON__SEARCH}" />
+        </button>
       </nav>
       {#if findNavOpen}
         <FindNav
@@ -46,7 +55,7 @@
         />
       {/if}
     </header>
-    {#if $currentNote.tags && $currentNote.tags.length}
+    {#if $currentNote?.tags.length}
       <div class="full-note__tags">
         {#each $currentNote.tags as tag}
           <NoteTag rounded strokeWidth="2" text={tag} />
@@ -102,7 +111,7 @@
     display: flex;
   }
   :global(.full-note__nav .modify-nav) {
-    margin-left: 0.75em;
+    margin-right: 1em;
   }
   
   .full-note__tags {
