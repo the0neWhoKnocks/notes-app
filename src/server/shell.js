@@ -439,6 +439,9 @@ const shell = ({
         <symbol id="arrow-down" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="nonzero" d="M5.70710678,7.29289322 C5.31658249,6.90236893 4.68341751,6.90236893 4.29289322,7.29289322 C3.90236893,7.68341751 3.90236893,8.31658249 4.29289322,8.70710678 L12,16.4142136 L19.7071068,8.70710678 C20.0976311,8.31658249 20.0976311,7.68341751 19.7071068,7.29289322 C19.3165825,6.90236893 18.6834175,6.90236893 18.2928932,7.29289322 L12,13.5857864 L5.70710678,7.29289322 Z"/>
         </symbol>
+        <symbol id="horizontal-rule" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="4 11 20 11 20 13 4 13"></polygon>
+        </symbol>
       </svg>
       <script>
         document.body.classList.remove('no-js');
