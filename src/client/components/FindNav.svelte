@@ -62,9 +62,11 @@
     await tick();
     const yOffset = 15; 
     const matchEl = document.querySelector(matchSelector);
-    const yPos = (matchEl.getBoundingClientRect().top + contentEl.scrollTop) - yOffset - contentEl.offsetTop;
     
-    contentEl.scrollTo({ top: yPos, behavior: 'smooth' });
+    if (matchEl) {
+      const yPos = (matchEl.getBoundingClientRect().top + contentEl.scrollTop) - yOffset - contentEl.offsetTop;
+      contentEl.scrollTo({ top: yPos, behavior: 'smooth' });
+    }
   }
   
   function handleInput() {
