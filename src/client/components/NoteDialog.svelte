@@ -103,6 +103,44 @@
     }
   }
   
+  function tableRowCheck(lineData) {
+    const { indexes: { end, start }, lines } = lineData;
+    const newline = 1;
+    const [prevLine] = lines;
+    const nextLine = contentText.substring(end + newline).split('\n').shift();
+    const leadingSpaceRegEx = /^\s+/;
+    const rowRegEx = /(^\|\s|\s\|\s|\s\|$)/g;
+    
+    if (rowRegEx.test(prevLine)) {
+      const leadingSpace = prevLine.match(leadingSpaceRegEx) || '';
+      const pipes = prevLine.match(rowRegEx) || [];
+      
+      // there could be a pipe in some text, only care if there are multiple
+      if (pipes.length > 1) {
+        const rowText = prevLine.replace(/\|/g, '').trim();
+        
+        // create a blank row
+        if (rowText) {
+          const columns = pipes.map((pipe, ndx) => {
+            // first pipe could have leading space so don't rely on it's spacing
+            return (ndx === 0) ? '| ' : pipe;
+          }).join('');
+          
+          insertText(`${leadingSpace}${columns}`);
+          return true;
+        }
+        // previous row was blank, User wants to exit out of the Table
+        else {
+          const s = contentText.substring(0, start);
+          const e = contentText.substring(end, contentText.length);
+          // update text, minus the empty list item
+          updateEditorValue(start + newline, start + newline, `${s}${e}`);
+          return false;
+        }
+      }
+    }
+  }
+  
   function getLeadingSpace(line) {
     if (line === undefined) {
       const { lines } = getSelectedLines();
@@ -128,7 +166,10 @@
   function handleContentKeyUp(ev) {
     const { key, shiftKey } = ev;
     
-    if (key === 'Enter' && !shiftKey) listItemCheck(keyDownContentData);
+    autoChecks: if (key === 'Enter' && !shiftKey) {
+      if (listItemCheck(keyDownContentData)) break autoChecks;
+      else if (tableRowCheck(keyDownContentData)) break autoChecks;
+    }
     
     keyDownContentData = undefined;
   }

@@ -141,6 +141,7 @@ const shell = ({
         table {
           width: 100%;
           border-collapse: collapse;
+          margin-bottom: 1em;
         }
         th, td {
           padding: 0.5em 0.75em;
