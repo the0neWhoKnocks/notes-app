@@ -16,6 +16,7 @@
     ICON__BOLD,
     ICON__CODE_BLOCK,
     ICON__HEADING,
+    ICON__HR,
     ICON__INDENT,
     ICON__INLINE_CODE,
     ICON__ITALIC,
@@ -546,6 +547,10 @@
         });
         break;
       
+      case 'hr':
+        toggleCharAtLineStart('---');
+        break;
+      
       case 'bold':
         wrapSelectionWithChar('**');
         break;
@@ -704,6 +709,12 @@
             disabled={previewing}
           >
             <Icon type="{ICON__HEADING}" />
+          </button>
+          <button
+            type="button" title="Horizontal Rule" data-type="hr" tabindex="-1"
+            disabled={previewing}
+          >
+            <Icon type="{ICON__HR}" />
           </button>
           <button
             type="button" title="Bold &#013; CTRL + B" data-type="bold" tabindex="-1"

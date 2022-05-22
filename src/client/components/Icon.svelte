@@ -12,6 +12,7 @@
   export const ICON__FILE = 'file';
   export const ICON__FOLDER = 'folder';
   export const ICON__HEADING = 'heading';
+  export const ICON__HR = 'horizontal-rule';
   export const ICON__INDENT = 'indent';
   export const ICON__INLINE_CODE = 'inline-code';
   export const ICON__ITALIC = 'italic';
