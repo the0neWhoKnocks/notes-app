@@ -8,6 +8,7 @@
   export let helpText = '';
   export let hiddenValue = '';
   export let label = '';
+  export let min = undefined;
   export let name = '';
   export let onInput = undefined;
   export let placeholder = '';
@@ -36,6 +37,7 @@
       on:input={onInput}
       {id}
       {disabled}
+      {min}
       {name}
       {placeholder}
       {required}

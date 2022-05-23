@@ -442,6 +442,9 @@ const shell = ({
         <symbol id="horizontal-rule" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polygon points="4 11 20 11 20 13 4 13"></polygon>
         </symbol>
+        <symbol id="table" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="nonzero" d="M19,4 C20.1045695,4 21,4.8954305 21,6 L21,18 C21,19.1045695 20.1045695,20 19,20 L5,20 C3.8954305,20 3,19.1045695 3,18 L3,6 C3,4.8954305 3.8954305,4 5,4 L19,4 Z M5,14 L5,18 L11,18 L11,14 L5,14 Z M19,14 L13,14 L13,18 L19,18 L19,14 Z M19,8 L13,8 L13,12 L19,12 L19,8 Z M5,12 L11,12 L11,8 L5,8 L5,12 Z"/>
+        </symbol>
       </svg>
       <script>
         document.body.classList.remove('no-js');
