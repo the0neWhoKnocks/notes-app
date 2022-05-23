@@ -27,28 +27,39 @@
     ICON__PREVIEW,
     ICON__QUOTE,
     ICON__STRIKETHROUGH,
+    ICON__TABLE,
     ICON__TOC,
     ICON__UNORDERED_LIST,
   } from './Icon.svelte';
   import LabeledInput from './LabeledInput.svelte';
   import TagsInput from './TagsInput.svelte';
   
+  const TABLE_COLUMN_DEFAULT_COUNT = 2;
+  const TABLE_COLUMN_MIN_COUNT = 1;
   let anchorDialogData;
-  let previewing = false;
   let contentText = '';
   let contentWrapperRef;
   let editingNote;
   let formRef;
   let keyDownContentData;
   let oldTags = [];
+  let previewing = false;
   let previewRef;
   let queryParams;
   let saveBtnDisabled;
+  let tableDialogData;
   let tags = [];
   let textareaRef;
   let textSelected = false;
   let titleValue;
   let wrap = true;
+  
+  function parseForm(form) {
+    return [...(new FormData(form)).entries()].reduce((obj, [prop, val]) => {
+      obj[prop] = val;
+      return obj;
+    }, {});
+  }
   
   function closeDialog() {
     dialogDataForNote.set();
@@ -108,7 +119,6 @@
     const { indexes: { end, start }, lines } = lineData;
     const newline = 1;
     const [prevLine] = lines;
-    const nextLine = contentText.substring(end + newline).split('\n').shift();
     const leadingSpaceRegEx = /^\s+/;
     const rowRegEx = /(^\|\s|\s\|\s|\s\|$)/g;
     
@@ -167,7 +177,10 @@
   function handleContentKeyUp(ev) {
     const { key, shiftKey } = ev;
     
-    autoChecks: if (key === 'Enter' && !shiftKey) {
+    autoChecks: if (
+      keyDownContentData // when Dialogs (for anchors/tables) are open, this'll be undefined
+      && (key === 'Enter' && !shiftKey)
+    ) {
       if (listItemCheck(keyDownContentData)) break autoChecks;
       else if (tableRowCheck(keyDownContentData)) break autoChecks;
     }
@@ -500,10 +513,7 @@
     
     const { currentTarget: form } = ev;
     const { selEnd, selStart } = anchorDialogData;
-    const data = [...(new FormData(form)).entries()].reduce((obj, [prop, val]) => {
-      obj[prop] = val;
-      return obj;
-    }, {});
+    const data = parseForm(form);
     const link = `[${data.text}](${data.url})`;
     
     selectText(selStart, selEnd);
@@ -512,6 +522,39 @@
     anchorDialogData.selEnd = selStart + link.length;
     
     closeAnchorDialog();
+  }
+  
+  function openTableDialog() {
+    tableDialogData = {
+      columnCount: TABLE_COLUMN_DEFAULT_COUNT,
+    };
+  }
+  
+  function closeTableDialog() {
+    tableDialogData = undefined;
+  }
+  
+  function addTable(ev) {
+    ev.preventDefault();
+    
+    const { currentTarget: form } = ev;
+    const cols = [...Object.values(parseForm(form))];
+    const table = [
+      `| ${cols.join(' | ')} |`,
+      `| ${cols.map(col => Array(col.length).fill('-').join('')).join(' | ')} |`,
+      `| ${Array(cols.length).join(' | ')} |`,
+    ].join('\n');
+    
+    insertText(table);
+    closeTableDialog();
+  }
+  
+  function handleTableColumnChange({ target: { value } }) {
+    const count = +value;
+    if (
+      !isNaN(count)
+      && count >= TABLE_COLUMN_MIN_COUNT
+    ) tableDialogData.columnCount = count;
   }
   
   async function handleToolClick(ev) {
@@ -597,6 +640,10 @@
       
       case 'blockquote':
         toggleCharAtLineStart('> ');
+        break;
+      
+      case 'table':
+        openTableDialog();
         break;
       
       case 'wrap':
@@ -789,6 +836,12 @@
           >
             <Icon type="{ICON__QUOTE}" />
           </button>
+          <button
+            type="button" title="Table" data-type="table" tabindex="-1"
+            disabled={previewing}
+          >
+            <Icon type="{ICON__TABLE}" />
+          </button>
           <div class="note-form__sep"></div>
           <button
             type="button" title="Table of Contents" data-type="toc" tabindex="-1"
@@ -848,6 +901,30 @@
         name="url"
         required
       />
+      <button>Add</button>
+    </form>
+  </Dialog>
+{/if}
+{#if tableDialogData}
+  <Dialog for="table" onCloseClick={closeTableDialog}>
+    <form class="table-form" on:submit={addTable}>
+      <div class="table-form__items">
+        <LabeledInput
+          autoFocus
+          label="Columns"
+          min={TABLE_COLUMN_MIN_COUNT}
+          onInput={handleTableColumnChange}
+          type="number"
+          value={tableDialogData.columnCount}
+        />
+        {#each Array(tableDialogData.columnCount) as col, colNdx}
+          <LabeledInput
+            label={`Column #${colNdx + 1}`}
+            name={`col${colNdx + 1}`}
+            value=""
+          />
+        {/each}
+      </div>
       <button>Add</button>
     </form>
   </Dialog>
@@ -967,6 +1044,19 @@
     color: var(--color--app--fg); 
   }
   
+  .table-form {
+    max-height: 80vh;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+  }
+  .table-form__items {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+  
   @media (max-width: 780px) {
     .note-form__toolbar {
       display: grid;
@@ -980,7 +1070,7 @@
       margin: 0;
     }
     .note-form__toolbar button[data-type="preview"] {
-      grid-column: 7 / span 2;
+      grid-column: 1 / span 8;
     }
     
     .note-form__sep {

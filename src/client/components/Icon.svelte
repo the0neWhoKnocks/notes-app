@@ -28,6 +28,7 @@
   export const ICON__SEARCH = 'search';
   export const ICON__SETTINGS = 'settings';
   export const ICON__STRIKETHROUGH = 'strikethrough';
+  export const ICON__TABLE = 'table';
   export const ICON__THEME = 'theme';
   export const ICON__TOC = 'toc';
   export const ICON__TRASH = 'trash';
