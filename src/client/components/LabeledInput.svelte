@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import Icon, { ICON__ASTERISK } from './Icon.svelte';
   
   export let autoComplete = false;
@@ -21,9 +21,12 @@
   const id = window.btoa(`cli_${name}`).replace(/=/g, '');
   let inputRef;
   
-  if (autoFocus) {
-    onMount(() => { inputRef.focus(); });
-  }
+  onMount(async () => {
+    if (autoFocus) {
+      await tick();
+      inputRef.focus();
+    }
+  });
 </script>
 
 <div class="labeled-input {_class}">
