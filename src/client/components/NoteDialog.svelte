@@ -251,8 +251,12 @@
   }
   
   function updateEditorValue(newText, { postSelect, preSelect } = {}) {
-    const selStart = preSelect?.start || textareaRef.selectionStart;
-    const selEnd = preSelect?.end || textareaRef.selectionEnd;
+    const selStart = (preSelect?.start !== undefined)
+      ? preSelect.start
+      : textareaRef.selectionStart;
+    const selEnd = (preSelect?.end !== undefined)
+      ? preSelect.end
+      : textareaRef.selectionEnd;
     
     // add changes
     selectText(selStart, selEnd);
