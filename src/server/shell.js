@@ -123,7 +123,7 @@ const shell = ({
           padding: 0.5em 0.75em;
           border-left: solid 0.5em;
           border-radius: 0.25em;
-          margin-bottom: 1em;
+          margin: 1em 0 1em 0;
           background: rgba(255, 255, 255, 0.15);
         }
         
