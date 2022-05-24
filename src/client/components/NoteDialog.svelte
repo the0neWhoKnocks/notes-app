@@ -126,7 +126,11 @@
     const leadingSpaceRegEx = /^\s+/;
     const rowRegEx = /(^\|\s|\s\|\s|\s\|$)/g;
     
-    if (rowRegEx.test(prevLine)) {
+    // only if at the end of a row
+    if (
+      textareaRef.selectionEnd >= end
+      && rowRegEx.test(prevLine)
+    ) {
       const leadingSpace = prevLine.match(leadingSpaceRegEx) || '';
       const pipes = prevLine.match(rowRegEx) || [];
       
