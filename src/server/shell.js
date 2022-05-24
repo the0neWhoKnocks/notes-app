@@ -123,11 +123,8 @@ const shell = ({
           padding: 0.5em 0.75em;
           border-left: solid 0.5em;
           border-radius: 0.25em;
-          margin: 0;
+          margin-bottom: 1em;
           background: rgba(255, 255, 255, 0.15);
-        }
-        blockquote:not(:first-of-type) {
-          margin-top: 1em;
         }
         
         ol, ul {
