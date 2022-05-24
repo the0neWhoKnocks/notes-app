@@ -256,6 +256,7 @@ context('Notes', () => {
       cy.get('@FORM').find('.note-form__toolbar').as('TOOLBAR');
       cy.get('@FORM').find('.note-form__content').as('CONTENT');
       cy.get('@TOOLBAR').find('button[data-type="heading"]').as('WYSIWYG_BTN__HEADING');
+      cy.get('@TOOLBAR').find('button[data-type="hr"]').as('WYSIWYG_BTN__HR');
       cy.get('@TOOLBAR').find('button[data-type="bold"]').as('WYSIWYG_BTN__BOLD');
       cy.get('@TOOLBAR').find('button[data-type="italic"]').as('WYSIWYG_BTN__ITALIC');
       cy.get('@TOOLBAR').find('button[data-type="strikethrough"]').as('WYSIWYG_BTN__STRIKE');
@@ -265,7 +266,9 @@ context('Notes', () => {
       cy.get('@TOOLBAR').find('button[data-type="ul"]').as('WYSIWYG_BTN__UL');
       cy.get('@TOOLBAR').find('button[data-type="ol"]').as('WYSIWYG_BTN__OL');
       cy.get('@TOOLBAR').find('button[data-type="indent"]').as('WYSIWYG_BTN__INDENT');
+      cy.get('@TOOLBAR').find('button[data-type="codeBlock"]').as('WYSIWYG_BTN__CODE_BLOCK');
       cy.get('@TOOLBAR').find('button[data-type="blockquote"]').as('WYSIWYG_BTN__QUOTE');
+      cy.get('@TOOLBAR').find('button[data-type="table"]').as('WYSIWYG_BTN__TABLE');
       cy.get('@TOOLBAR').find('button[data-type="wrap"]').as('WYSIWYG_BTN__WRAP');
       cy.get('@TOOLBAR').find('button[data-type="toc"]').as('WYSIWYG_BTN__TOC');
       cy.get('@TOOLBAR').find('button[data-type="preview"]').as('WYSIWYG_BTN__PREVIEW');
@@ -278,6 +281,8 @@ context('Notes', () => {
       cy.get('@CONTENT').type(' {selectall}{backspace}');
       cy.get('@WYSIWYG_BTN__TOC').click();
       cy.get('@CONTENT').type('{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
       cy.get('@WYSIWYG_BTN__HEADING').click();
       cy.get('@CONTENT').type('Section 1{enter}');
       cy.get('@WYSIWYG_BTN__HEADING').click().click();
@@ -286,23 +291,40 @@ context('Notes', () => {
       cy.get('@CONTENT').type('Section 1.a.1{enter}');
       cy.get('@WYSIWYG_BTN__HEADING').click();
       cy.get('@CONTENT').type('Section 2{enter}{enter}');
-      cy.get('@CONTENT').type('---{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
+      cy.get('@WYSIWYG_BTN__HR').click();
+      cy.get('@CONTENT').type('{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
       cy.get('@CONTENT').type('Bold text').highlight(-4);
       cy.get('@WYSIWYG_BTN__BOLD').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}Italic text').highlight(-4);
+      cy.get('@CONTENT').type('{end}{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
+      cy.get('@CONTENT').type('Italic text').highlight(-4);
       cy.get('@WYSIWYG_BTN__ITALIC').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}Strikethrough text').highlight(-4);
+      cy.get('@CONTENT').type('{end}{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
+      cy.get('@CONTENT').type('Strikethrough text').highlight(-4);
       cy.get('@WYSIWYG_BTN__STRIKE').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}Inline code').highlight(-4);
+      cy.get('@CONTENT').type('{end}{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
+      cy.get('@CONTENT').type('Inline code').highlight(-4);
       cy.get('@WYSIWYG_BTN__CODE').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}A link').highlight(-6);
+      cy.get('@CONTENT').type('{end}{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
+      cy.get('@CONTENT').type('A link').highlight(-6);
       cy.get('@WYSIWYG_BTN__LINK').click();
       cy.get('#Y2xpX3VybA').type('/relative/path');
       cy.get('.dialog__body button').contains('Add').click();
-      cy.get('@CONTENT').scrollTo('bottom');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
       
       cy.get('@CONTENT').type('{end}{enter}{enter}Some random test text to test search.{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
       
       cy.get('@WYSIWYG_BTN__UL').click();
       cy.get('@CONTENT').type('{end}unordered{enter}unordered{enter}{enter}');
@@ -314,18 +336,34 @@ context('Notes', () => {
       cy.get('@WYSIWYG_BTN__INDENT').click();
       cy.get('@WYSIWYG_BTN__OL').click();
       cy.get('@CONTENT').type('{end}child{enter}child{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
       
       cy.get('@CONTENT').type('```{enter}// no lang specified{enter}blah{enter}```{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
       cy.get('@CONTENT').type('```html{enter}<!-- comment -->{enter}<div att="val">{enter}  <span>blah</span>{enter}</div>{enter}```{enter}');
-      cy.get('@CONTENT').type('```js{enter}// code block{enter}var x = \'y\';{enter}```{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      cy.get('@CONTENT').type('```js{enter}// code block{enter}var x = \'y\';{enter}```{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      cy.get('@CONTENT').type('code block from button').highlight(-22);
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      cy.get('@WYSIWYG_BTN__CODE_BLOCK').click();
+      cy.get('@CONTENT').type('{moveToEnd}{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
       
       cy.get('@WYSIWYG_BTN__QUOTE').click();
       cy.get('@CONTENT').type('block  {enter}');
       cy.get('@WYSIWYG_BTN__QUOTE').click();
-      cy.get('@CONTENT').type('quote{enter}');
-      cy.get('@CONTENT').scrollTo('bottom');
+      cy.get('@CONTENT').type('quote{enter}{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      
+      cy.get('@WYSIWYG_BTN__TABLE').click();
+      cy.focused().type('{upArrow}').trigger('input');
+      cy.get('.table-form [name="col1"]').type('col1');
+      cy.get('.table-form [name="col2"]').type('col2');
+      cy.get('.table-form [name="col3"]').type('col3');
+      cy.get('.table-form button').contains('Add').click();
+      cy.get('@CONTENT').highlight(-3).type('col3 value |{enter}');
+      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
       
       cy.get('@CONTENT').type('{enter}askdjlaksdjf;laksjdfla;skjdfla;ksdjflskajdfl;askjdfla;skdjfl;sakdjflsa;kdjfal;skdjfl;askjdf;adf {enter}');
       cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(651); });
@@ -336,6 +374,11 @@ context('Notes', () => {
       cy.get('@WYSIWYG_BTN__WRAP').click();
       
       cy.get('@WYSIWYG_BTN__PREVIEW').click();
+      cy.get('.note-form__content-preview').as('PREVIEW');
+      cy.get('@PREVIEW').find('hr');
+      cy.get('@PREVIEW').find('thead').contains('col1 col2 col3');
+      cy.get('@PREVIEW').find('tbody').contains('col3 value');
+      cy.get('@PREVIEW').find('tbody tr').should('have.length', 1);
       screenshot(null, 'previewing note');
       cy.get('@WYSIWYG_BTN__PREVIEW').click();
       
@@ -350,11 +393,11 @@ context('Notes', () => {
       cy.get('@TAGS').find('.notes-nav-items-toggle__items .note-tag')
         .should('have.length', 1)
         .should('have.attr', 'href', '?tag=test');
-        
+      
       cy.get('.group-list.is--root > .item .item__label')
         .should('have.length', 1)
         .should('have.attr', 'href', '?note=root%2Ffull-test-note');
-        
+      
       cy.get('.flyout__close-btn').click();
     });
     
