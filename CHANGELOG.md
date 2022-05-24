@@ -1,6 +1,24 @@
 # Changelog
 ---
 
+## v1.8.0
+
+**Bugfixes**
+- [6fec285](https://github.com/the0neWhoKnocks/notes-app/commit/6fec285): Spacing below blockquotes
+- [ca887a3](https://github.com/the0neWhoKnocks/notes-app/commit/ca887a3): Input autofocus not working
+- [565aca7](https://github.com/the0neWhoKnocks/notes-app/commit/565aca7): Notes not auto-updating
+
+**Dev-Ops**
+- [896610a](https://github.com/the0neWhoKnocks/notes-app/commit/896610a): Added tests
+
+**Features**
+- [54ddbdd](https://github.com/the0neWhoKnocks/notes-app/commit/54ddbdd): Add support for the Undo Stack
+- [efed9a0](https://github.com/the0neWhoKnocks/notes-app/commit/efed9a0): Add Table to WYSIWYG
+- [8d8ff3d](https://github.com/the0neWhoKnocks/notes-app/commit/8d8ff3d): Add HR to WYSIWYG
+- [4a96696](https://github.com/the0neWhoKnocks/notes-app/commit/4a96696): Auto-fill new Table row on ENTER
+
+---
+
 ## v1.7.0
 
 **Bugfixes**
