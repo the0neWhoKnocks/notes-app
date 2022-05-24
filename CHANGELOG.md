@@ -1,6 +1,15 @@
 # Changelog
 ---
 
+## v1.8.1
+
+**Bugfixes**
+- [9acfced](https://github.com/the0neWhoKnocks/notes-app/commit/9acfced): Spacing for blockquotes
+- [5d6a5c9](https://github.com/the0neWhoKnocks/notes-app/commit/5d6a5c9): Some WYSIWYG functions don't work on the first line
+- [31807d9](https://github.com/the0neWhoKnocks/notes-app/commit/31807d9): Table rows auto-inserted when trying to move table down
+
+---
+
 ## v1.8.0
 
 **Bugfixes**
