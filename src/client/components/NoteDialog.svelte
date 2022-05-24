@@ -107,10 +107,14 @@
     }
     // previous line is a blank list item, User probably want to exit out of list
     else if (type) {
-      const s = contentText.substring(0, start);
-      const e = contentText.substring(end, contentText.length);
       // update text, minus the empty list item
-      updateEditorValue(start + newline, start + newline, `${s}${e}`);
+      updateEditorValue('', {
+        preSelect: { end, start },
+        postSelect: {
+          end: start + newline,
+          start: start + newline,
+        },
+      });
       return false;
     }
   }
@@ -142,10 +146,14 @@
         }
         // previous row was blank, User wants to exit out of the Table
         else {
-          const s = contentText.substring(0, start);
-          const e = contentText.substring(end, contentText.length);
           // update text, minus the empty list item
-          updateEditorValue(start + newline, start + newline, `${s}${e}`);
+          updateEditorValue('', {
+            preSelect: { end, start },
+            postSelect: {
+              end: start + newline,
+              start: start + newline,
+            },
+          });
           return false;
         }
       }
@@ -238,16 +246,17 @@
     textareaRef.setSelectionRange(startPos, endPos);
   }
   
-  async function updateEditorValue(newSelStart, newSelEnd, newValue) {
-    const scrollPos = textareaRef.scrollTop;
+  function updateEditorValue(newText, { postSelect, preSelect } = {}) {
+    const selStart = preSelect?.start || textareaRef.selectionStart;
+    const selEnd = preSelect?.end || textareaRef.selectionEnd;
     
-    if (newValue && newValue !== contentText) contentText = newValue;
+    // add changes
+    selectText(selStart, selEnd);
+    document.execCommand('insertText', false, newText);
     
-    // wait a tick for the render
-    await tick();
+    // select anything that needs selecting
+    if (postSelect) selectText(postSelect.start, postSelect.end);
     
-    selectText(newSelStart, newSelEnd);
-    if (textareaRef.scrollTop !== scrollPos) textareaRef.scrollTop = scrollPos;
     diffCheck();
   }
   
@@ -268,34 +277,30 @@
   function wrapSelectionWithChar(char) {
     let selStart = textareaRef.selectionStart;
     let selEnd = textareaRef.selectionEnd;
-    let newSelStart = selStart;
     let newSelEnd = selEnd;
-    let newValue;
     
     if (selEnd > selStart) {
       const selIsSurrounded = selectionIsSurroundedBy(char);
       const selIsWrapped = selectionIsWrappedWith(char);
       let wrapper = selIsSurrounded ? '' : char;
-      const padding = selIsSurrounded ? char.length : 0;
-      let selPadding = selIsSurrounded ? -padding : wrapper.length;
-      const s = contentText.substring(0, selStart - padding);
       let selection = contentText.substring(selStart, selEnd);
-      const e = contentText.substring(selEnd + padding, contentText.length);
       
       if (selIsWrapped) {
+        selection = contentText.substring(selStart + char.length, selEnd - char.length);
+        newSelEnd = selEnd - (char.length * 2);
         wrapper = '';
-        selStart = selStart + char.length;
-        selEnd = selEnd - char.length;
-        selection = contentText.substring(selStart, selEnd);
-        selPadding = -char.length;
+      }
+      else {
+        newSelEnd = selEnd + (wrapper.length * 2);
       }
       
-      newSelStart = selStart + selPadding;
-      newSelEnd = selEnd + selPadding;
-      newValue = `${s}${wrapper}${selection}${wrapper}${e}`;
+      updateEditorValue(`${wrapper}${selection}${wrapper}`, {
+        postSelect: {
+          end: newSelEnd,
+          start: selStart,
+        },
+      });
     }
-    
-    updateEditorValue(newSelStart, newSelEnd, newValue);
   }
   
   function getSelectedLines() {
@@ -363,7 +368,8 @@
             currBlock.start = lineNdx;
           }
           else {
-            currBlock.end = lineNdx + getLeadingSpace(line).length + char.length;
+            currBlock.leadingSpace = getLeadingSpace(line);
+            currBlock.end = lineNdx + currBlock.leadingSpace.length + char.length;
             
             if (
               selStart >= currBlock.start
@@ -386,15 +392,17 @@
   
   function wrapSelectionWithBlock(char) {
     const block = blockCheck(char);
-    let leadingSpace = '';
     let indexes;
+    let leadingSpace = '';
     
-    let startIndex, endIndex, wrapper, nl;
+    let startIndex, endChunk, endIndex, wrapper, nl;
     if (block) {
       startIndex = block.start;
       endIndex = block.end;
+      leadingSpace = block.leadingSpace;
       wrapper = '';
       nl = '';
+      endChunk = `${nl}${wrapper}`;
     }
     else {
       indexes = getCharIndex('\n', '\n');
@@ -403,29 +411,32 @@
       endIndex = indexes.end;
       wrapper = char;
       nl = '\n';
+      endChunk = `${nl}${leadingSpace}${wrapper}`;
     }
     
-    let newSelEnd = endIndex;
-    let newValue;
-    const firstNL = startIndex === 0 ? '' : nl;
-    
-    const s = contentText.substring(0, startIndex);
+    const addedNewLines = 2;
+    let endPos;
+    let preSelect;
     let selection = contentText.substring(startIndex, endIndex);
-    const e = contentText.substring(endIndex, contentText.length);
-    const endChunk = `${nl}${leadingSpace}${wrapper}`;
+    let startPos;
     
     if (block) {
+      endPos = block.end - (leadingSpace.length * 2) - (char.length * 2) - addedNewLines;
+      startPos = block.start + leadingSpace.length;
+      preSelect = block;
       selection = selection
-        .replace(new RegExp(`^(\\s+)?${char}\n`, 'm'), '')
-        .replace(new RegExp(`\n(\\s+)?${char}$`, 'm'), '');
+        .replace(new RegExp(`^(\\s+)?${char}\\n`, 'm'), '')
+        .replace(new RegExp(`\\n(\\s+)?${char}$`, 'm'), '');
     }
     else {
-      newSelEnd = indexes.end + endChunk.length;
+      endPos = indexes.end + endChunk.length;
+      startPos = indexes.start + (leadingSpace.length * 2) + char.length + addedNewLines;
     }
     
-    newValue = `${s}${firstNL}${leadingSpace}${wrapper}${selection}${endChunk}${e}`;
-    
-    updateEditorValue(newSelEnd, newSelEnd, newValue);
+    updateEditorValue(`${wrapper}${selection}${endChunk}`, {
+      preSelect,
+      postSelect: { end: endPos, start: startPos },
+    });
   }
   
   function toggleCharAtLineStart(transformOrChar) {
@@ -443,52 +454,42 @@
     const selEnd = textareaRef.selectionEnd;
     const { indexes, lines: selLines } = getSelectedLines();
     const updatedLengths = [];
-    const updates = selLines
+    let updates = selLines
       .map(line => {
         const updated = _transform(line);
         updatedLengths.push(updated.length - line.length);
         return updated;
       })
       .join('\n');
-    const s = contentText.substring(0, indexes.start);
-    const e = contentText.substring(indexes.end, contentText.length);
-    const updatedText = `${s}${updates}${e}`;
     let updatedSelStart = selStart + updatedLengths[0];
     let updatedSelEnd = selEnd + updatedLengths.reduce((num, val) => num + val, 0);
+    
+    let preEnd = indexes.end;
+    let preStart = indexes.start;
+    if (!updates) {
+      updates = '\n';
+      preStart -= 1;
+    }
     
     // Ensures that a selection stays on the first selected line, even after an
     // updated line has all it's content removed.
     if (updatedSelStart < indexes.start) updatedSelStart = indexes.start;
     if (updatedSelEnd < indexes.start) updatedSelEnd = indexes.start;
     
-    updateEditorValue(updatedSelStart, updatedSelEnd, updatedText);
+    updateEditorValue(updates, {
+      preSelect: {
+        end: preEnd,
+        start: preStart,
+      },
+      postSelect: {
+        end: updatedSelEnd,
+        start: updatedSelStart,
+      },
+    });
   }
   
-  function insertText(text, pos) {
-    let selStart = textareaRef.selectionStart;
-    let selEnd = textareaRef.selectionEnd;
-    
-    const s = contentText.substring(0, selStart);
-    const e = contentText.substring(selEnd, contentText.length);
-    let updatedText;
-    
-    switch (pos) {
-      case 'wrap': {
-        const selText = contentText.substring(selStart, selEnd);
-        const formattedText = text.replace('%s', selText);
-        updatedText = `${s}${formattedText}${e}`;
-        selEnd = selStart + formattedText.length;
-        break;
-      }
-      default: {
-        updatedText = `${s}${text}${e}`;
-        selEnd = selStart + text.length;
-        selStart = selEnd;
-        break;
-      }
-    }
-    
-    updateEditorValue(selStart, selEnd, updatedText);
+  function insertText(text) {
+    updateEditorValue(text);
   }
   
   function openAnchorDialog() {
