@@ -24,6 +24,7 @@
   export const ICON__ORDERED_LIST = 'ordered-list';
   export const ICON__OUTDENT = 'outdent';
   export const ICON__PREVIEW = 'preview';
+  export const ICON__PRINT = 'print';
   export const ICON__QUOTE = 'quote';
   export const ICON__SEARCH = 'search';
   export const ICON__SETTINGS = 'settings';

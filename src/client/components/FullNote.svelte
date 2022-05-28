@@ -5,13 +5,17 @@
     recentlyViewedOpen,
   } from '../stores'; 
   import FindNav from './FindNav.svelte';
-  import Icon, { ICON__SEARCH } from './Icon.svelte';
+  import Icon, { ICON__PRINT, ICON__SEARCH } from './Icon.svelte';
   import ModifyNav from './ModifyNav.svelte';
   import NoteTag from './NoteTag.svelte';
   
   let findNavOpen = false;
   let prevNotePath;
   let searchedNote;
+  
+  function handlePrintClick() {
+    window.print();
+  }
   
   function handleFindClick() {
     findNavOpen = true;
@@ -43,7 +47,10 @@
           path={$currentNote.path}
           type="note"
         />
-        <button on:click={handleFindClick}>
+        <button on:click={handlePrintClick} title="Print Note">
+          <Icon type="{ICON__PRINT}" />
+        </button>
+        <button on:click={handleFindClick} title="Search Note">
           <Icon type="{ICON__SEARCH}" />
         </button>
       </nav>
@@ -105,6 +112,7 @@
   
   .full-note__nav {
     display: flex;
+    gap: 0.25em;
   }
   .full-note__nav > button {
     padding: 0.25em;
@@ -136,5 +144,57 @@
   :global(.full-note__body mark) {
     text-shadow: none;
     border-radius: 0.2em;
+  }
+  
+  /* Preview in DevTools > CTRL+SHIFT+P > Rendering > Emulate CSS media type: print */
+  @media print {
+    :global(*) {
+      color: black !important;
+      text-shadow: none !important;
+      background: transparent !important;
+    }
+    
+    :global(body) {
+      background: white !important;
+    }
+    
+    :global(.root) {
+      box-shadow: unset !important;
+    }
+    
+    :global(.top-nav),
+    :global(.toc),
+    :global(.code-toolbar .toolbar),
+    :global(.code-toolbar .line-numbers-rows),
+    :global(.full-note__nav) {
+      display: none !important;
+    }
+    
+    :global(.user-content) {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    
+    :global(.full-note) {
+      border: unset !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
+    }
+    
+    :global(.full-note__body code),
+    :global(.code-toolbar pre) {
+      border: solid 1px !important;
+      box-shadow: none !important;
+    }
+    
+    :global(.code-toolbar pre) {
+      white-space: break-spaces !important;
+      line-break: anywhere !important;
+      padding: 2em 1em 1em !important;
+    }
+    
+    :global(.code-toolbar pre code) {
+      border: unset !important;
+    }
   }
 </style>
