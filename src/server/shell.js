@@ -442,6 +442,9 @@ const shell = ({
         <symbol id="table" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="nonzero" d="M19,4 C20.1045695,4 21,4.8954305 21,6 L21,18 C21,19.1045695 20.1045695,20 19,20 L5,20 C3.8954305,20 3,19.1045695 3,18 L3,6 C3,4.8954305 3.8954305,4 5,4 L19,4 Z M5,14 L5,18 L11,18 L11,14 L5,14 Z M19,14 L13,14 L13,18 L19,18 L19,14 Z M19,8 L13,8 L13,12 L19,12 L19,8 Z M5,12 L11,12 L11,8 L5,8 L5,12 Z"/>
         </symbol>
+        <symbol id="print" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18,8 L6,8 C4.34,8 3,9.34 3,11 L3,17 L5,17 L5,20 L19,20 L19,17 L21,17 L21,11 C21,9.34 19.66,8 18,8 Z M17,18 L7,18 L7,14 L17,14 L17,18 Z M17.5,13 C16.675,13 16,12.325 16,11.5 C16,10.675 16.675,10 17.5,10 C18.325,10 19,10.675 19,11.5 C19,12.325 18.325,13 17.5,13 Z M18,5 L6,5 L6,7 L18,7 L18,5 Z" fill-rule="nonzero"></path>
+        </symbol>
       </svg>
       <script>
         document.body.classList.remove('no-js');

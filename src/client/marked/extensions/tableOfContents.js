@@ -45,7 +45,7 @@ module.exports = {
     }).join('');
     
     return [
-      '<div>',
+      '<div class="toc">',
       '  <b>Table of Contents</b>',
       '  <ul>',
       `    ${listItems}`,
