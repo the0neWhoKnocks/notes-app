@@ -1,6 +1,13 @@
 # Changelog
 ---
 
+## v1.9.0
+
+**Features**
+- [58558a4](https://github.com/the0neWhoKnocks/notes-app/commit/58558a4): Add Print option to Note
+
+---
+
 ## v1.8.1
 
 **Bugfixes**
