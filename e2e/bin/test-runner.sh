@@ -6,7 +6,7 @@ export CURR_GID=$(id -g)
 
 APP__PORT=3000
 BUILD=true
-CMD__COMPILE_ASSETS=$(node -e "console.log(require('./bin/release-config').CMD__COMPILE_ASSETS)")
+CMD__COMPILE_ASSETS=$(node -e "console.log(require('./release-config').CMD__COMPILE_ASSETS)")
 DOCKER_HOST="host.docker.internal"
 E2E_SERVICE="e2e-cypress"
 SCRIPT_DIR="$(cd "$(dirname "$0")" > /dev/null 2>&1; pwd -P)"
