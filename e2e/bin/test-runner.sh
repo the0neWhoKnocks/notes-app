@@ -8,8 +8,9 @@ APP__PORT=3000
 BUILD=true
 CMD__COMPILE_ASSETS=$(node -e "console.log(require('./release-config').CMD__COMPILE_ASSETS)")
 DOCKER_HOST="host.docker.internal"
-E2E_SERVICE="e2e-cypress"
 SCRIPT_DIR="$(cd "$(dirname "$0")" > /dev/null 2>&1; pwd -P)"
+SERVICE__APP="notes"
+SERVICE__E2E="e2e-cypress"
 WATCH_MODE=false
 isLinux=false
 isOSX=false
@@ -104,7 +105,7 @@ if $WATCH_MODE; then
   fi
 
   if [[ "$display" != "" ]]; then
-    cypressCmd="docker-compose run --user ${CURR_UID}:${CURR_GID} -e DISPLAY=${display} ${extraArgs} --rm --entrypoint cypress ${E2E_SERVICE} open --project ."
+    cypressCmd="docker-compose run --user ${CURR_UID}:${CURR_GID} -e DISPLAY=${display} ${extraArgs} --rm --entrypoint cypress ${SERVICE__E2E} open --project ."
     
     if [[ "$xlaunchBinary" != "" ]] && [ -f "$xlaunchBinary" ]; then
       echo;
@@ -143,7 +144,7 @@ if $BUILD; then
   
   echo;
   echo "[BUILD] Containers"
-  docker-compose build $E2E_SERVICE notes-4-tests
+  docker-compose build $SERVICE__E2E $SERVICE__APP
   if [ $? -ne 0 ]; then
     echo "[ERROR] Building Docker image failed."
     exit 1
@@ -159,7 +160,7 @@ if [[ "$cypressCmd" != "" ]]; then
 else
   envVars=$(printf "export %s; " "${baseEnvVars[@]}")
   # NOTE - `depends_on` in docker-compose will start the App
-  eval "${envVars} docker-compose up --abort-on-container-exit ${E2E_SERVICE}" 
+  eval "${envVars} docker-compose up --abort-on-container-exit ${SERVICE__E2E}" 
 fi
 exitCode=$(echo $?)
 

@@ -1,35 +1,16 @@
-## Base Node image
-FROM node:14-alpine as node-w-tz
-# - `tzdata` so the `TZ` env var works for timezones
-RUN apk add --no-cache --update tzdata
-
-# start building the base
-FROM node-w-tz as notes--packagejson
+## Create intermediary Container specifically for package.json 
+FROM theonewhoknocks/dev-base:node20 as notes--packagejson
 # Create a temporary package.json where things like `version` and `scripts`
-# are omitted so the cache of the build step won't be invalidated.
+# are omitted so the cache of the build step is invalidated only when modules
+# are modified.
 COPY --chown=node:node ./package*.json ./
-RUN ["node", "-e", " \
-  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8')); \
-  const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf-8')); \
-  \
-  let preInstallScript; \
-  if (pkg.scripts && pkg.scripts.preinstall) preInstallScript = pkg.scripts.preinstall; \
-  \
-  delete pkg.devDependencies; \
-  delete pkg.scripts; \
-  delete pkg.version; \
-  delete lock.version; \
-  \
-  if (preInstallScript) pkg.scripts = { preinstall: preInstallScript }; \
-  \
-  fs.writeFileSync('package.json', JSON.stringify(pkg)); \
-  fs.writeFileSync('package-lock.json', JSON.stringify(lock)); \
-"]
+RUN ["node", "/home/node/packageJSONParser.js"]
 
 # Set up the environment
-FROM node-w-tz AS notes
-ENV NODE_ENV=production
+FROM theonewhoknocks/dev-base:node20 AS notes
 ENV APP=/home/node/app
+ENV IN_CONTAINER=true
+ENV NODE_ENV=production
 RUN mkdir -p $APP/node_modules && chown -R node:node /home/node/*
 
 WORKDIR $APP
@@ -39,8 +20,7 @@ WORKDIR $APP
 COPY --chown=node:node --from=notes--packagejson ./package*.json ./
 
 # Install production dependencies and compile assets
-RUN npm i --only=production --quiet --unsafe-perm \
-  && rm ./package*.json
+RUN npm i --only=production --quiet --unsafe-perm && rm ./package*.json
 
 # Copy locally compiled code to the image
 COPY --chown=node:node ./dist/constants.js ./constants.js
