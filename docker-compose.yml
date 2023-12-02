@@ -5,7 +5,7 @@ services:
     # command: 'cypress run --browser chrome'
     container_name: e2e-notes
     depends_on:
-      - notes-4-tests
+      - notes
     environment:
       ## Cypress vars
       CYPRESS_BASE_URL: "${CYPRESS_BASE_URL}"
@@ -25,12 +25,9 @@ services:
     volumes:
       - "${PWD}/dist/constants.js:/repo/e2e/mnt/constants.js"
       - "${PWD}/e2e:/repo/e2e"
-      - "${PWD}/e2e/mnt/data:/repo/e2e/cypress/fixtures"
-  
-  notes-4-tests:
-    extends: notes
-    volumes:
-      - "${PWD}/e2e/mnt/data:/home/node/app/data"
+      - type: bind
+        source: "${PWD}/e2e/mnt/data"
+        target: "/repo/e2e/cypress/fixtures"
   
   notes:
     build:
@@ -38,9 +35,8 @@ services:
       dockerfile: .docker/Dockerfile
     container_name: notes
     environment:
-      DATA_PATH: /home/node/app/data
+      DATA_PATH: /app_data
       NODE_EXTRA_CA_CERTS: /home/node/certs/localhost.crt
-      NODE_ENV: production
       TZ: America/Los_Angeles
     image: theonewhoknocks/notes
     ports:
@@ -49,9 +45,25 @@ services:
     user: "${CURR_UID}:${CURR_GID}"
     volumes:
       - "${PWD}/certs:/home/node/certs"
-      - "${PWD}/data:/home/node/app/data"
-      # Uncomment to map Local assets
-      # - "${PWD}/dist/public:/home/node/app/public"
-      # - "${PWD}/dist/server:/home/node/app/server"
-      # - "${PWD}/dist/utils:/home/node/app/utils"
-      # - "${PWD}/dist/constants.js:/home/node/app/constants.js"
+      - type: bind
+        source: "${PWD}/e2e/mnt/data"
+        target: "/app_data"
+  
+  notes-dev:
+    extends: notes
+    command: tail -F /dev/null # starts the container, and keeps it running
+    container_name: notes-dev
+    environment:
+      NODE_ENV: development
+    ports:
+      # browserSync
+      - "3001:3001"
+      - "3002:3002"
+      - "3003:3003"
+      # inspector
+      - "9229:9229"
+    volumes:
+      # Map shell files over, so they're maintained between sessions
+      - "${PWD}/.ignore:/home/node/dev" # allows for .zsh_history to be written
+      # Map the current directory over for development
+      - "${PWD}:/home/node/app"
