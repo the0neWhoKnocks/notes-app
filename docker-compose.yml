@@ -57,9 +57,9 @@ services:
       NODE_ENV: development
     ports:
       # browserSync
-      - "3001:3001"
-      - "3002:3002"
-      - "3003:3003"
+      - "3001:3001" # proxied App
+      - "3002:3002" # not sure, but I think this is for WS connections
+      - "3003:3003" # bsync GUI
       # inspector
       - "9229:9229"
     volumes:
