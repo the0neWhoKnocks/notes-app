@@ -87,7 +87,7 @@
     const newline = 1;
     const [prevLine] = lines;
     const nextLine = contentText.substring(end + newline).split('\n').shift();
-    const liRegEx = /^(?<leadingSpace>\s+)?(?<type>- |1\. )(?<liText>.*)/;
+    const liRegEx = /^(?<leadingSpace>\s+)?(?<type>-|1\.)\s?(?<liText>.*)/;
     const {
       groups: { leadingSpace = '', liText, type },
     } = prevLine.match(liRegEx) || { groups: {} };
@@ -102,10 +102,10 @@
         || liRegEx.test(nextLine)
       )
     ) {
-      insertText(`${leadingSpace}${type}`);
+      insertText(`${leadingSpace}${type} `);
       return true;
     }
-    // previous line is a blank list item, User probably want to exit out of list
+    // previous line is a blank list item, User probably wants to exit out of list
     else if (type) {
       // update text, minus the empty list item
       updateEditorValue('', {
