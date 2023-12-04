@@ -31,6 +31,7 @@
   <div class="note-blurb__sub-title">{subTitle}</div>
   {#if content}
     <div class="note-blurb__content">
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       {@html parseContent(content)}
     </div>
   {/if}

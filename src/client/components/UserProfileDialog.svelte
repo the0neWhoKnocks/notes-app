@@ -83,10 +83,11 @@
     title="User Profile"
   >
     <form
-      action={ROUTE__API__USER__PROFILE__SET}
-      bind:this={formRef}
       class="user-profile-form"
+      action={ROUTE__API__USER__PROFILE__SET}
       method="POST"
+      slot="dialogBody"
+      bind:this={formRef}
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >

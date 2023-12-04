@@ -3,7 +3,7 @@
 </script>
 <script>
   import { cubicOut } from 'svelte/easing';
-  import Portal from './Portal.svelte';
+  import Portal from 'svelte-portal';
   
   flyoutNum += 1;
   
@@ -80,13 +80,13 @@
   >
     <div
       class="flyout-mask"
+      aria-hidden="true"
       on:click={handleCloseClick}
       in:toggleMask
       out:toggleMask
     ></div>
     <dialog
       class="flyout"
-      tabindex="0"
       open
       in:toggleFlyout={{ dir: 'in' }}
       out:toggleFlyout={{}}

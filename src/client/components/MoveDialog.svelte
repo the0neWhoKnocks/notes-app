@@ -74,7 +74,7 @@
 
 {#if $dialogDataForMove}
   <Dialog for="moveTo" onCloseClick={closeMoveDialog}>
-    <div class="move-to">
+    <div class="move-to" slot="dialogBody">
       <div class="move-to__title">
         Move {type}
         <code>

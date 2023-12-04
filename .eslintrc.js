@@ -7,20 +7,14 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:node/recommended',
+    'plugin:svelte/recommended',
   ],
-  overrides: [
-    {
-      files: ['*.svelte'],
-      processor: 'svelte3/svelte3',
-    },
-  ],
+  overrides: [],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
   },
-  plugins: [
-    'svelte3',
-  ],
+  plugins: [],
   rules: {
     'comma-dangle': ['error', {
       arrays: 'always-multiline',
@@ -31,13 +25,16 @@ module.exports = {
     }],
     'keyword-spacing': ['error', { after: true, before: true }],
     'no-process-exit': 'off',
-    'no-unused-vars': ['error', { args: 'after-used' }],
-    'node/no-unpublished-import': ['error', {
+    'no-unused-vars': ['error', {
+      args: 'after-used',
+      argsIgnorePattern: "^_$",
+    }],
+    'node/no-missing-import': ['error', {
       allowModules: [
-        'svelte',
-        'svelte-portal',
+        'svelte', // NOTE: There's a known issue where new modules with an `exports` section don't resolve in eslint: https://github.com/import-js/eslint-plugin-import/issues/1810
       ],
     }],
+    'node/no-unpublished-import': 'off',
     'node/no-unpublished-require': 'off',
     'node/no-unsupported-features/es-syntax': ['error', {
       version: '>=14.16.1',

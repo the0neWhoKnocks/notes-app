@@ -49,8 +49,9 @@
     onCloseClick={handleCloseClick}
   >
     <form
-      bind:this={formRef}
       class="delete-form"
+      slot="dialogBody"
+      bind:this={formRef}
       on:submit|preventDefault={handleSubmit}
     >
       <input type="hidden" name="username" value={$userData.username} />

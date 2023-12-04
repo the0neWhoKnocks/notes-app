@@ -50,8 +50,9 @@
       {#if editingGroup}Edit{:else}Add{/if} Group
     </svelte:fragment>
     <form
-      bind:this={formRef}
       class="group-form"
+      slot="dialogBody"
+      bind:this={formRef}
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >

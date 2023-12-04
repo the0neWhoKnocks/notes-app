@@ -23,9 +23,10 @@
     <form
       action={ROUTE__API__CONFIG__CREATE}
       autocomplete="off"
+      method="POST"
+      slot="dialogBody"
       bind:this={formRef}
       on:submit={handleSubmit}
-      method="POST"
     >
       <HRWithText label="Create Config" />
       <p>

@@ -16,6 +16,7 @@
             <input type="checkbox" name={`changes[${type}][${typeProp}][]`} value={ndx} checked />
             <div>
               {#if transformPath}
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html transformPath(diff)}
               {:else}
                 {diff.path}

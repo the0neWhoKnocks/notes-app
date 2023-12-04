@@ -70,6 +70,7 @@
       </div>
     {/if}
     <section class="full-note__body">
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       {@html (searchedNote || window.marked.parse($currentNote.content))}
     </section>
   </article>

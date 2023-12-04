@@ -94,8 +94,9 @@
     title="Offline Changes"
   >
     <form
-      bind:this={formRef}
       class="diff-form"
+      slot="dialogBody"
+      bind:this={formRef}
       on:submit|preventDefault={handleSubmit}
     >
       <input type="hidden" name="username" value={$userData.username} />

@@ -3,7 +3,7 @@
 </script>
 <script>
   import { cubicOut } from 'svelte/easing'; // visualizations https://svelte.dev/repl/6904f0306d6f4985b55f5f9673f762ef?version=3.4.1
-  import Portal from './Portal.svelte';
+  import Portal from 'svelte-portal';
   
   export let animDuration = 300;
   export let bodyColor = '#eee';
@@ -11,8 +11,11 @@
   export let modal = false;
   export let onCloseClick = undefined;
   export let onCloseEnd = undefined;
+  export let onOpenEnd = undefined;
+  export let title = '';
   export let titleBGColor = '#333';
   export let titleTextColor = '#eee';
+  
   let dialogFor = undefined;
   export { dialogFor as for }
   
@@ -56,6 +59,10 @@
     dialogNum -= 1;
   }
   
+  function handleOpenEnd() {
+    if (onOpenEnd) onOpenEnd();
+  }
+  
   function handleCloseClick() {
     if (!modal && onCloseClick) onCloseClick();
   }
@@ -80,6 +87,7 @@
   >
     <div
       class="dialog-mask"
+      aria-hidden="true"
       on:click={handleCloseClick}
       in:toggleMask
       out:toggleMask
@@ -87,16 +95,16 @@
     <dialog
       class="dialog"
       class:is--modal={modal}
-      tabindex="0"
       open
       in:toggleDialog="{{ dir: 'in', start: 70 }}"
       out:toggleDialog="{{ start: 50 }}"
+      on:introend={handleOpenEnd}
       on:outroend={handleCloseEnd}
     >
-      {#if !modal || modal && $$slots.dialogTitle}
+      {#if !modal || modal && (title || $$slots.dialogTitle)}
         <nav class="dialog__nav">
           <div class="dialog__title">
-            <slot name="dialogTitle"></slot>
+            <slot name="dialogTitle">{title}</slot>
           </div>
           {#if !modal}
             <button
@@ -108,7 +116,7 @@
         </nav>
       {/if}
       <div class="dialog__body">
-        <slot></slot>
+        <slot name="dialogBody"></slot>
       </div>
     </dialog>
   </div>
@@ -129,13 +137,13 @@
     box-sizing: border-box;
   }
   
-  :global(.dialog-wrapper button),
-  :global(.dialog-wrapper input),
-  :global(.dialog-wrapper select),
-  :global(.dialog-wrapper textarea) {
+  .dialog-wrapper :global(button),
+  .dialog-wrapper :global(input),
+  .dialog-wrapper :global(select),
+  .dialog-wrapper :global(textarea) {
 		fill: orange;
 	}
-  :global(.dialog-wrapper button:not(:disabled)) {
+  .dialog-wrapper :global(button:not(:disabled)) {
     cursor: pointer;
   }
   
@@ -149,6 +157,8 @@
     margin: 0;
     background: var(--dialog-border-color);
     box-shadow: 0 0.75em 2em 0.25em rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -161,6 +171,7 @@
     border-bottom: solid 1px;
     background-color: var(--dialog-title-bg-color);
     display: flex;
+    align-items: center;
   }
   
   .dialog__title {
@@ -172,12 +183,13 @@
   }
   
   .dialog__body {
+    overflow: hidden;
     background: var(--dialog-body-color);
+    display: flex;
   }
   
   .dialog__close-btn {
     color: var(--dialog-title-text-color);
-    padding: 0 1em;
     border: none;
     background: var(--dialog-title-bg-color);
   }
