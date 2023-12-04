@@ -114,6 +114,7 @@
   .full-note__nav {
     display: flex;
     gap: 0.25em;
+    align-self: flex-start;
   }
   .full-note__nav > button {
     padding: 0.25em;
