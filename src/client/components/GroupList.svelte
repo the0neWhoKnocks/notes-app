@@ -1,23 +1,3 @@
-<script context="module">
-  const getGroupData = (item, expanded) => {
-    const { subGroup } = item;
-    const hasItems = !!subGroup.length;
-    const empty = hasItems ? null : true;
-    const open = (expanded && hasItems) ? true : null;
-    
-    return [{ ...item, empty, hasItems, open }];
-  };
-  
-  const getFileData = (item, groupPath) => {
-    const { id } = item;
-    const dataAttrs = {
-      'data-id': id,
-      'data-path': `${groupPath}/${id}`,
-    };
-    
-    return [{ ...item, dataAttrs }];
-  };
-</script>
 <script>
   import Icon, {
     ICON__FILE,
@@ -59,44 +39,48 @@
 >
   {#each data as item (item.path)}
     {#if item.groupName}
-      {#each getGroupData(item, expanded) as {empty, groupName, hasItems, nameComponent, open, subGroup} (item.path)}
-        <div class="group" {empty} {open}>
-          <div class="group__name">
-            <div class="group__name-wrapper">
-              {#if hasItems}
-                <span class="indicator"></span>
-              {/if}
-              <Icon type={ICON__FOLDER} /><span class="group__name-text">{groupName}</span>
-            </div>
-            {#if nameComponent}
-              <svelte:component this={nameComponent} {...item} />
+      {@const { groupName, nameComponent, subGroup } = item}
+      {@const hasItems = !!subGroup.length}
+      {@const empty = hasItems ? null : true}
+      {@const open = (expanded && hasItems) ? true : null}
+      <div class="group" {empty} {open}>
+        <div class="group__name">
+          <div class="group__name-wrapper">
+            {#if hasItems}
+              <span class="indicator"></span>
             {/if}
+            <Icon type={ICON__FOLDER} /><span class="group__name-text">{groupName}</span>
           </div>
-          {#if hasItems}
-            <div class="group__items">
-              <svelte:self data={subGroup} groupPath={`${groupPath}/${groupName}`} />
-            </div>
-          {/if}
-        </div>
-      {/each}
-    {:else}
-      <!-- TODO: Can simplify if they ever merge the @const PR -->
-      {#each getFileData(item, groupPath) as {dataAttrs, link, name, nameComponent} (item.path)}
-        <div class="item">
-          {#if link}
-            <a class="item__label" href={link} {...dataAttrs}>
-              <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
-            </a>
-          {:else}
-            <div class="item__label" {...dataAttrs}>
-              <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
-            </div>
-          {/if}
           {#if nameComponent}
             <svelte:component this={nameComponent} {...item} />
           {/if}
         </div>
-      {/each}
+        {#if hasItems}
+          <div class="group__items">
+            <svelte:self data={subGroup} groupPath={`${groupPath}/${groupName}`} />
+          </div>
+        {/if}
+      </div>
+    {:else}
+      {@const { id, link, name, nameComponent } = item}
+      {@const dataAttrs = {
+        'data-id': id,
+        'data-path': `${groupPath}/${id}`,
+      }}
+      <div class="item">
+        {#if link}
+          <a class="item__label" href={link} {...dataAttrs}>
+            <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
+          </a>
+        {:else}
+          <div class="item__label" {...dataAttrs}>
+            <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
+          </div>
+        {/if}
+        {#if nameComponent}
+          <svelte:component this={nameComponent} {...item} />
+        {/if}
+      </div>
     {/if}
   {/each}
 </div>
