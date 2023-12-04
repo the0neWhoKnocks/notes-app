@@ -173,6 +173,7 @@ export function logout() {
 	window[storageType].removeItem(NAMESPACE__STORAGE__USER);
 	
 	currentNote.set();
+  initialUserDataLoaded.set(false);
 	noteGroups.set();
 	userIsLoggedIn.set(false);
 	userNavOpen.set(false);
