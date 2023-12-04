@@ -23,6 +23,7 @@ export const dialogDataForGroup = writable();
 export const dialogDataForMove = writable();
 export const dialogDataForNote = writable();
 export const initialUserDataLoaded = writable(false);
+export const loggedInStateChecked = writable(false);
 export const noteGroups = writable();
 export const notesNavFlyoutOpen = writable(false);
 export const offline = writable(false);
@@ -161,6 +162,8 @@ export function checkLoggedInState() {
 		userIsLoggedIn.set(true);
 		log.info('[USER] logged in');
 	}
+  
+  loggedInStateChecked.set(true);
 }
 
 export function login({ data, persistent }) {
@@ -174,6 +177,7 @@ export function logout() {
 	
 	currentNote.set();
   initialUserDataLoaded.set(false);
+  loggedInStateChecked.set(false);
 	noteGroups.set();
 	userIsLoggedIn.set(false);
 	userNavOpen.set(false);

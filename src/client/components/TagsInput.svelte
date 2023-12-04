@@ -180,6 +180,8 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="tags-input__container"
   on:click={handleTagClick}
@@ -218,6 +220,7 @@
     bind:this={measureRef}
   >{placeholder}</div>
   {#if autoCompleteItems.length}
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <nav
       class="tags-input__auto-complete-list"
       bind:this={autoCompleteRef}

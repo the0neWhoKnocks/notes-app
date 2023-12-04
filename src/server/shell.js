@@ -458,7 +458,7 @@ const shell = ({
           </noscript>
         </div>
         <div id="${DOM__SVELTE_MOUNT_POINT}"></div>
-        <div id=overlays></div>
+        <div id="overlays"></div>
       </div>
       
       ${addNodes('link', body.styles)}

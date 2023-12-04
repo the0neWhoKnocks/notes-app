@@ -6,6 +6,7 @@
   import postData from '../utils/postData';
   import {
     login,
+    loggedInStateChecked,
     offline,
     userData,
     userIsLoggedIn,
@@ -86,17 +87,18 @@
   $: rememberCredentials = $userStorageType === 'localStorage';
 </script>
 
-{#if !$userIsLoggedIn}
+{#if $loggedInStateChecked && !$userIsLoggedIn}
   {#if loginOpen}
     <Dialog modal>
       <form
         action={ROUTE__API__USER__LOGIN}
         autocomplete='off'
-        bind:this={loginFormRef}
         class="login-form"
         method="POST"
-        on:submit={handleLoginSubmit}
         spellcheck="false"
+        slot="dialogBody"
+        bind:this={loginFormRef}
+        on:submit={handleLoginSubmit}
       >
         <HRWithText label="Log In" />
         <LabeledInput
@@ -138,11 +140,12 @@
       <form
         action={ROUTE__API__USER__PROFILE__CREATE}
         autocomplete="off"
-        bind:this={createFormRef}
         class="create-form"
         method="POST"
-        on:submit={handleCreateSubmit}
         spellcheck="false"
+        slot="dialogBody"
+        bind:this={createFormRef}
+        on:submit={handleCreateSubmit}
       >
         <HRWithText label="Create Account" />
         <LabeledInput

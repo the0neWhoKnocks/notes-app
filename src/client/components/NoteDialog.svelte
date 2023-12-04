@@ -731,10 +731,11 @@
       {#if editingNote}Edit{:else}Add{/if} Note
     </svelte:fragment>
     <form
-      bind:this={formRef}
       class="note-form"
       class:previewing={previewing}
       class:wrap={wrap}
+      slot="dialogBody"
+      bind:this={formRef}
       on:input={handleChange}
       on:submit|preventDefault={handleSubmit}
     >
@@ -759,6 +760,8 @@
         {tags}
       />
       <div class="note-form__content-area">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <nav class="note-form__toolbar" on:click={handleToolClick}>
           <button
             type="button" title="Heading" data-type="heading" tabindex="-1"
@@ -882,6 +885,7 @@
               bind:this={previewRef}
               class="note-form__content-preview"
             >
+              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               {@html window.marked.parse(contentText)}
             </div>
           {/if}
@@ -896,7 +900,7 @@
 {/if}
 {#if anchorDialogData}
   <Dialog for="anchor" onCloseClick={closeAnchorDialog}>
-    <form on:submit={addAnchor}>
+    <form slot="dialogBody" on:submit={addAnchor}>
       <LabeledInput
         autoFocus={!anchorDialogData.text}
         label="Text"
@@ -916,7 +920,7 @@
 {/if}
 {#if tableDialogData}
   <Dialog for="table" onCloseClick={closeTableDialog}>
-    <form class="table-form" on:submit={addTable}>
+    <form class="table-form" slot="dialogBody" on:submit={addTable}>
       <div class="table-form__items">
         <LabeledInput
           autoFocus
@@ -926,7 +930,7 @@
           type="number"
           value={tableDialogData.columnCount}
         />
-        {#each Array(tableDialogData.columnCount) as col, colNdx}
+        {#each Array(tableDialogData.columnCount) as _, colNdx}
           <LabeledInput
             label={`Column #${colNdx + 1}`}
             name={`col${colNdx + 1}`}

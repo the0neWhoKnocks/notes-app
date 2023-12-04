@@ -30,6 +30,8 @@
     <Icon type={ICON__THEME} />
     Theme
   </svelte:fragment>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div on:click={handleThemeSelect}>
     {#each themes as {label, value}}
       <button

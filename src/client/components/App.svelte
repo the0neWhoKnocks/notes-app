@@ -251,21 +251,6 @@
         </section>
       </section>
     {/if}
-    
-    <SearchFlyout />
-    <NotesNavFlyout />
-    <LoginDialog />
-    <UserProfileDialog />
-    <NoteDialog />
-    <GroupDialog />
-    <DeleteDialog />
-    <MoveDialog />
-    
-    <!-- {#if $dialogDataForDiff}
-      <DiffDialog
-        onDiscard={discardOfflineChanges}
-      />
-    {/if} -->
   {/if}
   
   <div
@@ -288,6 +273,15 @@
     {/if}
   </div>
 </div>
+<DeleteDialog />
+<!-- <DiffDialog onDiscard={discardOfflineChanges} /> -->
+<GroupDialog />
+<MoveDialog />
+<NoteDialog />
+<NotesNavFlyout />
+<LoginDialog />
+<SearchFlyout />
+<UserProfileDialog />
 
 <style>
   :global(body) {

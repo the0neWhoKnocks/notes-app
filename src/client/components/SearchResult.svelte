@@ -38,6 +38,7 @@
       <Icon type={ICON__FILE} />
     {/if}
     <div class="search-result__title">
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       {@html title}
     </div>
     {#if subTitle}
@@ -45,7 +46,10 @@
     {/if}
   </div>
   {#if content}
-    <div class="search-result__content">{@html content}</div>
+    <div class="search-result__content">
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+      {@html content}
+    </div>
   {/if}
 </button>
 
