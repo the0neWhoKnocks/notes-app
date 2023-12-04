@@ -82,9 +82,9 @@
   style={addFileStyles(itemStyles)}
   on:click={isRoot && handleClick}
 >
-  {#each data as item (`${groupPath}/${item.groupName}`)}
+  {#each data as item (item.path)}
     {#if item.groupName}
-      {#each getGroupData(item, expanded) as {empty, groupName, hasItems, nameComponent, open, subGroup}}
+      {#each getGroupData(item, expanded) as {empty, groupName, hasItems, nameComponent, open, subGroup} (item.path)}
         <div class="group" {empty} {open}>
           <div class="group__name">
             <div class="group__name-wrapper">
@@ -106,7 +106,7 @@
       {/each}
     {:else}
       <!-- TODO: Can simplify if they ever merge the @const PR -->
-      {#each getFileData(item, groupPath) as {dataAttrs, link, name, nameComponent}}
+      {#each getFileData(item, groupPath) as {dataAttrs, link, name, nameComponent} (item.path)}
         <div class="item">
           {#if link}
             <a class="item__label" href={link} {...dataAttrs}>
