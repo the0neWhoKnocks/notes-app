@@ -1,6 +1,4 @@
 <script context="module">
-  const itemStyles = {};
-  
   const getGroupData = (item, expanded) => {
     const { subGroup } = item;
     const hasItems = !!subGroup.length;
@@ -11,25 +9,11 @@
   };
   
   const getFileData = (item, groupPath) => {
-    const { id, name } = item;
-    const [, ext] = name.match(/\.(.*)$/) || ['', ''];
+    const { id } = item;
     const dataAttrs = {
       'data-id': id,
       'data-path': `${groupPath}/${id}`,
     };
-    
-    if (ext) {
-      dataAttrs['data-ext'] = ext;
-      
-      if (!itemStyles[ext]) {
-        itemStyles[ext] = `
-          .item[data-ext="${ext}"] .svg-icon {
-            fill: var(--color--item--${ext}--fill, var(--color--file--fill));
-            stroke: var(--color--item--${ext}--stroke, var(--color--file--stroke));
-          }
-        `;
-      }
-    }
     
     return [{ ...item, dataAttrs }];
   };
@@ -44,14 +28,6 @@
   export let expanded = false;
   export let groupPath = '';
   export let onItemClick = undefined;
-  
-  function addFileStyles() {
-    let ret;
-    if (Object.keys(itemStyles).length) {
-      ret = Object.values(itemStyles).join('\n');
-    }
-    return ret;
-  }
   
   function handleClick(ev) {
     const { ctrlKey, target } = ev;
@@ -79,7 +55,6 @@
 <div
   class="group-list"
   class:is--root={isRoot}
-  style={addFileStyles(itemStyles)}
   on:click={isRoot && handleClick}
 >
   {#each data as item (item.path)}
