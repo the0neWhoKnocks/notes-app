@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy } from 'svelte';
   import { BASE_DATA_NODE } from '../../constants';
   import {
     allTags,
@@ -26,7 +27,7 @@
     loadNote(note);
   }
   
-  noteGroups.subscribe((data = {}) => {
+  const unsubNoteGroups = noteGroups.subscribe((data = {}) => {
 		groupsData = transformNoteData(
       data[BASE_DATA_NODE],
       {
@@ -36,6 +37,10 @@
       }
     );
 	});
+  
+  onDestroy(() => {
+    unsubNoteGroups();
+  });
 </script>
 
 <nav class="notes-nav">
