@@ -41,6 +41,7 @@
   let contentWrapperRef;
   let editingNote;
   let formRef;
+  let hideCaret = false;
   let keyDownContentData;
   let oldTags = [];
   let previewing = false;
@@ -178,6 +179,8 @@
     const { key, shiftKey } = ev;
     
     if (key === 'Enter') {
+      hideCaret = true;
+      
       if (shiftKey) insertText(`\n${getLeadingSpace()}`);
       else keyDownContentData = getSelectedLines();
     }
@@ -197,6 +200,7 @@
       else if (tableRowCheck(keyDownContentData)) break autoChecks;
     }
     
+    if (key === 'Enter') hideCaret = false;
     keyDownContentData = undefined;
   }
   
@@ -872,6 +876,7 @@
         >
           <textarea
             class="note-form__content"
+            class:has--hidden-caret={hideCaret}
             name="content"
             bind:this={textareaRef}
             bind:value={contentText}
@@ -1006,6 +1011,9 @@
     font-size: inherit;
     padding: 1em;
     resize: none;
+  }
+  .note-form__content.has--hidden-caret {
+    caret-color: transparent;
   }
   .note-form__content:focus {
     outline: none;
