@@ -801,7 +801,7 @@
           </button>
           <button
             type="button" title="Link" data-type="anchor" tabindex="-1"
-            disabled={previewing || !textSelected}
+            disabled={previewing}
           >
             <Icon type="{ICON__LINK}" />
           </button>
