@@ -13,7 +13,7 @@
 | Alias | Command          |
 | ----- | ---------------- |
 | `d`   | `docker`         |
-| `dc`  | `docker-compose` |
+| `dc`  | `docker compose` |
 | `nr`  | `npm run`        |
 
 Install dependencies
