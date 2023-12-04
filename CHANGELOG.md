@@ -1,6 +1,34 @@
 # Changelog
 ---
 
+## v1.10.0
+
+<details>
+  <summary>Expand for v1.10.0 Details</summary>
+
+  **Bugfixes**
+  - [e7142f5](/the0neWhoKnocks/notes-app/commit/e7142f5): Auto-removal of blank list item not working on Android
+  - [191d9df](/the0neWhoKnocks/notes-app/commit/191d9df): Buttons are vertically stretching in FullNote nav
+  - [10969da](/the0neWhoKnocks/notes-app/commit/10969da): After editing a note it disappears in list or duplicate listings appear
+  - [7f132b7](/the0neWhoKnocks/notes-app/commit/7f132b7): Error when logging in after just logging out
+  - [94af904](/the0neWhoKnocks/notes-app/commit/94af904): Logout after viewing notes list results in error
+
+  **Dev-Ops**
+  - [65d6488](/the0neWhoKnocks/notes-app/commit/65d6488): Changed references of 'docker-compose' to 'docker compose'
+  - [7f4bd3b](/the0neWhoKnocks/notes-app/commit/7f4bd3b): Simplified GroupList logic
+  - [daf109a](/the0neWhoKnocks/notes-app/commit/daf109a): Removed unused code
+  - [dc26760](/the0neWhoKnocks/notes-app/commit/dc26760): Upgrade Svelte
+  - [1b0d696](/the0neWhoKnocks/notes-app/commit/1b0d696): Upgraded browser-sync so GUI would work
+  - [a5b04d4](/the0neWhoKnocks/notes-app/commit/a5b04d4): Added dev env
+  - [c9f00e3](/the0neWhoKnocks/notes-app/commit/c9f00e3): Decouple release script from repo
+
+  **Features**
+  - [fc6e874](/the0neWhoKnocks/notes-app/commit/fc6e874): Prevent the appearance of the caret jumping around when text inserted
+  - [b3304e8](/the0neWhoKnocks/notes-app/commit/b3304e8): Don't require selection for Link button to be enabled
+</details>
+
+---
+
 ## v1.9.0
 
 **Features**
