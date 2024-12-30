@@ -10,6 +10,7 @@ const constants = {
   NAMESPACE__LOGGER: 'notes',
   NAMESPACE__STORAGE,
   NAMESPACE__STORAGE__USER: `${NAMESPACE__STORAGE}.user`,
+  PRISMAJS__COPY_TEXT: '⧉ Copy', // `&#10697;`
   ROUTE__API__CONFIG__CREATE: `${API_PREFIX}/config/create`,
   ROUTE__API__USER__DATA__GET: `${API_PREFIX}/user/data`,
   ROUTE__API__USER__DATA__SET: `${API_PREFIX}/user/data/set`,

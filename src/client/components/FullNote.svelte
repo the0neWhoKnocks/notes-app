@@ -1,5 +1,6 @@
 <script>
   import { beforeUpdate } from 'svelte';
+  import { PRISMAJS__COPY_TEXT } from '../../constants';
   import {
     currentNote,
     recentlyViewedOpen,
@@ -38,7 +39,7 @@
 </script>
 
 {#if !$recentlyViewedOpen && $currentNote?.content}
-  <article class="full-note" data-prismjs-copy="&#10697; Copy">
+  <article class="full-note" data-prismjs-copy={`${PRISMAJS__COPY_TEXT}`}>
     <header>
       {$currentNote.title}
       <nav class="full-note__nav">

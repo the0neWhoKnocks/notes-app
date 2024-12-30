@@ -1,5 +1,6 @@
 <script>
   import { tick } from 'svelte';
+  import { PRISMAJS__COPY_TEXT } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
   import parseTags from '../../utils/parseTags';
   import {
@@ -889,6 +890,7 @@
             <div
               bind:this={previewRef}
               class="note-form__content-preview"
+              data-prismjs-copy={PRISMAJS__COPY_TEXT}
             >
               <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               {@html window.marked.parse(contentText)}
