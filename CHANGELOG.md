@@ -1,6 +1,23 @@
 # Changelog
 ---
 
+## v1.11.0
+
+<details>
+  <summary>Expand for v1.11.0 Details</summary>
+
+  **Bugfixes**
+  - [3ad9762](/the0neWhoKnocks/notes-app/commit/3ad9762): Copy (code) button not formatted the same in Preview
+
+  **Dev-Ops**
+  - [a606b15](/the0neWhoKnocks/notes-app/commit/a606b15): Docker --remove-orphans
+
+  **Features**
+  - [9b21e25](/the0neWhoKnocks/notes-app/commit/9b21e25): Consistent font rendering for code blocks
+</details>
+
+---
+
 ## v1.10.0
 
 <details>

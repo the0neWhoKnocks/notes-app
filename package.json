@@ -1,5 +1,5 @@
 {
-  "version": "1.10.0",
+  "version": "1.11.0",
   "scripts": {
     "build": "./bin/prep-dist.sh && webpack",
     "lint": "eslint ./*.js \"{bin,e2e,src}/**/*.{js,svelte}\"",
