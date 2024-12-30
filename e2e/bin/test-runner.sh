@@ -160,7 +160,7 @@ if [[ "$cypressCmd" != "" ]]; then
 else
   envVars=$(printf "export %s; " "${baseEnvVars[@]}")
   # NOTE - `depends_on` in docker-compose will start the App
-  eval "${envVars} docker compose up --abort-on-container-exit ${SERVICE__E2E}" 
+  eval "${envVars} docker compose up --remove-orphans --abort-on-container-exit ${SERVICE__E2E}" 
 fi
 exitCode=$(echo $?)
 
