@@ -175,6 +175,8 @@ const conf = {
         // at startup before the bundling has started. Note that you have to
         // exclude the folder and it's contents separately.
         '!css',
+        '!css/fonts',
+        '!css/fonts/**/*',
         '!css/vendor',
         '!css/vendor/**/*',
         '!imgs',

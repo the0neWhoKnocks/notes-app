@@ -2,6 +2,7 @@
 
 mkdir -p \
   ./dist \
+  ./dist/public/css \
   ./dist/public/imgs \
   ./dist/public/js/vendor
 
@@ -13,6 +14,12 @@ rsync -avh \
   ./src/constants.js \
   ./dist --delete
 
+# Sync fonts
+rsync -avh \
+  ./src/static/fonts \
+  ./dist/public/css
+
+# Sync favicons
 rsync -avh \
   ./src/static/favicons \
   ./dist/public/imgs

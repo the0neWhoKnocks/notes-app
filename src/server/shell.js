@@ -144,54 +144,9 @@ const shell = ({
           padding: 0.5em 0.75em;
           border: solid 1px;
         }
-
+        
         pre > code {
           display: block;
-        }
-        pre[data-lang] {
-          position: relative;
-        }
-        pre[data-lang]::after {
-          content: '[' attr(data-lang) ']';
-          opacity: 0.5;
-          position: absolute;
-          top: 0.1em;
-          right: 0.5em;
-        }
-        .app :not(pre) > code[class*="language-"],        
-        .dialog :not(pre) > code[class*="language-"] {
-          font-size: 0.9em;
-          line-height: 1em;
-          overflow-wrap: anywhere;
-          padding: 0.2em 0.4em;
-          margin: 0;
-          display: inline-block;
-          vertical-align: middle;
-        }
-        .app .code-toolbar {
-          margin: .5em 0;
-          display: flex;
-          flex-direction: column-reverse;
-        }
-        .app .code-toolbar > pre {
-          margin: 0;
-        }
-        .app .code-toolbar > .toolbar {
-          background: #0000004a;
-          display: flex;
-          justify-content: flex-end;
-          opacity: 1;
-          position: relative;
-          z-index: unset;
-          top: unset;
-          right: unset;
-        }
-        .app .code-toolbar > .toolbar > .toolbar-item > button {
-          font-family: revert;
-          font-size: 1em;
-          padding: 0.5em 0.75em;
-          box-shadow: none;
-          background: transparent;
         }
 
         button {
@@ -254,6 +209,64 @@ const shell = ({
         #${DOM__SVELTE_MOUNT_POINT} {
           width: 100%;
           height: 100%;
+        }
+          
+        @font-face {
+          font-family: FiraCode;
+          src: url(css/fonts/FiraCode-VariableFont.ttf); /* from Google Fonts */
+        }
+        :is(.full-note, .note-form__content-preview) :is(pre, code)[class*="language-"] {
+          font-family: FiraCode;
+        }
+        :is(.full-note, .note-form__content-preview) pre[data-lang] {
+          position: relative;
+        }
+        :is(.full-note, .note-form__content-preview) pre[data-lang]::after {
+          content: '[' attr(data-lang) ']';
+          opacity: 0.5;
+          position: absolute;
+          top: 0.1em;
+          right: 0.5em;
+        }
+        :is(.full-note, .note-form__content-preview) :not(pre) > code[class*="language-"] {
+          font-size: 0.9em;
+          line-height: 1em;
+          overflow-wrap: anywhere;
+          padding: 0.2em 0.4em;
+          margin: 0;
+          display: inline-block;
+          vertical-align: middle;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar {
+          margin: .5em 0;
+          display: flex;
+          flex-direction: column-reverse;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar > pre {
+          margin: 0;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar {
+          background: #0000004a;
+          display: flex;
+          justify-content: flex-end;
+          opacity: 1;
+          position: relative;
+          z-index: unset;
+          top: unset;
+          right: unset;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar > .toolbar-item > button {
+          font-family: revert;
+          font-size: 1em;
+          color: inherit;
+          outline-color: currentColor;
+          padding: 0.5em 0.75em;
+          box-shadow: none;
+          background: transparent;
+          opacity: 0.5;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar > .toolbar-item > button:is(:focus, :hover) {
+          opacity: 1;
         }
       </style>
       ${addNodes('link', head.styles)}
