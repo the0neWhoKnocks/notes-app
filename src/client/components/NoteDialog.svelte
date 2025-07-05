@@ -241,18 +241,20 @@
     const { newData } = await setUserData(payload);
     const { id } = $dialogDataForNote;
     
-    updateCurrNote({
-      id,
-      noteData: {
-        ...$currentNote,
-        content: newData.content,
-        draft: newData.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
-        id: kebabCase(newData.title),
-        tags: newData.tags,
-        title: newData.title,
-      },
-      params: queryParams,
-    });
+    if (newData) {
+      updateCurrNote({
+        id,
+        noteData: {
+          ...$currentNote,
+          content: newData.content,
+          draft: newData.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
+          id: kebabCase(newData.title),
+          tags: newData.tags,
+          title: newData.title,
+        },
+        params: queryParams,
+      });
+    }
   }
   
   async function handleSubmit() {
