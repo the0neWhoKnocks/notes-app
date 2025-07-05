@@ -586,11 +586,14 @@
     ev.preventDefault();
     
     const { currentTarget: form } = ev;
+    const { lines } = getSelectedLines();
+    const [ currLine ] = lines;
+    const leadingSpace = getLeadingSpace(currLine);
     const cols = [...Object.values(parseForm(form))];
     const table = [
       `| ${cols.join(' | ')} |`,
-      `| ${cols.map(col => Array(col.length).fill('-').join('')).join(' | ')} |`,
-      `| ${Array(cols.length).join(' | ')} |`,
+      `${leadingSpace}| ${cols.map(col => Array(col.length).fill('-').join('')).join(' | ')} |`,
+      `${leadingSpace}| ${Array(cols.length).join(' | ')} |`,
     ].join('\n');
     
     insertText(table);
