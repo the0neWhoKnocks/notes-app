@@ -14,6 +14,7 @@ const langAliases = {
   ssml: 'markup',
   svg: 'markup',
   xml: 'markup',
+  yml: 'yaml',
 };
 const langDeps = {
   arduino: ['cpp'],
@@ -26,6 +27,7 @@ const langDeps = {
   jsonp: ['json'],
   jsx: ['javascript', 'markup'],
   markdown: ['markup'],
+  yml: ['yaml'],
 };
 const loadedLangs = [];
 let langs = [];
