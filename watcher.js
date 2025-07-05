@@ -134,7 +134,7 @@ fileGate
 
     nodemon({
       delay: 500,
-      exec: 'node --inspect',
+      exec: 'node --inspect=0.0.0.0',
       ext: 'js json',
       legacyWatch: pollForFileChanges,
       script: './dist/server',
