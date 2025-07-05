@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   e2e-cypress:
     # command: 'cypress run --browser chrome'
