@@ -17,6 +17,7 @@
     ICON__TRASH,
   } from './Icon.svelte';
   
+  export let draft = false;
   export let id = undefined;
   export let path = undefined;
   export let type = undefined;
@@ -47,8 +48,18 @@
       dialogDataForGroup.set({ ...base, id, name: groupName });
     }
     else {
-      const { content, tags, title } = getNoteNode($noteGroups, path).note;
-      dialogDataForNote.set({ ...base, content, id, tags, title });
+      const { draft, ...rest } = getNoteNode($noteGroups, path).note;
+      let content, fromDraft, tags, title;
+      
+      if (draft) {
+        ({ content, tags, title } = draft);
+        fromDraft = true;
+      }
+      else {
+        ({ content, tags, title } = rest);
+      }
+      
+      dialogDataForNote.set({ ...base, content, fromDraft, id, tags, title });
     }
   }
   
@@ -60,6 +71,9 @@
 <nav class="modify-nav">
   <button type="button" title="Edit" on:click={editItem}>
     <Icon type="{ICON__EDIT}" />
+    {#if draft}
+      <div class="modify-nav__draft-txt">Draft</div>
+    {/if}
   </button>
   <button type="button" title="Move" on:click={moveItem}>
     <Icon type="{ICON__NEW_TAB}" />
@@ -75,8 +89,14 @@
     gap: 0.25em;
   }
   
+  .modify-nav__draft-txt {
+    font-size: 0.8em;
+    padding: 0 0.25em;
+  }
+  
   :global(.modify-nav button) {
     padding: 0.25em;
     display: flex;
+    align-items: center;
   }
 </style>

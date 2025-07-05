@@ -44,6 +44,7 @@
       {$currentNote.title}
       <nav class="full-note__nav">
         <ModifyNav
+          draft={$currentNote.draft}
           id={$currentNote.id}
           path={$currentNote.path}
           type="note"

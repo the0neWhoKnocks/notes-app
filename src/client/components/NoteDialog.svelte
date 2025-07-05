@@ -2,7 +2,7 @@
   import { tick } from 'svelte';
   import { PRISMAJS__COPY_TEXT } from '../../constants';
   import kebabCase from '../../utils/kebabCase';
-  import parseTags from '../../utils/parseTags';
+  const serializeForm = require('../utils/serializeForm');
   import {
     allTags,
     currentNote,
@@ -68,7 +68,11 @@
     previewing = false;
   }
   
-  function handleCloseClick() {
+  async function handleCloseClick() {
+    if ($currentNote.draft) {
+      await saveNote({ deleteDraft: true });
+    }
+    
     closeDialog();
   }
   
@@ -226,22 +230,34 @@
     queryParams = params;
   }
   
+  /**
+   * @param {Object}  opts Extra options for saving note data.
+   * @param {Boolean} opts.draft Whether to save a draft of the note.
+   * @param {Boolean} opts.deleteDraft Whether to delete a saved draft.
+   */
+  async function saveNote(opts = {}) {
+    const payload = serializeForm(formRef);
+    Object.assign(payload, opts);
+    const { newData } = await setUserData(payload);
+    const { id } = $dialogDataForNote;
+    
+    updateCurrNote({
+      id,
+      noteData: {
+        ...$currentNote,
+        content: newData.content,
+        draft: newData.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
+        id: kebabCase(newData.title),
+        tags: newData.tags,
+        title: newData.title,
+      },
+      params: queryParams,
+    });
+  }
+  
   async function handleSubmit() {
     try {
-      const { newData } = await setUserData(formRef);
-      const { id } = $dialogDataForNote;
-      
-      updateCurrNote({
-        id,
-        noteData: {
-          ...$currentNote,
-          content: newData.content,
-          id: kebabCase(newData.title),
-          tags: parseTags(newData.tags),
-          title: newData.title,
-        },
-        params: queryParams,
-      });
+      await saveNote();
       closeDialog();
     }
     catch (err) {
@@ -708,7 +724,7 @@
   }
   
   function deriveNoteData() {
-    const { action, content, tags: _tags, title } = $dialogDataForNote;
+    const { action, content, fromDraft, tags: _tags, title } = $dialogDataForNote;
     
     tags = _tags;
     oldTags = (_tags || []).join(', ');
@@ -716,14 +732,39 @@
     editingNote = action === 'edit';
     saveBtnDisabled = editingNote;
     contentText = content;
+    
+    if (fromDraft) saveBtnDisabled = false;
+  }
+  
+  function handleVisChange() {
+    // Nesting in a timeout so that reloads still function. Not sure if it was
+    // because it was async, or if that's just the nature of `visibilitychange`.
+    setTimeout(async () => {
+      switch (document.visibilityState) {
+        case 'hidden': {
+          if (!saveBtnDisabled) {
+            await saveNote({ draft: true });
+          } 
+          break;
+        }
+        case 'visible': {
+          if ($currentNote.draft) {
+            await saveNote({ deleteDraft: true });
+          }
+          break;
+        }
+      }
+    }, 0);
   }
   
   $: if ($dialogDataForNote) {
     deriveNoteData();
     document.addEventListener('selectionchange', handleSelection);
+    document.addEventListener('visibilitychange', handleVisChange);
   }
   else {
     document.removeEventListener('selectionchange', handleSelection);
+    document.removeEventListener('visibilitychange', handleVisChange);
   }
 </script>
 

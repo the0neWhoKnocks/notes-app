@@ -181,6 +181,8 @@ module.exports = async function modifyUserData({
     const {
       action,
       content,
+      deleteDraft,
+      draft,
       id,
       importedData,
       name,
@@ -343,17 +345,42 @@ module.exports = async function modifyUserData({
             nodeId = newNodeId;
           }
           
-          notes[nodeId] = {
-            ...oldNote,
-            content: sanitizeContent(content) || '',
-            modified: Date.now(),
-            tags: fTags,
-            title,
-          };
+          logMsg = `Updated note "${title}" in "${groupPath}"`;
+          
+          if (draft) {
+            notes[nodeId] = {
+              ...oldNote,
+              draft: {
+                content: sanitizeContent(content) || '',
+                modified: Date.now(),
+                tags: fTags,
+                title,
+              },
+            };
+            logMsg += ' | Saved draft';
+          }
+          else if (deleteDraft) {
+            delete notes[nodeId].draft;
+            logMsg += ' | Deleted draft';
+          }
+          else {
+            // User could switch or close a tab after a draft was saved. Then
+            // open a note, edit and save. This'll clean up the straggling draft.
+            if (oldNote.draft) {
+              delete oldNote.draft;
+              logMsg += ' | Deleted straggling draft';
+            }
+            
+            notes[nodeId] = {
+              ...oldNote,
+              content: sanitizeContent(content) || '',
+              modified: Date.now(),
+              tags: fTags,
+              title,
+            };
+          }
           
           allTags = compileTags(notesData);
-          
-          logMsg = `Updated note "${title}" in "${groupPath}"`;
         }
         else if (type === 'group') {
           const { rawPrefix: parentPath } = parsePath(path)

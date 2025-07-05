@@ -95,18 +95,16 @@ export const currentNote = (function curentNoteStore() {
 				let changed = false;
 				let recent = getStoreValue(recentlyViewed);
 				
-				if (recent && recent.length) {
-					const trimmed = recent.filter(path => path !== note.path);
-					// current item removed
-					changed = (trimmed.length < recent.length);
-					// make sure current item is at top of list
-					const current = [note.path, ...trimmed];
-					// new item was added
-					if (!changed) changed = (current.length > recent.length);
+				if (recent?.length) {
+					const otherItems = recent.filter(path => path !== note.path);
+          // make sure current item is at top of list
+					const current = [note.path, ...otherItems];
 					// truncate list to max length
+          const oldRecent = JSON.stringify(recent);
 					recent = (current.length > MAX_ITEMS)
 						? current.slice(0, MAX_ITEMS)
 						: current;
+          changed = JSON.stringify(recent) !== oldRecent;
 				}
 				else {
 					recent = [note.path];
@@ -324,7 +322,7 @@ export function updateCurrNote({ id, noteData, params } = {}) {
 	// For the case where another note is open, and the User decided to 
 	// edit/delete a note from the NotesNav, only update the URL and the currently
 	// open note's data if the ids match.
-	if (cN && cN.id === id) {
+	if (cN?.id === id) {
 		currentNote.set(noteData);
 		updateHistory({ params });
 	}

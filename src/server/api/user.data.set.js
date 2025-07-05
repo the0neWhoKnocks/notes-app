@@ -1,5 +1,6 @@
 const { writeFile } = require('fs');
 const log = require('../../utils/logger')('api.user.data.set');
+const { getNoteNode } = require('../../utils/dataNodeUtils');
 const modifyUserData = require('../../utils/modifyUserData');
 const encrypt = require('../utils/encrypt');
 const getUserDataPath = require('../utils/getUserDataPath');
@@ -7,7 +8,7 @@ const loadUserData = require('../utils/loadUserData');
 
 module.exports = async function setData(req, res) {
   const { appConfig, body: reqBody } = req;
-  const { password, username } = reqBody;
+  const { action, password, type, username } = reqBody;
   
   const { data, error, logMsg } = await modifyUserData({
     loadCurrentData: async () => {
@@ -34,6 +35,13 @@ module.exports = async function setData(req, res) {
     }
   
     log.info(logMsg);
-    res.json({ ...data, newData: reqBody });
+    
+    if (action === 'edit' && type === 'note') {
+      const { note } = getNoteNode(data.notesData, reqBody.path);
+      res.json({ ...data, newData: note });
+    }
+    else {
+      res.json({ ...data });
+    }
   });
 }
