@@ -170,6 +170,21 @@
     }
   }
   
+  function leadingSpaceCheck(lineData) {
+    const { indexes: { end }, lines } = lineData;
+    const [ prevLine ] = lines;
+    const leadingSpaceRegEx = /^\s+/;
+    
+    if (
+      textareaRef.selectionEnd >= end
+      && leadingSpaceRegEx.test(prevLine)
+    ) {
+      const leadingSpace = prevLine.match(leadingSpaceRegEx) || '';
+      insertText(leadingSpace);
+      return true;
+    }
+  }
+  
   function getLeadingSpace(line) {
     if (line === undefined) {
       const { lines } = getSelectedLines();
@@ -203,6 +218,7 @@
     ) {
       if (listItemCheck(keyDownContentData)) break autoChecks;
       else if (tableRowCheck(keyDownContentData)) break autoChecks;
+      else if (leadingSpaceCheck(keyDownContentData)) break autoChecks;
     }
     
     if (key === 'Enter') hideCaret = false;
