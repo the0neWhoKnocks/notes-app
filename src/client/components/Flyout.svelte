@@ -49,7 +49,7 @@
     duration: animDuration,
     css: t => `opacity: ${t};`,
     easing: cubicOut,
-	});
+  });
   
   function handleCloseEnd() {
     if (onCloseEnd) onCloseEnd();
@@ -128,8 +128,8 @@
   :global(.flyout-wrapper input),
   :global(.flyout-wrapper select),
   :global(.flyout-wrapper textarea) {
-		fill: orange;
-	}
+    fill: orange;
+  }
   :global(.flyout-wrapper button:not(:disabled)) {
     cursor: pointer;
   }

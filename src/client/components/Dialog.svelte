@@ -52,7 +52,7 @@
     duration: animDuration,
     css: t => `opacity: ${t};`,
     easing: cubicOut,
-	});
+  });
   
   function handleCloseEnd() {
     if (onCloseEnd) onCloseEnd();
@@ -141,8 +141,8 @@
   .dialog-wrapper :global(input),
   .dialog-wrapper :global(select),
   .dialog-wrapper :global(textarea) {
-		fill: orange;
-	}
+    fill: orange;
+  }
   .dialog-wrapper :global(button:not(:disabled)) {
     cursor: pointer;
   }

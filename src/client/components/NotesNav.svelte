@@ -28,7 +28,7 @@
   }
   
   const unsubNoteGroups = noteGroups.subscribe((data = {}) => {
-		groupsData = transformNoteData(
+    groupsData = transformNoteData(
       data[BASE_DATA_NODE],
       {
         addCount: true,
@@ -36,7 +36,7 @@
         itemComponent: NotesNavSubNav,
       }
     );
-	});
+  });
   
   onDestroy(() => {
     unsubNoteGroups();
