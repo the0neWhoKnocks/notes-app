@@ -51,7 +51,7 @@ function addLangDeps(arr) {
 
 function loadLangs() {
   if (window.langsTO) clearTimeout(window.langsTO);
-  window.langsTO = setTimeout(() => {
+  window.langsTO = setTimeout(async () => {
     langs = deDupeArray(langs);
     langs = mapLangAliases(langs);
     langs = addLangDeps(langs);
@@ -59,13 +59,20 @@ function loadLangs() {
     const langPromises = langs.reduce((arr, lang) => {
       if (!loadedLangs.includes(lang)) {
         arr.push(new Promise((resolve) => {
-          const script = document.createElement('script');
-          script.src = `/js/vendor/prism/langs/prism-${lang}.min.js`;
-          script.onload = () => {
-            loadedLangs.push(lang);
-            resolve(script.src);
-          };
-          document.head.appendChild(script);
+          // NOTE: If the User enters an unsupported lang, the load will fail
+          // leaving an unresolved Promise. So no matter what, resolve the
+          // attempt of a load.
+          try {
+            const script = document.createElement('script');
+            script.src = `/js/vendor/prism/langs/prism-${lang}.min.js`;
+            script.onload = () => {
+              loadedLangs.push(lang);
+              resolve(script.src);
+            };
+            script.onerror = () => { resolve(); };
+            document.head.appendChild(script);
+          }
+          catch (err) { resolve(); }
         }));
       }
       
@@ -73,11 +80,13 @@ function loadLangs() {
     }, []);
     
     if (langPromises.length) {
-      Promise.all(langPromises).then(() => {
+      await Promise.all(langPromises).then(() => {
         window.Prism.highlightAll();
       });
     }
     else window.Prism.highlightAll();
+    
+    langs = [];
   }, 100);
 }
 
