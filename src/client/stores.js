@@ -175,7 +175,7 @@ export function logout() {
   
   currentNote.set();
   initialUserDataLoaded.set(false);
-  loggedInStateChecked.set(false);
+  loggedInStateChecked.set(true);
   noteGroups.set();
   userIsLoggedIn.set(false);
   userNavOpen.set(false);
