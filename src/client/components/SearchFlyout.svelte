@@ -48,7 +48,7 @@
     
     if (notes) {
       Object.entries(notes).forEach(([noteId, note]) => {
-        const matchedTitle = noteId.toLowerCase().includes(query);
+        const matchedTitle = note.title.toLowerCase().includes(query);
         const matchedContent = note.content.toLowerCase().includes(query);
         
         if (matchedTitle || matchedContent) {
