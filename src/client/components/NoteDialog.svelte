@@ -69,7 +69,7 @@
   }
   
   async function handleCloseClick() {
-    if ($currentNote.draft) {
+    if ($currentNote?.draft) {
       await saveNote({ deleteDraft: true });
     }
     
