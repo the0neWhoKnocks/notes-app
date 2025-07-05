@@ -111,6 +111,27 @@ export default function init() {
     return rendered.replace(/^<code/, `<code class="language-${lang}"`);
   };
   
+  window.Prism.hooks.add('complete', (env) => {
+    const el = env.element.parentNode.parentNode;
+    
+    if (!el.classList.contains('code-toolbar')) return;
+    
+    // NOTE: This is dependant on the Toolbar plugin wrapping everything in the
+    // `.code-toolbar` el. Without it, I can't absolutely position the lang and
+    // line numbers.
+    
+    const codeEl = env.element;
+    const preEl = codeEl.parentNode;
+    const toolbar = el;
+    const lineNumsEl = codeEl.querySelector('.line-numbers-rows');
+    
+    if (preEl.dataset.lang) toolbar.setAttribute('data-lang', preEl.dataset.lang);
+    
+    if (lineNumsEl) {
+      toolbar.appendChild(lineNumsEl);
+    }
+  });
+  
   window.marked.setOptions({
     headerPrefix: 'header_',
     highlight: (code, lang) => {

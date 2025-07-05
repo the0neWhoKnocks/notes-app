@@ -288,6 +288,12 @@
     --color--app--bg: #ffffff;
     --color--app--fg: #000000;
     --color--app--highlight: #dadada;
+    --color--prism--code-text: #626262;
+    --color--prism--lang-bg: #f5f2f0;
+    --color--prism--lang-top: 2.5em;
+    --color--prism--ln-bg: var(--color--prism--lang-bg);
+    --color--prism--ln-left: 0;
+    --color--prism--ln-top: 3.2em;
     --color--prism--text: #626262;
     --color--tag--bg: #dbdbdb;
     --color--tag--border: #909090;
@@ -299,6 +305,10 @@
     --color--app--bg: #5e4b55;
     --color--app--fg: #f6f9fb;
     --color--app--highlight: #358ccb;
+    --color--prism--code-text: #806f77;
+    --color--prism--lang-bg: #fdfdfd;
+    --color--prism--ln-left: 0.65em;
+    --color--prism--ln-top: 2.2em;
     --color--prism--text: #806f77;
     --color--tag--bg: #358ccb;
     --color--tag--border: #6dc2ff;
@@ -310,6 +320,12 @@
     --color--app--bg: #cebdac;
     --color--app--fg: #4d4033;
     --color--app--highlight: #bea387;
+    --color--prism--code-text: #fff;
+    --color--prism--lang-bg: #4d4033;
+    --color--prism--lang-top: 2.8em;
+    --color--prism--ln-bg: linear-gradient(90deg, #1f1f1f, #4d4033 17%);
+    --color--prism--ln-left: 0.25em;
+    --color--prism--ln-top: 3.4em;
     --color--prism--text: #4e4740;
     --color--tag--bg: #ead7c3;
     --color--tag--border: #9d846b;
@@ -321,6 +337,9 @@
     --color--app--bg: #4b4d41;
     --color--app--fg: #edf9d9;
     --color--app--highlight: #272822;
+    --color--prism--code-text: #7b7d6f;
+    --color--prism--lang-bg: #272822;
+    --color--prism--ln-top: 3.1em;
     --color--prism--text: #7b7d6f;
     --color--tag--bg: #272822;
     --color--tag--border: #71775c;
@@ -332,6 +351,8 @@
     --color--app--bg: #e9e5db;
     --color--app--fg: #433a34;
     --color--app--highlight: #cfc9bc;
+    --color--prism--code-text: #646158;
+    --color--prism--lang-bg: #fdf6e3;
     --color--prism--text: #646158;
     --color--tag--bg: #b0aa9f;
     --color--tag--border: #9d988d;
@@ -343,6 +364,8 @@
     --color--app--bg: #43464f;
     --color--app--fg: #ccc;
     --color--app--highlight: #303238;
+    --color--prism--code-text: #6d7079;
+    --color--prism--lang-bg: #2d2d2d;
     --color--prism--text: #6d7079;
     --color--tag--bg: #33353d;
     --color--tag--border: #656977;
@@ -354,6 +377,10 @@
     --color--app--bg: #333;
     --color--app--fg: #eee;
     --color--app--highlight: #141414;
+    --color--prism--code-text: #bbb;
+    --color--prism--lang-bg: #141414;
+    --color--prism--ln-left: 0.25em;
+    --color--prism--ln-top: 3.4em;
     --color--prism--text: #bbb;
     --color--tag--bg: #232323;
     --color--tag--border: #919191;

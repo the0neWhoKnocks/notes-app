@@ -78,6 +78,11 @@ const shell = ({
       <meta name="theme-color" content="#f7e19a">
       
       <style>
+        :root {
+          --prismOverlayBGColor: #000;
+          --prismOverlayTextColor: #ababab;
+        }
+        
         *, *::after, *::before {
           box-sizing: border-box;
         }
@@ -221,13 +226,6 @@ const shell = ({
         :is(.full-note, .note-form__content-preview) pre[data-lang] {
           position: relative;
         }
-        :is(.full-note, .note-form__content-preview) pre[data-lang]::after {
-          content: '[' attr(data-lang) ']';
-          opacity: 0.5;
-          position: absolute;
-          top: 0.1em;
-          right: 0.5em;
-        }
         :is(.full-note, .note-form__content-preview) :not(pre) > code[class*="language-"] {
           font-size: 0.9em;
           line-height: 1em;
@@ -244,6 +242,17 @@ const shell = ({
         }
         :is(.full-note, .note-form__content-preview) .code-toolbar > pre {
           margin: 0;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar:has(> pre[data-lang])::after {
+          content: '[ ' attr(data-lang) ' ]';
+          color: var(--color--prism--code-text);
+          border-radius: 0.2em;
+          padding: 0 0.2em;
+          background: var(--color--prism--lang-bg);
+          position: absolute;
+          top: var(--color--prism--lang-top);
+          right: 0.5em;
+          z-index: 10;
         }
         :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar {
           background: #0000004a;
@@ -267,6 +276,18 @@ const shell = ({
         }
         :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar > .toolbar-item > button:is(:focus, :hover) {
           opacity: 1;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar > .line-numbers-rows {
+          width: 2.75em;
+          color: var(--color--prism--code-text);
+          border-right-color: currentColor;
+          background: var(--color--prism--ln-bg);
+          top: var(--color--prism--ln-top);
+          left: var(--color--prism--ln-left);
+          z-index: 10;
+        }
+        :is(.full-note, .note-form__content-preview) .code-toolbar > .line-numbers-rows > span:before {
+          color: currentColor;
         }
       </style>
       ${addNodes('link', head.styles)}
