@@ -752,7 +752,7 @@
     titleValue = title;
     editingNote = action === 'edit';
     saveBtnDisabled = editingNote;
-    contentText = content;
+    contentText = content || '';
     
     if (fromDraft) saveBtnDisabled = false;
   }
