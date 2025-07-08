@@ -43,7 +43,6 @@ CURR_UID=$(id -u)
 E2E_COMPOSE_FILE="./e2e/docker-compose.yml"
 E2E_CONTAINER_NAME="${CONT_NAME}-e2e"
 E2E_SERVICE="${CONT_NAME}-e2e"
-ROOT_COMPOSE_FILE="./docker-compose.yml"
 runnerCmd=""
 xlaunchPath="${SCRIPT_DIR}/XServer.xlaunch"
 extraArgs=""
@@ -109,10 +108,6 @@ if $WATCH_MODE; then
 fi
 
 if $BUILD; then
-  echo;
-  echo "[BUILD] App"
-  docker compose -f "${ROOT_COMPOSE_FILE}" run --remove-orphans --rm "${CONT_NAME}-dev" zsh -c "npm i && NODE_ENV=production npm run build"
-  
   echo;
   echo "[BUILD] Containers"
   docker compose -f "${E2E_COMPOSE_FILE}" build ${APP_SERVICE} ${E2E_SERVICE} 
