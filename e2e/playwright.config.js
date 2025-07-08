@@ -11,7 +11,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   
   // Run all tests in parallel.
-  fullyParallel: true,
+  fullyParallel: false,
+  
+  // Number of test failures for the whole test suite run. After reaching this
+  // number, testing will stop and exit with an error.
+  maxFailures: 1,
   
   // Folder for test artifacts such as screenshots, videos, traces, etc.
   outputDir: 'artifacts',
@@ -39,7 +43,7 @@ export default defineConfig({
   testMatch: '*.test.js',
   
   // If tests take longer that X seconds, it should fail.
-  timeout: 120000, // since I nested steps, it can take a bit.
+  timeout: 120000,
   
   use: {
     // For things like `click`
@@ -60,5 +64,5 @@ export default defineConfig({
   },
   
   // Opt out of parallel tests on CI.
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
 });

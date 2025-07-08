@@ -1,7 +1,10 @@
 import BaseFixture, { createTest, expect } from './BaseFixture';
 
+export const CREDS__PASS = 'pass';
+export const CREDS__USER = 'user';
 const SELECTOR__LOGIN_FORM = '.login-form';
 const LOG_PREFIX = '[AppFixture]';
+export const PATH__DATA = `/e2e/mnt/data`;
 
 class AppFixture extends BaseFixture {
   constructor({ browser, context, page, testCtx, testInfo }) {
@@ -46,6 +49,12 @@ class AppFixture extends BaseFixture {
   
   async deleteNote(noteName, selector = '.item') {
     await (await this.getItemNav('note', selector, noteName)).delete();
+  }
+  
+  async deleteUserData() {
+    await this.exec(`rm -rf ${PATH__DATA}/data_*.json`);
+    console.log(`${LOG_PREFIX} [DELETED] User data`);
+    await this.fx.page.reload();
   }
   
   async getItemNav(type, selector, itemName) {
@@ -117,7 +126,15 @@ class AppFixture extends BaseFixture {
     };
   }
   
-  async logIn({ overwrite, pass, screenshot, user } = {}) {
+  async logIn(opts) {
+    if (!opts) { // auto login for most tests
+      opts = {
+        user: CREDS__USER,
+        pass: CREDS__PASS,
+      };
+    }
+    
+    const { overwrite, pass, screenshot, user, willFail = false } = opts;
     const textFn = (overwrite) ? 'fill' : 'type';
     
     let dialog = await this.waitForDialog(SELECTOR__LOGIN_FORM);
@@ -125,7 +142,27 @@ class AppFixture extends BaseFixture {
     await dialog.locator('[name="password"]')[textFn](pass);
     if (screenshot) await this.fx.screenshot(screenshot);
     
+    let uResp;
+    if (!willFail) {
+      uResp = this.fx.page.waitForResponse((res) => {
+        const req = res.request();
+        return req.url().includes('/api/user/data') && res.status() === 200 && req.method() === 'POST';
+      });
+    }
+    
+    const lResp = this.fx.page.waitForResponse((res) => {
+      const req = res.request();
+      return req.url().includes('/api/user/login') && req.method() === 'POST';
+    });
     await dialog.locator('button[value="login"]').click();
+    await lResp;
+    console.log(`${LOG_PREFIX} Login response recieved`);
+    
+    if (!willFail) {
+      await uResp;
+      console.log(`${LOG_PREFIX} User data response recieved`);
+      await expect(dialog).not.toBeAttached();
+    }
     
     return dialog;
   }
@@ -147,7 +184,9 @@ class AppFixture extends BaseFixture {
       }
     });
     await fn();
-    await resp;
+    const r = await resp;
+    // This is only here to add a message in the Actions tab.
+    await expect(r.status(), `[${action}:${type}] Request Complete`).toEqual(200);
   }
 }
 
