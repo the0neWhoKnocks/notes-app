@@ -5,7 +5,7 @@
     "lint": "eslint ./*.js \"{bin,e2e,src}/**/*.{js,svelte}\"",
     "start": "node ./dist/server",
     "start:dev": "./bin/prep-dist.sh && webpack & ./watcher.js \"./bin/prep-dist.sh\" \"./dist/public/manifest.json\"",
-    "test": "./e2e/bin/test-runner.sh",
+    "test": "./e2e/bin/test-runner.sh --name notes",
     "test:watch": "npm run test -- --watch"
   },
   "dependencies": {
@@ -27,9 +27,10 @@
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.5.1",
     "css-minimizer-webpack-plugin": "3.1.3",
-    "eslint": "8.5.0",
+    "eslint": "8.57.1",
     "eslint-plugin-cypress": "2.11.3",
     "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-playwright": "1.7.0",
     "eslint-plugin-svelte": "2.35.1",
     "ignore-emit-webpack-plugin": "2.0.6",
     "mini-css-extract-plugin": "2.4.4",

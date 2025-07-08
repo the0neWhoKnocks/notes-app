@@ -7,7 +7,7 @@ module.exports = {
   // Command to start the built Container(s), so a Dev can verify before it's deployed.
   CMD__DOCKER_START: 'docker compose up --remove-orphans -d notes',
   // Command to compile any assets that may be needed by Docker, shipped off to S3, etc.
-  CMD__COMPILE_ASSETS: 'NODE_ENV=production npm run build',
+  CMD__COMPILE_ASSETS: 'docker compose run notes-dev zsh -c "npm i && NODE_ENV=production npm run build"',
   // Name of the Docker image: <DOCKER_USER>/<NAME>.
   DOCKER__IMG_NAME: 'theonewhoknocks/notes',
   // When the registry domain is blank, it defaults to `docker.io`.

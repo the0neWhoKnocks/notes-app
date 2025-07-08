@@ -1,5 +1,5 @@
 ## Create intermediary Container specifically for package.json 
-FROM theonewhoknocks/dev-base:node20 as notes--packagejson
+FROM theonewhoknocks/dev-base:node20 AS notes--packagejson
 # Create a temporary package.json where things like `version` and `scripts`
 # are omitted so the cache of the build step is invalidated only when modules
 # are modified.

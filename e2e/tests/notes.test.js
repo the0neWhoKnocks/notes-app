@@ -1,515 +1,393 @@
-context('Notes', () => {
-  const E2E_FOLDER = '/repo/e2e';
-  const PATH__CONSTANTS = `${E2E_FOLDER}/mnt/constants`;
-  const PATH__DATA = `${E2E_FOLDER}/mnt/data`;
-  const CREDS__USERNAME = 'user';
-  const CREDS__PASSWORD = 'pass';
-  let constants = {};
-  
-  const pad = (num, token='00') => token.substring(0, token.length-`${ num }`.length) + num;
-  
-  let screenshotNdx = 0;
-  function screenshot(selectorOrEl, name) {
-    let el = cy;
-    screenshotNdx++;
+import {
+  expect,
+  test,
+} from './fixtures/AppFixture';
+
+const CREDS__PASS = 'pass';
+const CREDS__USER = 'user';
+const PATH__DATA = `/e2e/mnt/data`;
+const SELECTOR__FLYOUT__CLOSE_BTN = '.flyout__close-btn';
+const SELECTOR__START_MSG = '.start-msg';
+
+
+test('App', async ({ app }) => {
+  await test.step('Init', async () => {
     
-    if (selectorOrEl) {
-      el = (typeof selectorOrEl === 'string')
-        ? cy.get(selectorOrEl, { timeout: 3000 })
-        : selectorOrEl;
-    }
-    
-    el.screenshot(`${ pad(screenshotNdx) }__${ name.replace(/\s/g, '-') }`);
-  }
-  
-  function loadPage(path = '/') {
-    cy.window().then((win) => {
-      const { NAMESPACE__STORAGE__USER } = constants;
+    await test.step('Fill out config data', async () => {
+      await app.exec(`rm -rf ${PATH__DATA}/*`);
+      await app.loadPage();
+      await app.clearStorage();
       
-      if (
-        win.localStorage[NAMESPACE__STORAGE__USER]
-        || win.sessionStorage[NAMESPACE__STORAGE__USER]
-      ) {
-        cy.intercept({ method: 'POST', url: '/api/user/data' }).as('RESP__USER_DATA');
-        cy.log('Alias added for User data');
-      }
-      else cy.log('No alias added for User data');
+      await app.loadPage();
+      await app.createConfig();
     });
     
-    cy.log('[PAGE] start load');
-    cy.visit(path);
-    cy.log('[PAGE] loaded');
-    
-    cy.window().then((win) => {
-      const { NAMESPACE__STORAGE__USER } = constants;
-      
-      if (
-        win.localStorage[NAMESPACE__STORAGE__USER]
-        || win.sessionStorage[NAMESPACE__STORAGE__USER]
-      ) {
-        // have to wait for user data, otherwise the tests execute too quickly and fail
-        cy.log('Wait for User data');
-        cy.wait('@RESP__USER_DATA');
-      }
-      else cy.log('Not waiting for User data');
-    });
-  }
-  
-  Cypress.Commands.add('login', (username, password, { label, overwrite } = {}) => {
-    cy.get('.login-form').as('LOGIN');
-    cy.get('@LOGIN').find('[name="username"]').type(`${overwrite ? '{selectall}' : ''}${CREDS__USERNAME}`);
-    cy.get('@LOGIN').find('[name="password"]').type(`${overwrite ? '{selectall}' : ''}${CREDS__PASSWORD}`);
-    if (label) screenshot(null, label);
-    cy.get('@LOGIN').find('button[value="login"]').click();
-  });
-  
-  before(() => {
-    cy.task('require', PATH__CONSTANTS).then(data => {
-      constants = data;
-    });
-    
-    cy.exec(`rm -rf ${E2E_FOLDER}/cypress/downloads/*`, { log: true }).then(() => {
-      console.log('[DELETED] Previous downloads');
-    });
-    
-    cy.exec(`rm -rf ${E2E_FOLDER}/cypress/screenshots/*`, { log: true }).then(() => {
-      console.log('[DELETED] Previous screenshots');
-    });
-    
-    loadPage();
-  });
-  
-  describe('init', () => {
-    before(() => {
-      cy.exec(`rm -rf ${PATH__DATA}/*`, { log: true }).then(() => {
-        console.log('[DELETED] Previous app data');
-      });
-      cy.window().then((win) => {
-        win.localStorage.clear();
-        win.sessionStorage.clear();
-      });
-      cy.reload();
-    });
-    
-    it('should have the correct title', () => {
-      cy.get('title').contains('Notes');
-    });
-    
-    it('should fill out config data', () => {
-      cy.get('input[name="cipherKey"]').type('zeffer');
-      cy.get('input[name="salt"]').type('pepper');
-      screenshot(null, '[config] filled out');
-      
-      cy.get('button[value="create"]').click();
-    });
-    
-    it('should create a new User', () => {
-      cy.get('.login-form').as('LOGIN');
-      cy.get('@LOGIN').find('button[value="create"]').click();
-      
-      cy.get('.create-form').as('CREATE');
-      cy.get('@CREATE').find('[name="username"]').type(CREDS__USERNAME);
-      cy.get('@CREATE').find('[name="password"]').type(CREDS__PASSWORD);
-      cy.get('@CREATE').find('[name="passwordConfirmed"]').type(CREDS__PASSWORD);
-      screenshot(null, '[create_user] filled out');
-      cy.get('@CREATE').find('button[value="create"]').click();
-      
-      cy.get('.login-form').as('LOGIN');
-      cy.login(CREDS__USERNAME, CREDS__PASSWORD, {
-        label: '[login_user] incorrect creds filled out',
-      });
-      
+    await test.step('Create a New User and Log In', async () => {
+      await app.createUser({ user: CREDS__USER, pass: CREDS__PASS });
       // going from create to login will persist what was entered, the doubling is expected
-      cy.on('window:alert', (txt) => {
-        expect(txt).to.contains(`An account for "${CREDS__USERNAME}${CREDS__USERNAME}" doesn't exist.`);
+      await app.validateAlert(
+        `An account for "${CREDS__USER}${CREDS__USER}" doesn't exist.`,
+        async () => {
+          await app.logIn({
+            user: CREDS__USER,
+            pass: CREDS__PASS,
+            screenshot: '[login_user] incorrect creds filled out',
+          });
+        }
+      );
+      
+      const lResp = app.fx.page.waitForResponse((res) => {
+        const req = res.request();
+        return req.url().includes('/api/user/login') && res.status() === 200 && req.method() === 'POST';
+      });
+      const uResp = app.fx.page.waitForResponse((res) => {
+        const req = res.request();
+        return req.url().includes('/api/user/data') && res.status() === 200 && req.method() === 'POST';
       });
       
-      cy.login(CREDS__USERNAME, CREDS__PASSWORD, {
-        label: '[login_user] filled out',
+      const dialog = await app.logIn({
+        user: CREDS__USER,
+        pass: CREDS__PASS,
         overwrite: true,
+        screenshot: '[login_user] filled out',
       });
+      await lResp;
+      await uResp;
+      await expect(dialog).not.toBeAttached();
     });
     
-    it('should display message when no notes exist', () => {
-      cy.get('.start-msg').contains("Looks like you haven't added any notes yet.");
-      cy.get('.start-msg button.notes-menu-btn').should('exist');
-      cy.get('.start-msg button.import-btn').should('exist');
-      screenshot(null, 'no notes msg');
+    await test.step('Display Message When No Notes Exist', async () => {
+      const startMsg = app.getElBySelector(SELECTOR__START_MSG);
+      await expect(startMsg).toContainText("Looks like you haven't added any notes yet.");
+      await expect(startMsg.locator('button.notes-menu-btn')).toBeAttached();
+      await expect(startMsg.locator('button.import-btn')).toBeAttached();
+      await app.screenshot('no notes msg');
     });
   });
-  
-  describe('Notes', () => {
-    function getItemNav(type, selector, itemName) {
-      const labelSelector = type === 'group' ? '.group__name-text' : '.item__label-text';
-      const parentSelector = type === 'group' ? '.group' : '.item';
-      
-      cy.window().then((win) => {
-        const _selector = `${selector} ${labelSelector}`;
-        const el = win.document.querySelector(_selector);
-        
-        if (el && el.textContent === itemName) {
-          cy.log(`${type} found via selector: '${_selector}'`);
-          cy.get(_selector).first().contains(itemName)
-            .parents(parentSelector)
-            .find('.sub-nav').first()
-            .as('SUB_NAV');
-          cy.wrap(true).as('NAV_FOUND');
-        }
-        else {
-          cy.log(`No ${type} found via selector: '${_selector}'`);
-          cy.wrap(false).as('NAV_FOUND');
-        }
-      });
-      
-      return {
-        delete: () => {
-          cy.get('@NAV_FOUND').then((navFound) => {
-            if (navFound) {
-              const alias = type === 'group' ? 'RESP__DELETED_GROUP' : 'RESP__DELETED_NOTE';
-              
-              cy.intercept('POST', '/api/user/data/set', (req) => {
-                const { action } = req.body;
-                if (action === 'delete') req.alias = alias;
-              });
-              cy.get('@SUB_NAV').find('.modify-nav [title="Delete"]').first().click();
-              cy.get('.delete-form__btm-nav').contains('Yes').click();
-              cy.wait(`@${alias}`);
-            }
-            else cy.log('Skipping delete, no nav found');
-          });
-        },
-        move: (moveToPath) => {
-          cy.get('@NAV_FOUND').then((navFound) => {
-            if (navFound) {
-              const alias = type === 'group' ? 'RESP__MOVED_GROUP' : 'RESP__MOVED_NOTE';
-              
-              cy.intercept('POST', '/api/user/data/set', (req) => {
-                const { action } = req.body;
-                if (action === 'move') req.alias = alias;
-              });
-              cy.get('@SUB_NAV').find('.modify-nav [title="Move"]').first().click();
-              cy.get('.move-to .group__name-text')
-                .contains(moveToPath)
-                .parents('.group__name')
-                .find('.move-nav').contains('Here')
-                .click();
-              cy.get('.move-to__btm-nav').contains('Move').click();
-              cy.wait(`@${alias}`);
-              cy.get('.move-to').should('not.exist');
-            }
-            else cy.log('Skipping delete, no nav found');
-          });
-        },
-      };
-    }
-    
-    function setTopNavAliases() {
-      cy.get('.top-nav .search-btn').as('TOP_NAV__SEARCH');
-      cy.get('.top-nav .notes-menu-btn').as('TOP_NAV__NOTES');
-      cy.get('.top-nav button').contains('Theme').as('TOP_NAV__THEME');
-      cy.get('.top-nav .user-nav .drop-down__toggle').as('TOP_NAV__USER');
-    }
-    
-    Cypress.Commands.add('highlight', { prevSubject: true }, (subject, count) => {
-      return cy.wrap(subject).then($el => {
-        if (count < 0) $el[0].selectionStart += count;
-        else $el[0].selectionEnd += count;
-      });
-    });
-    
-    Cypress.Commands.add('deleteGroup', (selector, groupName) => {
-      getItemNav('group', selector, groupName).delete();
-    });
-    Cypress.Commands.add('deleteNote', (selector, noteName) => {
-      getItemNav('note', selector, noteName).delete();
-    });
-    
-    Cypress.Commands.add('moveNote', (selector, noteName, moveToPath) => {
-      getItemNav('note', selector, noteName).move(moveToPath);
-    });
-    
+
+  await test.step('Notes', async () => {
     const GROUP_NAME = 'Test Group';
     const NOTE_NAME = 'Full Test Note';
+    const notesBtn = app.getElBySelector('.top-nav .notes-menu-btn');
+    const searchBtn = app.getElBySelector('.top-nav .search-btn');
+    const themeBtn = app.getElBySelector('.top-nav :text-is("Theme")');
+    const userBtn = app.getElBySelector('.top-nav .user-nav .drop-down__toggle');
     
-    beforeEach(() => {
-      // sometimes a test can be isolated, and a login may be required
-      cy.window().then((win) => {
-        if (win.document.querySelector('.login-form')) {
-          cy.log('Login prompted');
-          cy.login(CREDS__USERNAME, CREDS__PASSWORD);
+    async function deleteUserData() {
+      await app.exec(`rm -rf ${PATH__DATA}/data_*.json`);
+      console.log('[DELETED] User data');
+      await app.fx.page.reload();
+    }
+    
+    async function highlight(loc, count) {
+      await loc.evaluate((el, _count) => {
+        if (_count < 0) el.selectionStart += _count;
+        else el.selectionEnd += _count;
+      }, count);
+    }
+    
+    async function scrollToBottom(el) {
+      await el.evaluate(async () => {
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+        for (let i = 0; i < document.body.scrollHeight; i += 100) {
+          window.scrollTo(0, i);
+          await delay(100);
         }
-        else cy.log('No Login prompted');
       });
-      
-      setTopNavAliases();
-    });
+    }
     
-    it('should add full test note', () => {
-      cy.get('@TOP_NAV__NOTES').click();
+    async function typeStuff(loc, txt) {
+      const parts = txt.split(/(\{[^}]+\})/).filter((str) => !!str);
+      const keyReg = /^\{([^}]+)\}$/;
       
-      // reset data
-      cy.deleteNote('.item', NOTE_NAME);
+      for (let t of parts) {
+        // eslint-disable-next-line playwright/no-conditional-in-test
+        if (keyReg.test(t)) {
+          const [ , key ] = t.match(keyReg);
+          await loc.press(key);
+        }
+        else await loc.type(t);
+      }
+    }
+    
+    await test.step('Add Full Test Note', async () => {
+      await notesBtn.click();
+      await app.getElBySelector('.flyout .sub-nav button[title="Add Note"]').click();
       
-      cy.get('.flyout .sub-nav button[title="Add Note"]').first().click();
+      const form = app.getElBySelector('.note-form');
+      const toolbar = form.locator('.note-form__toolbar');
+      const content = form.locator('.note-form__content');
+      const wysiwygHeadingBtn = toolbar.locator('button[data-type="heading"]');
+      const wysiwygHRBtn = toolbar.locator('button[data-type="hr"]');
+      const wysiwygBoldBtn = toolbar.locator('button[data-type="bold"]');
+      const wysiwygItalicBtn = toolbar.locator('button[data-type="italic"]');
+      const wysiwygStrikeBtn = toolbar.locator('button[data-type="strikethrough"]');
+      const wysiwygCodeBtn = toolbar.locator('button[data-type="inlineCode"]');
+      const wysiwygLinkBtn = toolbar.locator('button[data-type="anchor"]');
+      const wysiwygULBtn = toolbar.locator('button[data-type="ul"]');
+      const wysiwygOLBtn = toolbar.locator('button[data-type="ol"]');
+      const wysiwygIndentBtn = toolbar.locator('button[data-type="indent"]');
+      const wysiwygCodeBlockBtn = toolbar.locator('button[data-type="codeBlock"]');
+      const wysiwygQuoteBtn = toolbar.locator('button[data-type="blockquote"]');
+      const wysiwygTableBtn = toolbar.locator('button[data-type="table"]');
+      const wysiwygWrapBtn = toolbar.locator('button[data-type="wrap"]');
+      const wysiwygTOCBtn = toolbar.locator('button[data-type="toc"]');
+      const wysiwygPreviewBtn = toolbar.locator('button[data-type="preview"]');
       
-      cy.get('.note-form').as('FORM');
-      cy.get('@FORM').find('.note-form__toolbar').as('TOOLBAR');
-      cy.get('@FORM').find('.note-form__content').as('CONTENT');
-      cy.get('@TOOLBAR').find('button[data-type="heading"]').as('WYSIWYG_BTN__HEADING');
-      cy.get('@TOOLBAR').find('button[data-type="hr"]').as('WYSIWYG_BTN__HR');
-      cy.get('@TOOLBAR').find('button[data-type="bold"]').as('WYSIWYG_BTN__BOLD');
-      cy.get('@TOOLBAR').find('button[data-type="italic"]').as('WYSIWYG_BTN__ITALIC');
-      cy.get('@TOOLBAR').find('button[data-type="strikethrough"]').as('WYSIWYG_BTN__STRIKE');
-      cy.get('@TOOLBAR').find('button[data-type="strikethrough"]').as('WYSIWYG_BTN__STRIKE');
-      cy.get('@TOOLBAR').find('button[data-type="inlineCode"]').as('WYSIWYG_BTN__CODE');
-      cy.get('@TOOLBAR').find('button[data-type="anchor"]').as('WYSIWYG_BTN__LINK');
-      cy.get('@TOOLBAR').find('button[data-type="ul"]').as('WYSIWYG_BTN__UL');
-      cy.get('@TOOLBAR').find('button[data-type="ol"]').as('WYSIWYG_BTN__OL');
-      cy.get('@TOOLBAR').find('button[data-type="indent"]').as('WYSIWYG_BTN__INDENT');
-      cy.get('@TOOLBAR').find('button[data-type="codeBlock"]').as('WYSIWYG_BTN__CODE_BLOCK');
-      cy.get('@TOOLBAR').find('button[data-type="blockquote"]').as('WYSIWYG_BTN__QUOTE');
-      cy.get('@TOOLBAR').find('button[data-type="table"]').as('WYSIWYG_BTN__TABLE');
-      cy.get('@TOOLBAR').find('button[data-type="wrap"]').as('WYSIWYG_BTN__WRAP');
-      cy.get('@TOOLBAR').find('button[data-type="toc"]').as('WYSIWYG_BTN__TOC');
-      cy.get('@TOOLBAR').find('button[data-type="preview"]').as('WYSIWYG_BTN__PREVIEW');
+      await form.locator('[name="title"]').fill(NOTE_NAME);
+      await expect(form.locator('.query')).toContainText('?note=root%2Ffull-test-note');
       
-      cy.get('@FORM').find('[name="title"]').type(NOTE_NAME);
-      cy.get('@FORM').find('.query').contains('?note=root%2Ffull-test-note');
+      const tagsInput = form.locator('.tags-input__input');
+      await tagsInput.fill('test');
+      await typeStuff(tagsInput, '{Enter}');
       
-      cy.get('@FORM').find('.tags-input__input').type('test{enter}');
+      await content.fill('');
+      await content.focus();
+      await wysiwygTOCBtn.click();
+      await typeStuff(content, '{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type(' {selectall}{backspace}');
-      cy.get('@WYSIWYG_BTN__TOC').click();
-      cy.get('@CONTENT').type('{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await wysiwygHeadingBtn.click();
+      await content.type('Section 1');
+      await typeStuff(content, '{Enter}');
+      await wysiwygHeadingBtn.click();
+      await wysiwygHeadingBtn.click();
+      await content.type('Section 1.a');
+      await typeStuff(content, '{Enter}');
+      await wysiwygHeadingBtn.click();
+      await wysiwygHeadingBtn.click();
+      await wysiwygHeadingBtn.click();
+      await content.type('Section 1.a.1');
+      await typeStuff(content, '{Enter}');
+      await wysiwygHeadingBtn.click();
+      await content.type('Section 2');
+      await typeStuff(content, '{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@WYSIWYG_BTN__HEADING').click();
-      cy.get('@CONTENT').type('Section 1{enter}');
-      cy.get('@WYSIWYG_BTN__HEADING').click().click();
-      cy.get('@CONTENT').type('Section 1.a{enter}');
-      cy.get('@WYSIWYG_BTN__HEADING').click().click().click();
-      cy.get('@CONTENT').type('Section 1.a.1{enter}');
-      cy.get('@WYSIWYG_BTN__HEADING').click();
-      cy.get('@CONTENT').type('Section 2{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await wysiwygHRBtn.click();
+      await typeStuff(content, '{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@WYSIWYG_BTN__HR').click();
-      cy.get('@CONTENT').type('{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await content.type('Bold text');
+      await highlight(content, -4);
+      await wysiwygBoldBtn.click();
+      await typeStuff(content, '{End}{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('Bold text').highlight(-4);
-      cy.get('@WYSIWYG_BTN__BOLD').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await content.type('Italic text')
+      await highlight(content, -4);
+      await wysiwygItalicBtn.click();
+      await typeStuff(content, '{End}{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('Italic text').highlight(-4);
-      cy.get('@WYSIWYG_BTN__ITALIC').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await content.type('Strikethrough text')
+      await highlight(content, -4);
+      await wysiwygStrikeBtn.click();
+      await typeStuff(content, '{End}{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('Strikethrough text').highlight(-4);
-      cy.get('@WYSIWYG_BTN__STRIKE').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await content.type('Inline code');
+      await highlight(content, -4);
+      await wysiwygCodeBtn.click();
+      await typeStuff(content, '{End}{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('Inline code').highlight(-4);
-      cy.get('@WYSIWYG_BTN__CODE').click();
-      cy.get('@CONTENT').type('{end}{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await content.type('A link')
+      await highlight(content, -6);
+      await wysiwygLinkBtn.click();
+      await app.getElBySelector('#Y2xpX3VybA').type('/relative/path');
+      await app.getElBySelector('.dialog__body :text-is("Add")').click();
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('A link').highlight(-6);
-      cy.get('@WYSIWYG_BTN__LINK').click();
-      cy.get('#Y2xpX3VybA').type('/relative/path');
-      cy.get('.dialog__body button').contains('Add').click();
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await typeStuff(content, '{End}{Enter}{Enter}Some random test text to test search.{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('{end}{enter}{enter}Some random test text to test search.{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await wysiwygULBtn.click();
+      await typeStuff(content, '{End}unordered{Enter}unordered{Enter}{Enter}');
+      await wysiwygOLBtn.click();
+      await typeStuff(content, '{End}ordered{Enter}ordered{Enter}{Enter}');
+      await wysiwygULBtn.click();
+      await typeStuff(content, '{End}parent{Enter}');
+      await wysiwygULBtn.click(); // remove list formatting
+      await wysiwygIndentBtn.click();
+      await wysiwygOLBtn.click();
+      await typeStuff(content, '{End}child{Enter}child{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@WYSIWYG_BTN__UL').click();
-      cy.get('@CONTENT').type('{end}unordered{enter}unordered{enter}{enter}');
-      cy.get('@WYSIWYG_BTN__OL').click();
-      cy.get('@CONTENT').type('{end}ordered{enter}ordered{enter}{enter}');
-      cy.get('@WYSIWYG_BTN__UL').click();
-      cy.get('@CONTENT').type('{end}parent{enter}');
-      cy.get('@WYSIWYG_BTN__UL').click(); // remove list formatting
-      cy.get('@WYSIWYG_BTN__INDENT').click();
-      cy.get('@WYSIWYG_BTN__OL').click();
-      cy.get('@CONTENT').type('{end}child{enter}child{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await typeStuff(content, '```{Enter}// no lang specified{Enter}blah{Enter}```{Enter}');
+      await scrollToBottom(content);
+      await typeStuff(content, '```html{Enter}<!-- comment -->{Enter}<div att="val">{Enter}  <span>blah</span>{Enter}{Backspace}{Backspace}</div>{Enter}```{Enter}');
+      await scrollToBottom(content);
+      await typeStuff(content, '```js{Enter}// code block{Enter}var x = \'y\';{Enter}```{Enter}');
+      await scrollToBottom(content);
+      await content.type('code block from button');
+      await highlight(content, -22);
+      await wysiwygCodeBlockBtn.click();
+      await scrollToBottom(content);
+      await typeStuff(content, '{Control+End}{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@CONTENT').type('```{enter}// no lang specified{enter}blah{enter}```{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
-      cy.get('@CONTENT').type('```html{enter}<!-- comment -->{enter}<div att="val">{enter}  <span>blah</span>{enter}</div>{enter}```{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
-      cy.get('@CONTENT').type('```js{enter}// code block{enter}var x = \'y\';{enter}```{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
-      cy.get('@CONTENT').type('code block from button').highlight(-22);
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
-      cy.get('@WYSIWYG_BTN__CODE_BLOCK').click();
-      cy.get('@CONTENT').type('{moveToEnd}{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await wysiwygQuoteBtn.click();
+      await typeStuff(content, 'block  {Enter}');
+      await wysiwygQuoteBtn.click();
+      await typeStuff(content, 'quote{Enter}{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@WYSIWYG_BTN__QUOTE').click();
-      cy.get('@CONTENT').type('block  {enter}');
-      cy.get('@WYSIWYG_BTN__QUOTE').click();
-      cy.get('@CONTENT').type('quote{enter}{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await wysiwygTableBtn.click();
+      await typeStuff(app.getFocusedEl(), '{ArrowUp}');
+      await app.getElBySelector('.table-form [name="col1"]').type('col1');
+      await app.getElBySelector('.table-form [name="col2"]').type('col2');
+      await app.getElBySelector('.table-form [name="col3"]').type('col3');
+      await app.getElBySelector('.table-form button:text-is("Add")').click();
+      await highlight(content, -3);
+      await typeStuff(content, ' col3 value |{Enter}');
+      await scrollToBottom(content);
       
-      cy.get('@WYSIWYG_BTN__TABLE').click();
-      cy.focused().type('{upArrow}').trigger('input');
-      cy.get('.table-form [name="col1"]').type('col1');
-      cy.get('.table-form [name="col2"]').type('col2');
-      cy.get('.table-form [name="col3"]').type('col3');
-      cy.get('.table-form button').contains('Add').click();
-      cy.get('@CONTENT').highlight(-3).type('col3 value |{enter}');
-      cy.get('@CONTENT').scrollTo('bottom', { ensureScrollable: false });
+      await typeStuff(content, '{Enter}askdjlaksdjf;laksjdfla;skjdfla;ksdjflskajdfl;askjdfla;skdjfl;sakdjflsa;kdjfal;skdjfl;askjdf;adf {Enter}');
+      let contWidth = await content.evaluate((el) => el.scrollWidth);
+      await expect(contWidth).toEqual(666);
+      await expect(form).toContainClass('wrap');
+      await app.screenshot('editor is wrapping text');
+      await wysiwygWrapBtn.click();
+      contWidth = await content.evaluate((el) => el.scrollWidth);
+      await expect(contWidth).toEqual(784);
+      await expect(form).not.toContainClass('wrap');
+      await app.screenshot('editor is not wrapping text');
+      await wysiwygWrapBtn.click();
       
-      cy.get('@CONTENT').type('{enter}askdjlaksdjf;laksjdfla;skjdfla;ksdjflskajdfl;askjdfla;skdjfl;sakdjflsa;kdjfal;skdjfl;askjdf;adf {enter}');
-      cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(651); });
-      cy.get('@FORM').should('have.class', 'wrap');
-      cy.get('@WYSIWYG_BTN__WRAP').click();
-      cy.get('@CONTENT').then(($el) => { expect($el[0].scrollWidth).to.equal(941); });
-      cy.get('@FORM').should('not.have.class', 'wrap');
-      cy.get('@WYSIWYG_BTN__WRAP').click();
-      
-      cy.get('@WYSIWYG_BTN__PREVIEW').click();
-      cy.get('.note-form__content-preview').as('PREVIEW');
-      cy.get('@PREVIEW').find('hr');
-      cy.get('@PREVIEW').find('thead').contains('col1 col2 col3');
-      cy.get('@PREVIEW').find('tbody').contains('col3 value');
-      cy.get('@PREVIEW').find('tbody tr').should('have.length', 1);
-      screenshot(null, 'previewing note');
-      cy.get('@WYSIWYG_BTN__PREVIEW').click();
+      await wysiwygPreviewBtn.click();
+      const preview = app.getElBySelector('.note-form__content-preview');
+      await expect(preview.locator('hr')).toBeAttached();
+      await expect(preview.locator('thead')).toContainText('col1 col2 col3');
+      await expect(preview.locator('tbody')).toContainText('col3 value');
+      await expect(preview.locator('tbody tr')).toHaveCount(1);
+      await app.screenshot('previewing note');
+      await wysiwygPreviewBtn.click();
       
       // make sure no accidental loss of note occurs
-      cy.get('.dialog-mask').click({ force: true });
-      cy.get('@CONTENT').should('exist');
+      await app.getElBySelector('.dialog-mask').click({ force: true }); // eslint-disable-line playwright/no-force-option
+      await expect(content).toBeAttached();
       
-      cy.get('@FORM').find('button').contains('Save').click();
+      await form.locator('button:text-is("Save")').click();
       
-      cy.get('.notes-nav .tags').as('TAGS');
-      cy.get('@TAGS').find('.notes-nav-items-toggle__btn').click();
-      cy.get('@TAGS').find('.notes-nav-items-toggle__items .note-tag')
-        .should('have.length', 1)
-        .should('have.attr', 'href', '?tag=test');
+      const tags = app.getElBySelector('.notes-nav .tags');
+      await tags.locator('.notes-nav-items-toggle__btn').click();
+      const noteTag = tags.locator('.notes-nav-items-toggle__items .note-tag');
+      await expect(noteTag).toHaveCount(1);
+      await expect(noteTag).toHaveAttribute('href', '?tag=test');
       
-      cy.get('.group-list.is--root > .item .item__label')
-        .should('have.length', 1)
-        .should('have.attr', 'href', '?note=root%2Ffull-test-note');
+      const label = app.getElBySelector('.group-list.is--root > .item .item__label');
+      await expect(label).toHaveCount(1);
+      await expect(label).toHaveAttribute('href', '?note=root%2Ffull-test-note');
       
-      cy.get('.flyout__close-btn').click();
+      await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
     });
     
-    it('should add group', () => {
-      cy.get('@TOP_NAV__NOTES').click();
-      
-      // reset test data
-      cy.deleteGroup('.group', GROUP_NAME);
-      
-      cy.get('.flyout .sub-nav button[title="Add Group"]').first().click();
-      cy.get('#Y2xpX25hbWU').type(GROUP_NAME);
-      cy.get('.query').contains('?note=root%2Ftest-group');
-      cy.get('.group-form__btm-nav button').contains('Save').click();
-      
-      cy.get('.group__name-text')
-        .should('have.length', 1)
-        .contains('Test Group');
+    await test.step('Add Group', async () => {
+      await notesBtn.click();
         
-      cy.get('.flyout__close-btn').click();
-    });
-  
-    it('should move Note to Group', () => {
-      cy.get('@TOP_NAV__NOTES').click();
+      // reset test data
+      await app.deleteGroup(GROUP_NAME);
       
+      await app.getElBySelector('.flyout .sub-nav button[title="Add Group"]').click();
+      await app.getElBySelector('#Y2xpX25hbWU').type(GROUP_NAME);
+      await expect(app.getElBySelector('.query')).toContainText('?note=root%2Ftest-group');
+      await app.getElBySelector('.group-form__btm-nav :text-is("Save")').click();
+      
+      const groupName = app.getElBySelector('.group__name-text');
+      await expect(groupName).toHaveCount(1);
+      await expect(groupName).toContainText(GROUP_NAME);
+        
+      await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
+    });
+    
+    await test.step('Move Note to Group', async () => {
+      await notesBtn.click();
+        
       // move note, verify the number of notes in the group is displayed
-      cy.moveNote('.item', NOTE_NAME, GROUP_NAME);
-      cy.get('.group__name-text').first().invoke('text').should('eq', `(1) ${GROUP_NAME}`);
+      await app.moveNote(NOTE_NAME, GROUP_NAME);
+      await expect(app.getElBySelector('.group__name-text')).toContainText(`(1) ${GROUP_NAME}`);
       
       // open group to execute actions on note
-      cy.get('.group').first().click();
+      await app.getElBySelector('.group').click();
       
       // verify query preview maintains group path(s)
-      cy.get('.group .item [title="Edit"]').click();
-      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note');
-      cy.get('.note-form [name="title"]').type(' update');
-      cy.get('.note-form .query').invoke('text').should('eq', '?note=root%2Ftest-group%2Ffull-test-note-update');
-      cy.get('.note-form__btm-nav button').contains('Cancel').click();
+      await app.getElBySelector('.group .item [title="Edit"]').click();
+      await expect(app.getElBySelector('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note');
+      await app.getElBySelector('.note-form [name="title"]').type(' update');
+      await expect(app.getElBySelector('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note-update');
+      await app.getElBySelector('.note-form__btm-nav :text-is("Cancel")').click();
       
       // move the note back to the root
-      cy.moveNote('.item', NOTE_NAME, '/');
-      cy.get('.group__name-text').first().invoke('text').should('eq', GROUP_NAME);
+      await app.moveNote(NOTE_NAME, '/');
+      await expect(app.getElBySelector('.group__name-text')).toContainText(GROUP_NAME);
       
-      cy.get('.flyout__close-btn').click();
-    });
-  
-    it('should display a list of related Search results', () => {
-      cy.get('@TOP_NAV__SEARCH').click();
-      cy.get('.search__input-wrapper input').type('test{enter}');
-      cy.get('.search-result')
-        .should('have.length', 3)
-        .then((els) => {
-          expect(els[0].dataset.tag).to.equal('test');
-          expect(els[0].querySelector('.search-result__title').innerHTML).to.equal('<mark>test</mark>');
-          
-          expect(els[1].dataset.path).to.equal('root/full-test-note');
-          expect(els[1].querySelector('.search-result__title').innerHTML).to.equal('Full <mark>Test</mark> Note');
-          expect(els[1].querySelector('.search-result__content').innerHTML).to.equal('me random <mark>test</mark> text to t ... t text to <mark>test</mark> search.\n\n');
-          
-          expect(els[2].dataset.path).to.equal('root/test-group');
-          expect(els[2].disabled).to.be.true;
-          expect(els[2].querySelector('.search-result__title').innerHTML).to.equal('<mark>Test</mark> Group');
-        });
-      screenshot(null, 'search results');
-      
-      cy.get('.flyout__close-btn').click();
-    });
-  
-    it('should export and import User data', () => {
-      const PATH__DOWNLOADS = Cypress.config('downloadsFolder');
-      
-      cy.get('@TOP_NAV__USER').click();
-      cy.get('.user-nav button').contains('Export').click();
-      
-      cy.wait(1000); // eslint-disable-line
-      cy.exec(`ls ${PATH__DOWNLOADS}/`).then(({ stdout }) => {
-        const BACKUP_FILE = `${PATH__DOWNLOADS}/${stdout}`;
-        
-        cy.readFile(BACKUP_FILE, 'utf8').then(data => {
-          cy.wrap(data).as('EXPORTED_DATA');
-        });
-        
-        cy.exec(`rm -rf ${PATH__DATA}/data_*.json`, { log: true }).then(() => {
-          console.log('[DELETED] Previous app data');
-        });
-        cy.reload();
-        setTopNavAliases();
-        
-        cy.get('.start-msg').should('exist');
-        
-        cy.get('@TOP_NAV__USER').click();
-        cy.get('.user-nav button').contains('Import').click();
-        cy.get('#tmpFileInput').selectFile(BACKUP_FILE, { force: true });
-        
-        cy.get('.start-msg').should('not.exist');
-      });
+      await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
     });
     
-    it('should switch themes', () => {
-      cy.get('@TOP_NAV__THEME').click();
-      cy.get('.theme-opt.current').contains('default');
-      cy.get('body[class*="theme-"]').should('not.exist');
+    await test.step('Display a List of Related Search Results', async () => {
+      await searchBtn.click();
       
-      cy.get('.theme-opt:not(.current)').each(($opt) => {
-        const theme = $opt[0].value;
-        cy.wrap($opt).click();
-        cy.get(`body.theme-${theme}`).should('exist');
-        screenshot(null, `theme '${theme}' applied`);
+      await typeStuff(app.getElBySelector('.search__input-wrapper input'), 'test{Enter}');
+      const results = app.getElBySelector('.search-result');
+      await expect(results).toHaveCount(3);
+      
+      const res1 = results.nth(0);
+      await expect(res1).toHaveAttribute('data-tag', 'test');
+      await expect(await res1.locator('.search-result__title').innerHTML()).toEqual('<mark>test</mark>');
+      
+      const res2 = results.nth(1);
+      await expect(res2).toHaveAttribute('data-path', 'root/full-test-note');
+      await expect(await res2.locator('.search-result__title').innerHTML()).toEqual('Full <mark>Test</mark> Note');
+      await expect(await res2.locator('.search-result__content').innerHTML()).toEqual('me random <mark>test</mark> text to t ... t text to <mark>test</mark> search.\n\n');
+      
+      const res3 = results.nth(2);
+      await expect(res3).toHaveAttribute('data-path', 'root/test-group');
+      await expect(res3).toBeDisabled();
+      await expect(await res3.locator('.search-result__title').innerHTML()).toEqual('<mark>Test</mark> Group');
+      
+      await app.screenshot('search results');
+      
+      await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
+    });
+    
+    await test.step('Export and Import User Data', async () => {
+      const backupFilePath = await app.downloadFile(async () => {
+        await userBtn.click();
+        await app.getElBySelector('.user-nav :text-is("Export")').click();
       });
       
-      cy.get('.theme-opt').contains('default').click();
-      cy.get('@TOP_NAV__THEME').click();
+      await deleteUserData();
+      
+      await expect(app.getElBySelector(SELECTOR__START_MSG)).toBeAttached();
+      
+      await app.waitForDataUpdate({ action: 'importData', type: 'all' }, async () => {
+        await app.chooseFile(backupFilePath, async () => {
+          await userBtn.click();
+          await app.getElBySelector('.user-nav :text-is("Import")').click();
+        });
+      });
+      
+      await expect(app.getElBySelector(SELECTOR__START_MSG)).not.toBeAttached();
+    });
+    
+    await test.step('Switch Themes', async () => {
+      await themeBtn.click();
+      await expect(app.getElBySelector('.theme-opt.current')).toContainText('default');
+      await expect(app.getElBySelector('body[class*="theme-"]')).toHaveCount(0);
+      
+      const opts = await app.getElBySelector('.theme-opt:not(.current)').all();
+      for (const opt of opts) {
+        const theme = await opt.getAttribute('value');
+        await app.waitForDataUpdate({ action: 'edit', type: 'preferences' }, async () => {
+          await opt.click();
+        });
+        await expect(app.getElBySelector(`body.theme-${theme}`)).toHaveCount(1);
+        await app.screenshot(`theme '${theme}' applied`);
+      }
+      
+      await app.getElBySelector('.theme-opt:text-is("default")').click();
+      await themeBtn.click();
     });
   });
 });
-

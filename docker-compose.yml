@@ -1,32 +1,4 @@
 services:
-  e2e-cypress:
-    # command: 'cypress run --browser chrome'
-    container_name: e2e-notes
-    depends_on:
-      - notes
-    environment:
-      ## Cypress vars
-      CYPRESS_BASE_URL: "${CYPRESS_BASE_URL}"
-      # DEBUG: cypress:server:browsers:electron # view Electron internal logging
-      # ELECTRON_ENABLE_LOGGING: 1 # view console logs from Browser (headless)
-      ## Test vars
-      # CYPRESS__MOCK_TIME: "${MOCK_TIME}"
-      # CYPRESS__PATHS__MOCKS: /repo/e2e/cypress/fixtures
-    hostname: cypresstests
-    image: cypress/included:9.3.0
-    ipc: host # https://github.com/cypress-io/cypress/issues/350#issuecomment-267704772
-    ports:
-      - "9001:3000"
-    privileged: true
-    user: "${CURR_UID}:${CURR_GID}"
-    working_dir: /repo/e2e
-    volumes:
-      - "${PWD}/dist/constants.js:/repo/e2e/mnt/constants.js"
-      - "${PWD}/e2e:/repo/e2e"
-      - type: bind
-        source: "${PWD}/e2e/mnt/data"
-        target: "/repo/e2e/cypress/fixtures"
-  
   notes:
     build:
       context: ./
