@@ -1,6 +1,42 @@
 # Changelog
 ---
 
+## v1.12.0
+
+<details>
+  <summary>Expand for v1.12.0 Details</summary>
+
+  **Bugfixes**
+  - [5ce6731](/the0neWhoKnocks/notes-app/commit/5ce6731): WYSIWYG buttons throw error when note is empty during new note creation
+  - [470d3d9](/the0neWhoKnocks/notes-app/commit/470d3d9): Inserted table not fully indented
+  - [c93fff7](/the0neWhoKnocks/notes-app/commit/c93fff7): Error closing Note dialog after moving note to another group
+  - [247bdd8](/the0neWhoKnocks/notes-app/commit/247bdd8): After 'logout', the login modal doesn't appear.
+  - [fe695e4](/the0neWhoKnocks/notes-app/commit/fe695e4): Multi-word search not returning results
+  - [babe58e](/the0neWhoKnocks/notes-app/commit/babe58e): Error when creating new note
+  - [f4d5a15](/the0neWhoKnocks/notes-app/commit/f4d5a15): Trying to add a non-existent code language breaks formatting and requires reload
+  - [4acfdf2](/the0neWhoKnocks/notes-app/commit/4acfdf2): Code block with horizontal scroll makes lang and line numbers scroll
+
+  **Dev-Ops**
+  - [361626f](/the0neWhoKnocks/notes-app/commit/361626f): Compile assets during Docker build
+  - [98419d8](/the0neWhoKnocks/notes-app/commit/98419d8): Flattened Dockerfile
+  - [24a2830](/the0neWhoKnocks/notes-app/commit/24a2830): Only remove test images at beginning of run
+  - [4033fa3](/the0neWhoKnocks/notes-app/commit/4033fa3): Save Draft test
+  - [245c428](/the0neWhoKnocks/notes-app/commit/245c428): Fix flakey tests
+  - [776fced](/the0neWhoKnocks/notes-app/commit/776fced): Speed up Note creation test
+  - [541974e](/the0neWhoKnocks/notes-app/commit/541974e): Made tests more atomic
+  - [8ce105a](/the0neWhoKnocks/notes-app/commit/8ce105a): Switched from Cypress to Playwright
+  - [1630e37](/the0neWhoKnocks/notes-app/commit/1630e37): Remove random TABs in files
+  - [f8bacac](/the0neWhoKnocks/notes-app/commit/f8bacac): Remove deprecated 'version' prop
+  - [29e3420](/the0neWhoKnocks/notes-app/commit/29e3420): Fix inspect for Server
+
+  **Features**
+  - [df3a8df](/the0neWhoKnocks/notes-app/commit/df3a8df): Persisit previous leading space for new line
+  - [5e1896e](/the0neWhoKnocks/notes-app/commit/5e1896e): Support for yml lang
+  - [197bbaf](/the0neWhoKnocks/notes-app/commit/197bbaf): Save draft when focus lost
+</details>
+
+---
+
 ## v1.11.0
 
 <details>
