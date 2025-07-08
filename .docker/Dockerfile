@@ -61,11 +61,26 @@ RUN npm i --only=production --quiet --unsafe-perm \
   && rm ./package*.json
 
 
-# Copy locally compiled code to the image
-COPY --chown=node:node ./dist/constants.js ./constants.js
-COPY --chown=node:node ./dist/utils ./utils
-COPY --chown=node:node ./dist/server ./server
-COPY --chown=node:node ./dist/public ./public
+# Env with dev deps to compile assets
+FROM notes--prod AS notes--dev
+# Install Dev deps (updated scripts or deps will invalidate build-cache)
+COPY --chown=node:node ./package*.json ./
+ENV NODE_ENV=development
+RUN npm i --quiet
+# Build is separate to utilize the build-cache if the package.json hasn't changed.
+COPY --chown=node:node ./bin/prep-dist.sh ./bin/
+COPY --chown=node:node ./src ./src
+COPY --chown=node:node ./webpack.config.js ./
+RUN npm run build
+
+
+# Bring over compiled assets and finalize.
+FROM notes--prod AS notes
+
+COPY --chown=node:node --from=notes--dev $APP/dist/constants.js ./constants.js
+COPY --chown=node:node --from=notes--dev $APP/dist/utils ./utils
+COPY --chown=node:node --from=notes--dev $APP/dist/server ./server
+COPY --chown=node:node --from=notes--dev $APP/dist/public ./public
 
 # Expose the default port from the Server, on the container
 EXPOSE 3000
