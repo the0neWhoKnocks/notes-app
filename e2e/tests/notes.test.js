@@ -107,14 +107,15 @@ test.describe('Notes', () => {
     
     note = {
       async clickAdd() {
-        await this.open();
+        await this.openNotesFlyout();
         await app.getElBySelector('.flyout .sub-nav button[title="Add Note"]').click();
         this.setUpLocs();
       },
-      async open() {
+      async openNotesFlyout() {
         await notesBtn.click();
+        await expect(app.getElBySelector('[flyout-for="notesNav"]')).toBeVisible();
       },
-      setUpLocs() {
+      async setUpLocs() {
         form = app.getElBySelector('.note-form');
         toolbar = form.locator('.note-form__toolbar');
         content = form.locator('.note-form__content');
@@ -134,6 +135,8 @@ test.describe('Notes', () => {
         wysiwygWrapBtn = toolbar.locator('button[data-type="wrap"]');
         wysiwygTOCBtn = toolbar.locator('button[data-type="toc"]');
         wysiwygPreviewBtn = toolbar.locator('button[data-type="preview"]');
+        
+        await expect(form).toBeVisible()
       },
     };
   });
@@ -290,9 +293,9 @@ test.describe('Notes', () => {
     await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
   });
   
-  test('Group', async ({ app }) => {
-    await test.step('Add Group', async () => {
-      await notesBtn.click();
+  test.describe('Group', () => {
+    test('Add Group', async ({ app }) => {
+      await note.openNotesFlyout();
         
       // reset test data
       await app.deleteGroup(GROUP_NAME);
@@ -309,8 +312,8 @@ test.describe('Notes', () => {
       await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
     });
     
-    await test.step('Move Note to Group', async () => {
-      await notesBtn.click();
+    test('Move Note to Group', async ({ app }) => {
+      await note.openNotesFlyout();
         
       // move note, verify the number of notes in the group is displayed
       await app.moveNote(NOTE_NAME, GROUP_NAME);

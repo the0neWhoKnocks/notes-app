@@ -162,6 +162,7 @@ class AppFixture extends BaseFixture {
       await uResp;
       console.log(`${LOG_PREFIX} User data response recieved`);
       await expect(dialog).not.toBeAttached();
+      await expect(this.getElBySelector('.user-nav .username')).toContainText(CREDS__USER);
     }
     
     return dialog;
