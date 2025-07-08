@@ -78,12 +78,7 @@ test.describe('Notes', () => {
   
   async function scrollToBottom(loc) {
     await loc.evaluate(async () => {
-      const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-      
-      for (let i = 0; i < document.body.scrollHeight; i += 100) {
-        window.scrollTo(0, i);
-        await delay(100);
-      }
+      window.scrollTo(0, document.body.scrollHeight);
     });
   }
   
