@@ -207,6 +207,8 @@ export function createTest({
   FxClass,
   fxKey,
 }) {
+  const removed = {};
+  
   return test.extend({
     [fxKey]: async ({ browser, context, page }, use, testInfo) => {
       const testCtx = {
@@ -216,9 +218,12 @@ export function createTest({
       
       // [ before test ] =========================================================
       const rmPath = `${PATH__ABS_SCREENSHOTS}/${genShotPrefix(genShotKeys(testInfo))}`;
-      await test.step(`Remove old screenshots for "${rmPath}"`, async () => {
-        await exec(`rm -rf "${rmPath}"*`); // without quotes, the brackets get misinterpreted
-      });
+      if (!removed[rmPath]) {
+        await test.step(`Remove old screenshots for "${rmPath}"`, async () => {
+          await exec(`rm -rf "${rmPath}"*`); // without quotes, the brackets get misinterpreted
+        });
+        removed[rmPath] = true;
+      }
       
       if (beforeTest) await beforeTest({ browser, context, page, testCtx, testInfo });
       
