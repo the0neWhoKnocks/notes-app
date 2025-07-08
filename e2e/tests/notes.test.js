@@ -401,4 +401,47 @@ test.describe('Notes', () => {
     await app.getElBySelector('.theme-opt:text-is("default")').click();
     await themeBtn.click();
   });
+  
+  test('Save Draft', async ({ app }) => {
+    const SELECTOR__EDIT_BTN = '.modify-nav button[title="Edit"]';
+    const CHANGED_TXT = '::TOC::\n\nedit\n\n';
+    
+    await app.loadNotePage(NOTE_NAME);
+    
+    let editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+    await expect(editBtn).not.toContainText('Draft');
+    await editBtn.click();
+    await note.setUpLocs();
+    
+    // edit note ===============================================================
+    const origTxt = await content.inputValue();
+    await content.fill(origTxt.replace('::TOC::', CHANGED_TXT));
+    
+    // create new tab and close tab w note edits ===============================
+    await app.createPage(); // new blank tab
+    await app.switchToPage(2); // draft saved in background
+    await app.closePage(1); // note page closed
+    
+    // verify draft saved ======================================================
+    await app.loadPage();
+    await app.logIn();
+    await app.loadNotePage(NOTE_NAME);
+    editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+    await expect(editBtn).toContainText('Draft');
+    await app.screenshot('[draft] Edit button displays Draft');
+    await editBtn.click();
+    await note.setUpLocs();
+    let txt = await content.inputValue();
+    await expect(txt).toContain(CHANGED_TXT);
+    await app.screenshot('[draft] Editor has Draft content');
+    
+    // disregard draft =========================================================
+    await app.getElBySelector('.note-form__btm-nav :text-is("Cancel")').click();
+    await expect(editBtn).not.toContainText('Draft');
+    await app.screenshot('[draft] Edit button does not displays Draft');
+    await editBtn.click();
+    txt = await content.inputValue();
+    await expect(txt).not.toContain(CHANGED_TXT);
+    await app.screenshot('[draft] Editor reverted to original content');
+  });
 });

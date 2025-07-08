@@ -1,3 +1,4 @@
+import { BASE_DATA_NODE } from '@src/constants';
 import BaseFixture, { createTest, expect } from './BaseFixture';
 
 export const CREDS__PASS = 'pass';
@@ -124,6 +125,11 @@ class AppFixture extends BaseFixture {
         else console.log(`${LOG_PREFIX} Skipping move, no nav found`);
       },
     };
+  }
+  
+  async loadNotePage(noteName, parentPath = BASE_DATA_NODE) {
+    await this.loadPage(`?note=${encodeURIComponent(`${parentPath}/${noteName}`.toLowerCase().replaceAll(' ', '-'))}`);
+    await expect(this.getElBySelector('.full-note')).toHaveCount(1);
   }
   
   async logIn(opts) {

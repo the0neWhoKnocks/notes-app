@@ -19,6 +19,7 @@ module.exports = {
         'createConfig',
         'deleteGroup',
         'deleteNote',
+        'loadNotePage',
         'logIn',
         'moveNote',
         'validateAlert',

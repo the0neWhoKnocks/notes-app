@@ -77,7 +77,7 @@ export default class BaseFixture {
     const ctx = await this.fx.browser.newContext();
     const page = await ctx.newPage();
     
-    new constructor({
+    new this.constructor({
       browser: this.fx.browser,
       context: ctx,
       page,
