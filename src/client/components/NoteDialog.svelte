@@ -758,24 +758,25 @@
   }
   
   function handleVisChange() {
-    // Nesting in a timeout so that reloads still function. Not sure if it was
-    // because it was async, or if that's just the nature of `visibilitychange`.
-    setTimeout(async () => {
-      switch (document.visibilityState) {
-        case 'hidden': {
-          if (!saveBtnDisabled) {
+    // Note has been edited, try to save draft.
+    if (!saveBtnDisabled) {
+      // Nesting in a timeout so that reloads still function. Not sure if it was
+      // because it was async, or if that's just the nature of `visibilitychange`.
+      setTimeout(async () => {
+        switch (document.visibilityState) {
+          case 'hidden': {
             await saveNote({ draft: true });
-          } 
-          break;
-        }
-        case 'visible': {
-          if ($currentNote.draft) {
-            await saveNote({ deleteDraft: true });
+            break;
           }
-          break;
+          case 'visible': {
+            if ($currentNote?.draft) {
+              await saveNote({ deleteDraft: true });
+            }
+            break;
+          }
         }
-      }
-    }, 0);
+      }, 0);
+    }
   }
   
   $: if ($dialogDataForNote) {
