@@ -1014,6 +1014,11 @@
 {/if}
 
 <style>
+  :root {
+    --noteDiagInputBGColor: #fff;
+    --noteDiagInputTextColor: #000;
+  }
+  
   :global([dialog-for="anchor"] .dialog__body) {
     padding: 1em;
   }
@@ -1030,6 +1035,10 @@
     flex-direction: column;
   }
   
+  .note-form button:disabled {
+    opacity: 0.35;
+  }
+  
   .note-form__content-area {
     height: 100%;
     display: flex;
@@ -1037,9 +1046,12 @@
   }
   
   .note-form__toolbar {
-    color: var(--color--app--fg);
+    color: var(--noteDiagInputTextColor);
     padding: 0.75em;
-    background: var(--color--app--bg);
+    border: solid 1px currentColor;
+    border-top: unset;
+    border-bottom: unset;
+    background: var(--noteDiagInputBGColor);
     display: flex;
   }
   .note-form__toolbar button {
@@ -1047,11 +1059,20 @@
     color: inherit;
     font-size: 1.2em;
     padding: 0.25em 0;
+    border-color: var(--noteDiagInputTextColor);
     border-radius: unset;
     margin: 2px;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  .note-form__toolbar button:disabled {
+    opacity: 0.25;
+  }
+  .note-form__toolbar button:not(:disabled):focus,
+  .note-form__toolbar button:not(:disabled):hover {
+    outline-color: currentColor;
   }
   :global(.note-form__toolbar button *) {
     pointer-events: none;
@@ -1061,7 +1082,7 @@
     width: 1px;
     height: 100%;
     margin: 0 6px;
-    background: var(--color--app--fg);
+    background: currentColor;
     flex-shrink: 0;
   }
   
@@ -1105,29 +1126,20 @@
   }
   .note-form__btm-nav button {
     width: 49%;
-  }
-  
-  .note-form button:disabled {
-    opacity: 0.35;
+    color: var(--dialog-title-text-color);
+    background: var(--dialog-title-bg-color);
   }
   
   .note-form.previewing button[data-type="preview"],
   .note-form.wrap button[data-type="wrap"] {
-    color: var(--color--app--bg);
-    background: var(--color--app--fg);
+    color: var(--noteDiagInputBGColor);
+    background: var(--noteDiagInputTextColor);
   }
   
   :global(.note-form .tags-input__container) {
+    border-color: var(--noteDiagInputTextColor);
     border-radius: 0.5em 0.5em 0 0;
     margin: 0;
-    background: var(--color--app--bg);
-  }
-  :global(.note-form .tags-input__input) {
-    color: var(--color--app--fg); 
-    background: transparent;
-  }
-  :global(.note-form .tags-input__input::placeholder) {
-    color: var(--color--app--fg); 
   }
   
   .table-form {

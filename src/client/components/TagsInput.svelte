@@ -292,7 +292,8 @@
     white-space: pre;
   }
   .tags-input__input {
-    padding: 5px 0;
+    height: 2em;
+    padding:0;
     margin-left: 4px;
     display: inline-block;
   }
