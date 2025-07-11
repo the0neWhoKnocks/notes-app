@@ -10,33 +10,11 @@
   const KEY__ESC = 27;
   const KEY__UP = 38;
   const KEY__DOWN = 40;
-  let autoCompleteItemSelector = '';
+  let autoCompleteItemSelector = '.tags-input__auto-complete-btn';
   let autoCompleteRef;
   let inputRef;
+  let items = [];
   let measureRef;
-  let stylesRef;
-  
-  function updateStyleRule(query) {
-    if (!autoCompleteItems.length) return;
-    
-    let rules = '';
-    
-    if (query !== '') {
-      autoCompleteItemSelector = `[data-autocomplete-item*="${query.toLowerCase()}"]`;
-      rules = `
-        .tags-input__auto-complete-list,
-        .tags-input__auto-complete-list ${autoCompleteItemSelector} {
-          display: block !important;
-        }
-      `;
-    }
-    else {
-      autoCompleteItemSelector = undefined;
-    }
-
-    stylesRef.textContent = rules;
-    autoCompleteRef.scrollTop = 0;
-  }
   
   function handleTagClick(ev) {
     if (ev.target !== inputRef) inputRef.focus();
@@ -48,8 +26,20 @@
 
     measureRef.textContent = val;
     inputRef.style.cssText = `width: ${measureRef.offsetWidth + 1}px`;
-
-    updateStyleRule(inputRef.value);
+    
+    items = autoCompleteItems
+      .filter((item) => item.toLowerCase().includes(val.toLowerCase()))
+      .map((item) => {
+        const ndx = item.toLowerCase().indexOf(val.toLowerCase());
+        return {
+          start: item.substring(0, ndx),
+          middle: item.substring(ndx, ndx + val.length),
+          end: item.substring(ndx + val.length, item.length),
+          tag: item,
+        };
+      });
+    
+    if (items.length && autoCompleteRef) autoCompleteRef.scrollTop = 0;
   }
   
   function handleKeyDown(ev) {
@@ -64,7 +54,7 @@
   function handleKeyUp(ev) {
     switch (ev.which) {
       case KEY__DOWN:
-        if (autoCompleteItemSelector) {
+        if (items.length) {
           autoCompleteRef.querySelector(autoCompleteItemSelector).focus();
         }
         break;
@@ -81,7 +71,7 @@
   }
   
   function handleAutoCompleteSelect(ev) {
-    if (!ev.target.matches('.tags-input__auto-complete-btn')) return;
+    if (!ev.target.matches(autoCompleteItemSelector)) return;
     
     const getSiblingsFor = (el) => {
       const getSib = (selector, sibType) => {
@@ -186,8 +176,6 @@
   class="tags-input__container"
   on:click={handleTagClick}
 >
-  <style type="text/css" bind:this={stylesRef}></style>
-  
   <input
     type="hidden"
     name="tags"
@@ -219,7 +207,7 @@
     class="tags-input__measure"
     bind:this={measureRef}
   >{placeholder}</div>
-  {#if autoCompleteItems.length}
+  {#if items.length}
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <nav
       class="tags-input__auto-complete-list"
@@ -227,12 +215,14 @@
       on:click={handleAutoCompleteSelect}
       on:keydown={handleAutoCompleteSelect}
     >
-    {#each autoCompleteItems as acItem}
+    {#each items as { start, middle, end, tag }}
       <button
         type="button"
         class="tags-input__auto-complete-btn"
-        data-autocomplete-item={acItem.toLowerCase()}
-      >{acItem}</button>
+        data-tag={tag}
+      >
+        {start}<mark>{middle}</mark>{end}
+      </button>
     {/each}
     </nav>
   {/if}
@@ -287,6 +277,7 @@
   */
   .tags-input__input,
   .tags-input__measure {
+    font: inherit;
     border: none;
     outline: none;
     white-space: pre;
@@ -312,7 +303,6 @@
     border-top: none;
     margin: 0;
     background: #fff;
-    display: none;
     position: absolute;
     top: 100%;
     left: 0.5em;
@@ -329,13 +319,11 @@
     border-bottom: solid 1px #bbb;
     border-radius: unset;
     background: #eee;
-    display: none;
     cursor: pointer;
   }
   .tags-input__auto-complete-btn:hover,
   .tags-input__auto-complete-btn:focus {
     color: #eee;
-    text-shadow: 0 1px 4px #000;
     background: #333;
     outline: none;
   }
