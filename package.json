@@ -1,5 +1,5 @@
 {
-  "version": "1.12.0",
+  "version": "1.13.0",
   "scripts": {
     "build": "./bin/prep-dist.sh && NODE_ENV=production webpack",
     "lint": "eslint ./*.js \"{bin,e2e,src}/**/*.{js,svelte}\"",

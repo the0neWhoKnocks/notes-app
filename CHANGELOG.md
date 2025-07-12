@@ -1,6 +1,25 @@
 # Changelog
 ---
 
+## v1.13.0
+
+<details>
+  <summary>Expand for v1.13.0 Details</summary>
+
+  **Bugfixes**
+  - [4aa2769](/the0neWhoKnocks/notes-app/commit/4aa2769): Saving draft with new note breaks other functionality
+  - [9c76b2a](/the0neWhoKnocks/notes-app/commit/9c76b2a): Line below tags input
+  - [3a2527d](/the0neWhoKnocks/notes-app/commit/3a2527d): Error when switching tabs, can't access 'draft'
+
+  **Dev-Ops**
+  - [6a8c63d](/the0neWhoKnocks/notes-app/commit/6a8c63d): '[Build] App' no longer needed
+
+  **Features**
+  - [c195fda](/the0neWhoKnocks/notes-app/commit/c195fda): Non-theme based styles for Note form
+</details>
+
+---
+
 ## v1.12.0
 
 <details>
