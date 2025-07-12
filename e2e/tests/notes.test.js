@@ -1,3 +1,4 @@
+import { BASE_DATA_NODE } from '@src/constants';
 import {
   CREDS__PASS,
   CREDS__USER,
@@ -62,8 +63,8 @@ test.describe('Init', () => {
 test.describe('Notes', () => {
   const GROUP_NAME = 'Test Group';
   const NOTE_NAME = 'Full Test Note';
-  let note, notesBtn, searchBtn, themeBtn, userBtn;
-  let content, form, toolbar,
+  let note, notesBtn, search, searchBtn, themeBtn, userBtn;
+  let cancelBtn, content, deleteDraftBtn, form, saveBtn, title, toolbar,
     wysiwygBoldBtn, wysiwygCodeBlockBtn, wysiwygCodeBtn, wysiwygHRBtn,
     wysiwygIndentBtn, wysiwygItalicBtn, wysiwygLinkBtn, wysiwygOLBtn,
     wysiwygPreviewBtn, wysiwygQuoteBtn, wysiwygStrikeBtn, wysiwygTOCBtn,
@@ -107,8 +108,10 @@ test.describe('Notes', () => {
     
     note = {
       async clickAdd() {
-        await this.openNotesFlyout();
-        await app.getElBySelector('.flyout .sub-nav button[title="Add Note"]').click();
+        if ( !(await app.getElBySelector('.flyout .notes').count()) ) {
+          await this.openNotesFlyout();
+        }
+        await app.getElBySelector('.flyout .notes > .sub-nav button[title="Add Note"]').click();
         this.setUpLocs();
       },
       async openNotesFlyout() {
@@ -117,8 +120,12 @@ test.describe('Notes', () => {
       },
       async setUpLocs() {
         form = app.getElBySelector('.note-form');
+        title = form.locator('[name="title"]');
         toolbar = form.locator('.note-form__toolbar');
         content = form.locator('.note-form__content');
+        cancelBtn = form.locator('.note-form__btm-nav :text-is("Cancel")');
+        deleteDraftBtn = form.locator('.note-form__btm-nav :text-is("Delete Draft")');
+        saveBtn = form.locator('.note-form__btm-nav :text-is("Save")');
         wysiwygHeadingBtn = toolbar.locator('button[data-type="heading"]');
         wysiwygHRBtn = toolbar.locator('button[data-type="hr"]');
         wysiwygBoldBtn = toolbar.locator('button[data-type="bold"]');
@@ -139,12 +146,24 @@ test.describe('Notes', () => {
         await expect(form).toBeVisible()
       },
     };
+    
+    search = {
+      find: async (query) => {
+        await searchBtn.click();
+        await typeStuff(app.getElBySelector('.search__input-wrapper input'), `${query}{Enter}`);
+        const results = app.getElBySelector('.search-result');
+        return results;
+      },
+    };
   });
   
   test('Add Full Test Note', async ({ app }) => {
+    await app.exec(`rm -rf ${PATH__DATA}/data_*`);
+    await app.loadPage('', true);
+    
     await note.clickAdd();
     
-    await form.locator('[name="title"]').fill(NOTE_NAME);
+    await title.fill(NOTE_NAME);
     await expect(form.locator('.query')).toContainText('?note=root%2Ffull-test-note');
     
     const tagsInput = form.locator('.tags-input__input');
@@ -278,7 +297,7 @@ test.describe('Notes', () => {
     await app.getElBySelector('.dialog-mask').click({ force: true }); // eslint-disable-line playwright/no-force-option
     await expect(content).toBeAttached();
     
-    await form.locator('button:text-is("Save")').click();
+    await saveBtn.click();
     
     const tags = app.getElBySelector('.notes-nav .tags');
     await tags.locator('.notes-nav-items-toggle__btn').click();
@@ -324,10 +343,11 @@ test.describe('Notes', () => {
       
       // verify query preview maintains group path(s)
       await app.getElBySelector('.group .item [title="Edit"]').click();
+      await note.setUpLocs();
       await expect(app.getElBySelector('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note');
-      await app.getElBySelector('.note-form [name="title"]').type(' update');
+      await title.type(' update');
       await expect(app.getElBySelector('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note-update');
-      await app.getElBySelector('.note-form__btm-nav :text-is("Cancel")').click();
+      await cancelBtn.click();
       
       // move the note back to the root
       await app.moveNote(NOTE_NAME, '/');
@@ -338,10 +358,7 @@ test.describe('Notes', () => {
   });
   
   test('Display a List of Related Search Results', async ({ app }) => {
-    await searchBtn.click();
-    
-    await typeStuff(app.getElBySelector('.search__input-wrapper input'), 'test{Enter}');
-    const results = app.getElBySelector('.search-result');
+    const results = await search.find('test');
     await expect(results).toHaveCount(3);
     
     const res1 = results.nth(0);
@@ -402,46 +419,109 @@ test.describe('Notes', () => {
     await themeBtn.click();
   });
   
-  test('Save Draft', async ({ app }) => {
+  test.describe('Draft', () => {
     const SELECTOR__EDIT_BTN = '.modify-nav button[title="Edit"]';
-    const CHANGED_TXT = '::TOC::\n\nedit\n\n';
     
-    await app.loadNotePage(NOTE_NAME);
-    
-    let editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
-    await expect(editBtn).not.toContainText('Draft');
-    await editBtn.click();
-    await note.setUpLocs();
-    
-    // edit note ===============================================================
-    const origTxt = await content.inputValue();
-    await content.fill(origTxt.replace('::TOC::', CHANGED_TXT));
-    
-    // create new tab and close tab w note edits ===============================
-    await app.createPage(); // new blank tab
-    await app.switchToPage(2); // draft saved in background
-    await app.closePage(1); // note page closed
-    
-    // verify draft saved ======================================================
-    await app.loadPage();
-    await app.logIn();
-    await app.loadNotePage(NOTE_NAME);
-    editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
-    await expect(editBtn).toContainText('Draft');
-    await app.screenshot('[draft] Edit button displays Draft');
-    await editBtn.click();
-    await note.setUpLocs();
-    let txt = await content.inputValue();
-    await expect(txt).toContain(CHANGED_TXT);
-    await app.screenshot('[draft] Editor has Draft content');
-    
-    // disregard draft =========================================================
-    await app.getElBySelector('.note-form__btm-nav :text-is("Delete Draft")').click();
-    await expect(editBtn).not.toContainText('Draft');
-    await app.screenshot('[draft] Edit button does not displays Draft');
-    await editBtn.click();
-    txt = await content.inputValue();
-    await expect(txt).not.toContain(CHANGED_TXT);
-    await app.screenshot('[draft] Editor reverted to original content');
+    test('While Creating a New Note', async ({ app }) => {
+      const NOTE_TITLE = 'Draft Note';
+      const NOTE_ID = 'draft-note'
+      const NOTE_CONTENT = 'asdf asdf asdf asdf asdf sadf';
+      
+      // await app.exec(`rm -rf ${PATH__DATA}/data_*`); // NOTE: uncomment when tweaking test to get past partially created data
+      
+      // Create and start filling out note =====================================
+      await note.clickAdd();
+      await title.fill(NOTE_TITLE);
+      await content.fill(NOTE_CONTENT);
+      await expect(app.getElBySelector('.dialog__title')).toContainText('Add Note');
+      await expect(cancelBtn).toHaveCount(1);
+      await app.screenshot('[draft] creating new note');
+      
+      // Create draft, verify note UI updated to reflect draft creation ========
+      await app.pageVisibility.hide();
+      await app.pageVisibility.show();
+      await expect(app.getElBySelector('.dialog__title')).toContainText('Edit Note');
+      await expect(deleteDraftBtn).toHaveCount(1);
+      await app.screenshot('[draft] created from unsaved new note');
+      
+      // Ensure Draft data is being used in Search =============================
+      await app.loadPage('', true);
+      const results = await search.find(NOTE_TITLE);
+      await expect(results).toHaveCount(1);
+      await app.screenshot('[draft] data used in search results');
+      
+      // Load and verify note from Search ======================================
+      await app.getElBySelector(`.search-result[data-path="${BASE_DATA_NODE}/${NOTE_ID}"]`).click();
+      await expect(app.getElBySelector('.full-note header')).toContainText(NOTE_TITLE);
+      await expect(app.getElBySelector('.full-note__body')).toContainText(NOTE_CONTENT);
+      await app.screenshot('[draft] content used in note view');
+      
+      // Delete draft and verify it's deletion =================================
+      const editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+      await expect(editBtn).toContainText('Draft');
+      await editBtn.click();
+      await deleteDraftBtn.click();
+      await app.waitForDialog('.delete-form');
+      await expect(app.getElBySelector('.delete-form__msg')).toContainText(`Delete note ${NOTE_TITLE} from /?`);
+      await app.getElBySelector('.delete-form__btm-nav :text-is("Yes")').click();
+      await note.openNotesFlyout();
+      await expect(app.getElBySelector(`.notes .item__label:text-is("${NOTE_TITLE}")`)).toHaveCount(0);
+      await app.screenshot('[draft] deletion deletes note since there was no previous data');
+      
+      // Verify note saved from a draft ========================================
+      await note.clickAdd();
+      await title.fill(NOTE_TITLE);
+      await content.fill(NOTE_CONTENT);
+      await app.pageVisibility.hide();
+      await app.pageVisibility.show();
+      await saveBtn.click();
+      await app.getElBySelector(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
+      await expect(app.getElBySelector('.flyout')).toBeHidden();
+      await expect(app.getElBySelector('.full-note header')).toContainText(NOTE_TITLE);
+      await expect(app.getElBySelector('.full-note__body')).toContainText(NOTE_CONTENT);
+      await app.screenshot('[draft] data converted to note data');
+    });
+      
+    test('While Editing Existing Note', async ({ app }) => {
+      const CHANGED_TXT = '::TOC::\n\nedit\n\n';
+      
+      await app.loadNotePage(NOTE_NAME);
+      
+      let editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+      await expect(editBtn).not.toContainText('Draft');
+      await editBtn.click();
+      await note.setUpLocs();
+      
+      // edit note ===============================================================
+      const origTxt = await content.inputValue();
+      await content.fill(origTxt.replace('::TOC::', CHANGED_TXT));
+      
+      // create new tab and close tab w note edits ===============================
+      await app.createPage(); // new blank tab
+      await app.switchToPage(2); // draft saved in background
+      await app.closePage(1); // note page closed
+      
+      // verify draft saved ======================================================
+      await app.loadPage();
+      await app.logIn();
+      await app.loadNotePage(NOTE_NAME);
+      editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+      await expect(editBtn).toContainText('Draft');
+      await app.screenshot('[draft] Edit button displays Draft');
+      await editBtn.click();
+      await note.setUpLocs();
+      let txt = await content.inputValue();
+      await expect(txt).toContain(CHANGED_TXT);
+      await app.screenshot('[draft] Editor has Draft content');
+      
+      // disregard draft =========================================================
+      await app.getElBySelector('.note-form__btm-nav :text-is("Delete Draft")').click();
+      await expect(editBtn).not.toContainText('Draft');
+      await app.screenshot('[draft] Edit button does not displays Draft');
+      await editBtn.click();
+      txt = await content.inputValue();
+      await expect(txt).not.toContain(CHANGED_TXT);
+      await app.screenshot('[draft] Editor reverted to original content');
+    });
   });
 });
