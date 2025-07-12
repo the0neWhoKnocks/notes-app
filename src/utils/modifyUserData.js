@@ -190,7 +190,7 @@ module.exports = async function modifyUserData({
       offlineChanges,
       oldName,
       oldParentPath,
-      oldTitle,
+      oldTitle = '',
       password,
       path,
       prefs,
@@ -201,6 +201,7 @@ module.exports = async function modifyUserData({
       username,
     } = reqBody;
     let missingRequiredItems;
+    let nodeId;
     
     if (!action) return { error: { code: 400, msg: 'Missing `action`' } };
     else if (![
@@ -284,17 +285,18 @@ module.exports = async function modifyUserData({
         
         if (type === 'note') {
           const { notes } = getNoteNode(notesData, `${path}/${id}`);
-          const nodeId = kebabCase(title);
+          nodeId = kebabCase(title);
           
           if (!notes[nodeId]) {
             const fTags = parseTags(tags);
-            
-            notes[nodeId] = {
+            const newData = {
               content: sanitizeContent(content) || '',
               created: creationDate,
               tags: fTags,
               title,
             };
+            
+            notes[nodeId] = (draft) ? { draft: newData } : newData;
             
             allTags = compileTags(notesData);
             
@@ -304,7 +306,7 @@ module.exports = async function modifyUserData({
         }
         else if (type === 'group') {
           const { groups } = getGroupNode(notesData, path);
-          const nodeId = kebabCase(name);
+          nodeId = kebabCase(name);
           
           if (!groups[nodeId]) {
             groups[nodeId] = { 
@@ -324,9 +326,9 @@ module.exports = async function modifyUserData({
         if (type === 'note') {
           const { rawPrefix: groupPath } = parsePath(path);
           const { note, notes } = getNoteNode(notesData, path);
-          let nodeId = kebabCase(oldTitle);
           const oldNote = { ...note };
           const fTags = parseTags(tags);
+          nodeId = kebabCase(oldTitle);
           
           // if the only thing that changed in the title was the casing, no need to update
           if (oldTitle.toLowerCase() !== title.toLowerCase()) {
@@ -347,37 +349,39 @@ module.exports = async function modifyUserData({
           
           logMsg = `Updated note "${title}" in "${groupPath}"`;
           
-          if (draft) {
-            notes[nodeId] = {
-              ...oldNote,
-              draft: {
-                content: sanitizeContent(content) || '',
-                modified: Date.now(),
-                tags: fTags,
-                title,
-              },
-            };
-            logMsg += ' | Saved draft';
-          }
-          else if (deleteDraft) {
+          if (deleteDraft) {
             delete notes[nodeId].draft;
             logMsg += ' | Deleted draft';
           }
           else {
-            // User could switch or close a tab after a draft was saved. Then
-            // open a note, edit and save. This'll clean up the straggling draft.
-            if (oldNote.draft) {
-              delete oldNote.draft;
-              logMsg += ' | Deleted straggling draft';
-            }
+            notes[nodeId] = {};
             
-            notes[nodeId] = {
-              ...oldNote,
-              content: sanitizeContent(content) || '',
-              modified: Date.now(),
-              tags: fTags,
-              title,
-            };
+            if (draft) {
+              Object.assign(notes[nodeId], oldNote, {
+                draft: {
+                  content: sanitizeContent(content) || '',
+                  modified: Date.now(),
+                  tags: fTags,
+                  title,
+                },
+              });
+              logMsg += ' | Saved draft';
+            }
+            else {
+              // User could switch or close a tab after a draft was saved. Then
+              // open a note, edit and save. This'll clean up the straggling draft.
+              if (oldNote.draft) {
+                delete oldNote.draft;
+                logMsg += ' | Commited draft data';
+              }
+              
+              Object.assign(notes[nodeId], oldNote, {
+                content: sanitizeContent(content) || '',
+                modified: Date.now(),
+                tags: fTags,
+                title,
+              });
+            }
           }
           
           allTags = compileTags(notesData);
@@ -385,7 +389,7 @@ module.exports = async function modifyUserData({
         else if (type === 'group') {
           const { rawPrefix: parentPath } = parsePath(path)
           const { groups } = getGroupNode(notesData, parentPath);
-          let nodeId = kebabCase(oldName);
+          nodeId = kebabCase(oldName);
           const groupCopy = JSON.parse(JSON.stringify(groups[nodeId]));
           
           if (oldName.toLowerCase() !== name.toLowerCase()) {
@@ -493,11 +497,11 @@ module.exports = async function modifyUserData({
                       }
                       case 'modified': {
                         const { from, prop, to } = changeData;
-                        let nodeId = (prop === 'title')
+                        const nId = (prop === 'title')
                           ? kebabCase(from)
                           : kebabCase(item);
                         
-                        objNode[nodeId][prop] = to;
+                        objNode[nId][prop] = to;
                         
                         if (prop === 'title') {
                           const newNodeId = kebabCase(to);
@@ -511,8 +515,8 @@ module.exports = async function modifyUserData({
                             };
                           }
                           
-                          objNode[newNodeId] = objNode[nodeId];
-                          delete objNode[nodeId];
+                          objNode[newNodeId] = objNode[nId];
+                          delete objNode[nId];
                           msgLines.push(`Renamed "${from}" to "${to}"`);
                         }
                         else msgLines.push(`Updated "${item}.${prop}"`);
@@ -602,7 +606,12 @@ module.exports = async function modifyUserData({
     data.allTags = allTags;
     data.notesData = notesData;
     
-    return finalizeData(data, logMsg);
+    if (data.recentlyViewed) data.recentlyViewed = data.recentlyViewed.filter((r) => !!r);
+    
+    const payload = finalizeData(data, logMsg);
+    if (nodeId) payload.nodeId = nodeId;
+    
+    return payload;
   }
   catch (err) {
     return { error: { code: 500, msg: err.stack } };

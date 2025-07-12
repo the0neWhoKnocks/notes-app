@@ -11,6 +11,7 @@
   } from './Icon.svelte';
   import ModifyNav from './ModifyNav.svelte';
   
+  export let draft = false;
   export let id = undefined;
   export let path = BASE_DATA_NODE;
   export let root = false;
@@ -31,7 +32,7 @@
 
 <nav class="sub-nav">
   {#if !root}
-    <ModifyNav {id} {path} {type} />
+    <ModifyNav {draft} {id} {path} {type} />
   {/if}
   {#if type === 'group'}
     <button
@@ -68,6 +69,12 @@
     align-items: center;
     justify-content: center;
   }
+  
+  :global(.sub-nav .modify-nav button.is--draft) {
+    width: auto;
+    padding: 0 0.25em;
+  }
+  
   .sub-nav > button::after {
     content: '+';
     color: #000;

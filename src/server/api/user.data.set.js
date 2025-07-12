@@ -10,7 +10,7 @@ module.exports = async function setData(req, res) {
   const { appConfig, body: reqBody } = req;
   const { action, password, type, username } = reqBody;
   
-  const { data, error, logMsg } = await modifyUserData({
+  const { data, error, logMsg, nodeId } = await modifyUserData({
     loadCurrentData: async () => {
       return await loadUserData(appConfig, username, password);
     },
@@ -36,9 +36,16 @@ module.exports = async function setData(req, res) {
   
     log.info(logMsg);
     
-    if (action === 'edit' && type === 'note') {
-      const { note } = getNoteNode(data.notesData, reqBody.path);
-      res.json({ ...data, newData: note });
+    if (
+      type === 'note'
+      && (
+        action === 'add'
+        || action === 'edit'
+      )
+    ) {
+      const nPath = (action === 'add') ? `${reqBody.path}/${nodeId}` : reqBody.path;
+      const { note } = getNoteNode(data.notesData, nPath);
+      res.json({ ...data, newData: note, newPath: nPath });
     }
     else {
       res.json({ ...data });

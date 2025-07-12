@@ -1,15 +1,8 @@
 <script>
   import {
-    getGroupNode,
-    getNoteNode,
-  } from '../../utils/dataNodeUtils';
-  import logger from '../../utils/logger';
-  import {
-    dialogDataForDelete,
-    dialogDataForGroup,
     dialogDataForMove,
-    dialogDataForNote,
-    noteGroups,
+    deleteItem,
+    editItem,
   } from '../stores.js';
   import Icon, {
     ICON__EDIT,
@@ -22,45 +15,12 @@
   export let path = undefined;
   export let type = undefined;
   
-  const log = logger('ModifyNav');
-  
-  function deleteItem() {
-    let groupName, title;
-    
-    if (type === 'group') {
-      ({ groupName, title } = getGroupNode($noteGroups, path).group);
-    }
-    else {
-      ({ groupName, title } = getNoteNode($noteGroups, path).note);
-    }
-    
-    log.info(`Delete ${type} "${id}"`);
-    dialogDataForDelete.set({ groupName, id, path, title, type });
+  function handleDeleteClick() {
+    deleteItem({ id, path, type });
   }
   
-  function editItem() {
-    const base = { action: 'edit', path };
-    
-    log.info(`Edit ${type} "${id}"`);
-    
-    if (type === 'group') {
-      const { groupName } = getGroupNode($noteGroups, path).group;
-      dialogDataForGroup.set({ ...base, id, name: groupName });
-    }
-    else {
-      const { draft, ...rest } = getNoteNode($noteGroups, path).note;
-      let content, fromDraft, tags, title;
-      
-      if (draft) {
-        ({ content, tags, title } = draft);
-        fromDraft = true;
-      }
-      else {
-        ({ content, tags, title } = rest);
-      }
-      
-      dialogDataForNote.set({ ...base, content, fromDraft, id, tags, title });
-    }
+  function handleEditClick() {
+    editItem({ id, path, type });
   }
   
   function moveItem() {
@@ -69,7 +29,7 @@
 </script>
 
 <nav class="modify-nav">
-  <button type="button" title="Edit" on:click={editItem}>
+  <button class:is--draft={draft} type="button" title="Edit" on:click={handleEditClick}>
     <Icon type="{ICON__EDIT}" />
     {#if draft}
       <div class="modify-nav__draft-txt">Draft</div>
@@ -78,7 +38,7 @@
   <button type="button" title="Move" on:click={moveItem}>
     <Icon type="{ICON__NEW_TAB}" />
   </button>
-  <button type="button" title="Delete" on:click={deleteItem}>
+  <button type="button" title="Delete" on:click={handleDeleteClick}>
     <Icon type="{ICON__TRASH}" />
   </button>
 </nav>
@@ -89,14 +49,14 @@
     gap: 0.25em;
   }
   
-  .modify-nav__draft-txt {
-    font-size: 0.8em;
-    padding: 0 0.25em;
-  }
-  
-  :global(.modify-nav button) {
+  .modify-nav button {
     padding: 0.25em;
     display: flex;
     align-items: center;
+  }
+  
+  .modify-nav__draft-txt {
+    font-size: 0.8em;
+    padding: 0 0.25em;
   }
 </style>

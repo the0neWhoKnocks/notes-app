@@ -1,4 +1,6 @@
 module.exports = function kebabCase(str) {
+  if (!str) return str;
+  
   return str
     .trim()
     .toLocaleLowerCase()

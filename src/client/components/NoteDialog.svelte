@@ -1,12 +1,16 @@
 <script>
   import { tick } from 'svelte';
   import { PRISMAJS__COPY_TEXT } from '../../constants';
+  import { getNoteNode } from '../../utils/dataNodeUtils';
   import kebabCase from '../../utils/kebabCase';
   const serializeForm = require('../utils/serializeForm');
   import {
     allTags,
     currentNote,
+    deleteItem,
     dialogDataForNote,
+    editItem,
+    noteGroups,
     setUserData,
     updateCurrNote,
     userData,
@@ -69,7 +73,7 @@
   }
   
   async function handleCloseClick() {
-    if ($currentNote?.draft) {
+    if ($dialogDataForNote?.fromDraft) {
       await saveNote({ deleteDraft: true });
     }
     
@@ -254,22 +258,45 @@
   async function saveNote(opts = {}) {
     const payload = serializeForm(formRef);
     Object.assign(payload, opts);
-    const { newData } = await setUserData(payload);
-    const { id } = $dialogDataForNote;
+    
+    // Draft was created while creating a new note. There is no previous data and
+    // the User is choosing to disgard the data, so just delete the note.
+    if (opts.deleteDraft) {
+      const { id, note } = getNoteNode($noteGroups, payload.path);
+      
+      if (!note.title) {
+        return deleteItem({ id, path: payload.path, type: 'note' });
+      }
+    }
+    
+    const { newData, newPath } = await setUserData(payload);
+    const { action, id } = $dialogDataForNote;
     
     if (newData) {
-      updateCurrNote({
-        id,
-        noteData: {
-          ...$currentNote,
-          content: newData.content,
-          draft: newData.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
-          id: kebabCase(newData.title),
-          tags: newData.tags,
-          title: newData.title,
-        },
-        params: queryParams,
-      });
+      const dataRef = (newData.draft) ? newData.draft : newData;
+      const noteId = kebabCase(dataRef?.title) || id;
+      
+      if (noteId) {
+        updateCurrNote({
+          id: noteId,
+          noteData: {
+            ...$currentNote,
+            content: dataRef.content,
+            draft: newData.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
+            id: noteId,
+            tags: dataRef.tags,
+            title: dataRef.title,
+          },
+          params: queryParams,
+        });
+        
+        // 'add' means they were creating a new note, switched tabs, and a draft
+        // was saved, so now it should switch to 'edit' since adding the same note
+        // isn't allowed.
+        if (action === 'add') {
+          editItem({ id: noteId, path: newPath, type: 'note' });
+        }
+      }
     }
   }
   
@@ -962,7 +989,13 @@
         </div>        
       </div>
       <nav class="note-form__btm-nav">
-        <button type="button" on:click={handleCloseClick}>Cancel</button>
+        <button type="button" on:click={handleCloseClick}>
+          {#if $dialogDataForNote.fromDraft}
+            Delete Draft
+          {:else}
+            Cancel
+          {/if}
+        </button>
         <button disabled={saveBtnDisabled}>Save</button>
       </nav>
     </form>

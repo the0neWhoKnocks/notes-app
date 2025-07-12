@@ -47,9 +47,10 @@
     }
     
     if (notes) {
-      Object.entries(notes).forEach(([noteId, note]) => {
-        const matchedTitle = note.title.toLowerCase().includes(query);
-        const matchedContent = note.content.toLowerCase().includes(query);
+      Object.entries(notes).forEach(([ noteId, note ]) => {
+        const noteRef = (note.draft) ? note.draft : note;
+        const matchedTitle = noteRef.title.toLowerCase().includes(query);
+        const matchedContent = noteRef.content.toLowerCase().includes(query);
         
         if (matchedTitle || matchedContent) {
           const _path = `${path}/${noteId}`;
@@ -60,12 +61,12 @@
           };
           
           if (matchedTitle) {
-            obj.title = note.title.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
+            obj.title = noteRef.title.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
           }
-          else obj.title = note.title;
+          else obj.title = noteRef.title;
           
           if (matchedContent) {
-            obj.content = [...note.content.matchAll(new RegExp(query, 'gi'))]
+            obj.content = [...noteRef.content.matchAll(new RegExp(query, 'gi'))]
               .map((m) => {
                 const match = m[0];
                 const ndx = m.index;
@@ -74,9 +75,9 @@
                 let endNdx = ndx + match.length + textPad;
                 
                 if (startNdx < 0) startNdx = 0;
-                if (endNdx > note.content.length) endNdx = note.content.length;
+                if (endNdx > noteRef.content.length) endNdx = noteRef.content.length;
                 
-                let str = note.content.substring(startNdx, endNdx);
+                let str = noteRef.content.substring(startNdx, endNdx);
                 str = str.replace(new RegExp(`(${match})`, 'gi'), '<mark>$1</mark>');
                 
                 return str;

@@ -5,7 +5,7 @@ import {
   ROUTE__API__USER__DATA__GET,
   ROUTE__API__USER__DATA__SET,
 } from '../constants';
-import { getNoteNode } from '../utils/dataNodeUtils';
+import { getGroupNode, getNoteNode } from '../utils/dataNodeUtils';
 import logger from '../utils/logger';
 import postData from './utils/postData';
 import {
@@ -123,6 +123,48 @@ export const currentNote = (function curentNoteStore() {
     },
   };
 })();
+
+export function editItem({ id, path, type } = {}) {
+  const _noteGroups = getStoreValue(noteGroups);
+  const base = { action: 'edit', path };
+  
+  log.info(`Edit ${type} "${id}"`);
+  
+  if (type === 'group') {
+    const { groupName } = getGroupNode(_noteGroups, path).group;
+    dialogDataForGroup.set({ ...base, id, name: groupName });
+  }
+  else {
+    const { draft, ...rest } = getNoteNode(_noteGroups, path).note;
+    let content, fromDraft, tags, title;
+    
+    if (draft) {
+      ({ content, tags, title } = draft);
+      fromDraft = true;
+    }
+    else {
+      ({ content, tags, title } = rest);
+    }
+    
+    dialogDataForNote.set({ ...base, content, fromDraft, id, tags, title });
+  }
+}
+
+export function deleteItem({ id, path, type } = {}) {
+  const _noteGroups = getStoreValue(noteGroups);
+  let groupName, title;
+  
+  if (type === 'group') {
+    ({ groupName, title } = getGroupNode(_noteGroups, path).group);
+  }
+  else {
+    const { note } = getNoteNode(_noteGroups, path);
+    ({ groupName, title } = (note.draft) ? note.draft : note);
+  }
+  
+  log.info(`Delete ${type} "${id}"`);
+  dialogDataForDelete.set({ groupName, id, path, title, type });
+}
 
 export const userPreferences = (function createPrefsStore() {
   const { subscribe, set, update } = writable({});

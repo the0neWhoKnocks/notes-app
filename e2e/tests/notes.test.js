@@ -436,7 +436,7 @@ test.describe('Notes', () => {
     await app.screenshot('[draft] Editor has Draft content');
     
     // disregard draft =========================================================
-    await app.getElBySelector('.note-form__btm-nav :text-is("Cancel")').click();
+    await app.getElBySelector('.note-form__btm-nav :text-is("Delete Draft")').click();
     await expect(editBtn).not.toContainText('Draft');
     await app.screenshot('[draft] Edit button does not displays Draft');
     await editBtn.click();

@@ -14,13 +14,18 @@
   let prevNotePath;
   let searchedNote;
   
+  let noteRef;
+  $: {
+    noteRef = ($currentNote?.draft) ? $currentNote.draft : $currentNote;
+  }
+  
   function handlePrintClick() {
     window.print();
   }
   
   function handleFindClick() {
     findNavOpen = true;
-    prevNotePath = $currentNote.path;
+    prevNotePath = noteRef.path;
   }
   
   function handleFindClose() {
@@ -38,10 +43,10 @@
   });
 </script>
 
-{#if !$recentlyViewedOpen && $currentNote?.content}
+{#if !$recentlyViewedOpen && noteRef?.content}
   <article class="full-note" data-prismjs-copy={`${PRISMAJS__COPY_TEXT}`}>
     <header>
-      {$currentNote.title}
+      {noteRef.title}
       <nav class="full-note__nav">
         <ModifyNav
           draft={$currentNote.draft}
@@ -64,16 +69,16 @@
         />
       {/if}
     </header>
-    {#if $currentNote?.tags.length}
+    {#if noteRef?.tags.length}
       <div class="full-note__tags">
-        {#each $currentNote.tags as tag}
+        {#each noteRef.tags as tag}
           <NoteTag rounded strokeWidth="2" text={tag} />
         {/each}
       </div>
     {/if}
     <section class="full-note__body">
       <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      {@html (searchedNote || window.marked.parse($currentNote.content))}
+      {@html (searchedNote || window.marked.parse(noteRef.content))}
     </section>
   </article>
 {/if}

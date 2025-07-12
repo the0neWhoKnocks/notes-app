@@ -50,13 +50,15 @@ module.exports = function transformNoteData(
     }
     
     if (!omitNotes && notes) {
-      for (const [noteId, note] of Object.entries(notes)) {
+      for (const [ noteId, note ] of Object.entries(notes)) {
         const path = `${parent}/${noteId}`;
+        const noteRef = (note.draft) ? note.draft : note;
         ret.push({
           ...extraProps,
+          draft: note.draft,
           id: noteId,
           link: `?note=${window.encodeURIComponent(path)}`,
-          name: note.title,
+          name: noteRef.title,
           nameComponent: itemComponent,
           path,
           type: 'note',
