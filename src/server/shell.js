@@ -199,10 +199,13 @@ const shell = ({
           display: flex;
           justify-content: center;
           align-items: center;
-          animation-name: showMsg;
-          animation-duration: 300ms;
-          animation-delay: 300ms;
-          animation-fill-mode: both;
+        }
+        .loading-msg .msg {
+          padding: 0.25em 0.5em;
+          border: solid 2px #000;
+          border-radius: 0.5em;
+          box-shadow: 0 5px 4px 1px rgb(0 0 0 / 25%);
+          background: #fff;
         }
         body.no-js .loading-msg .msg,
         body.view-loaded .loading-msg,
