@@ -1,6 +1,21 @@
 # Changelog
 ---
 
+## v1.14.0
+
+<details>
+  <summary>Expand for v1.14.0 Details</summary>
+
+  **Dev-Ops**
+  - [281edc3](/the0neWhoKnocks/notes-app/commit/281edc3): Test draft creation during new note creation
+
+  **Features**
+  - [540342b](/the0neWhoKnocks/notes-app/commit/540342b): Don't display notes UI until everything loaded
+  - [623c2e9](/the0neWhoKnocks/notes-app/commit/623c2e9): Make initial loading message more visible
+</details>
+
+---
+
 ## v1.13.0
 
 <details>
