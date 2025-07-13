@@ -1,6 +1,7 @@
 import { exec as _exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { test, expect } from '@playwright/test';
+import { NAMESPACE__LOGGER } from '@src/constants';
 
 const PATH__REL_SCREENSHOTS = 'artifacts/screenshots';
 const PATH__ABS_SCREENSHOTS = `/e2e/${PATH__REL_SCREENSHOTS}`;
@@ -19,7 +20,7 @@ const genShotPrefix = ({ testFileKey, testNameKey }) => {
 const pad = (num) => `${num}`.padStart(2, '0');
 
 export default class BaseFixture {
-  constructor({ browser, context, page, testCtx, testInfo, useWS = false }) {
+  constructor({ browser, context, page, testCtx, testInfo, useLogs = false, useWS = false }) {
     if (!testCtx.fixture) testCtx.fixture = this;
     testCtx.fixtures.push(this);
     
@@ -42,6 +43,15 @@ export default class BaseFixture {
       await d.accept();
     });
     
+    if (useLogs) {
+      page.consoleLogs = [];
+      page.on('console', (msg) => {
+        if (msg.text().includes(`${NAMESPACE__LOGGER}:`)) {
+          page.consoleLogs.push(msg.text().split(`${NAMESPACE__LOGGER}:`)[1]);
+        }
+      });
+    }
+    
     if (useWS) {
       page.wsMsgs = {};
       page.on('websocket', (ws) => {
@@ -61,6 +71,10 @@ export default class BaseFixture {
     
     const fileChooser = await fcPromise;
     await fileChooser.setFiles(filePath);
+  }
+  
+  clearLogs() {
+    this.fx.page.consoleLogs = [];
   }
   
   async closePage(pageNum) {
@@ -126,6 +140,17 @@ export default class BaseFixture {
       ? (str.startsWith('http')) ? str : `/${str}`
       : '';
     await this.fx.page.goto(route);
+  }
+  
+  async logDispatched(msg) {
+    await expect(async () => {
+      // Since the logs contain styling codes, I can only check that the log contains text, not exact.
+      const firstMatch = this.fx.page.consoleLogs.toReversed().find((m) => m.includes(msg));
+      await expect(firstMatch).toContain(msg);
+    }).toPass({
+      intervals: [100, 500, 1000, 2000],
+      timeout: 4000,
+    });
   }
   
   async readClipboard() {

@@ -143,19 +143,17 @@
   async function loadNotes() {
     try {
       await syncOfflineData($userData);
-    
-      setTimeout(() => {
-        // run highlight manually to make plugins kick in
-        window.Prism.highlightAll();
-        
-        log.info('Notes loaded and formatted');
-        
-        const { note, tag } = getParams(location.href);
-        if (note) loadNote(note);
-        else if (tag) loadTaggedNotes(tag);
-        
-        initialUserDataLoaded.set(true);
-      }, 0);
+      
+      // run highlight manually to make plugins kick in
+      window.Prism.highlightAll();
+      
+      log.info('Notes loaded and formatted');
+      
+      const { note, tag } = getParams(location.href);
+      if (note) loadNote(note);
+      else if (tag) loadTaggedNotes(tag);
+      
+      initialUserDataLoaded.set(true);
     }
     catch ({ message }) { alert(message); }
   }
@@ -210,9 +208,9 @@
   });
 </script>
 
-<div class="app">
+<div class="app" class:is--loaded={$initialUserDataLoaded}>
   {#if mounted}
-    {#if $userIsLoggedIn}
+    {#if $userIsLoggedIn && $initialUserDataLoaded}
       <nav class="top-nav">
         <div class="app__title">
           <a
@@ -260,17 +258,19 @@
     class:sw-actived={swActivated}
     class:sw-installing={swInstalling}
   >
-    {#if swError}
-      [SW] Error
-    {:else if swInstalling}
-      [SW] Installing
-    {:else if swActivated}
-      [SW] Activated
-    {:else if $offline}
-      Offline
-    {:else}
-      &nbsp;
-    {/if}
+    <div class="status-msg__txt">
+      {#if swError}
+        [SW] Error
+      {:else if swInstalling}
+        [SW] Installing
+      {:else if swActivated}
+        [SW] Activated
+      {:else if $offline}
+        Offline
+      {:else}
+        &nbsp;
+      {/if}
+    </div>
   </div>
 </div>
 <DeleteDialog />
@@ -426,23 +426,30 @@
   }
   
   .status-msg {
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+  }
+  .status-msg:not(:where(
+    .error,
+    .offline,
+    .sw-actived,
+    .sw-installing
+  )) {
+    display: none;
+  }
+  .status-msg__txt {
     padding: 0.25em 0.5em;
     border: dashed 1px #9a4900;
     border-radius: 0.5em;
     background: #ffc800;
-    position: fixed;
-    bottom: 0.5em;
-    right: 0.5em;
-    z-index: 50;
-    transition: transform 300ms;
-    transform: translateY(150%);
   }
-  .status-msg.offline,
-  .status-msg.sw-actived,
-  .status-msg.sw-installing {
-    transform: translateY(0%);
-  }
-  .status-msg.error {
+  .status-msg.error .status-msg__txt {
     color: yellow;
     font-weight: bold;
     text-shadow: 0px 2px 5px black;
@@ -461,6 +468,9 @@
     background: var(--color--app--bg);
     display: flex;
     flex-direction: column;
+  }
+  .app:not(.is--loaded) {
+    display: none;
   }
   
   .app__title {

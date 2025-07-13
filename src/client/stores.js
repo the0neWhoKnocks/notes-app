@@ -1,3 +1,4 @@
+import { tick } from 'svelte';
 import { get as getStoreValue, writable } from 'svelte/store';
 import {
   BASE_DATA_NODE,
@@ -234,10 +235,26 @@ export function logout() {
 }
 
 export function loadThemeCSS(theme) {
-  document.body.className = document.body.className.replace(/theme-[\w]+/, '');
-  if (theme) document.body.classList.add(`theme-${theme}`);
-  
-  document.getElementById('prismTheme').href = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.css`;
+  return new Promise((resolve) => {
+    const currEl = document.getElementById('prismTheme');
+    const newEl = document.createElement('link');
+    [...currEl.attributes].filter((attr) => attr.name !== 'href').forEach((attr) => {
+      newEl[attr.name] = attr.value;  
+    });
+    
+    const url = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.css`;
+    
+    newEl.addEventListener('load', () => {
+      document.body.className = document.body.className.replace(/theme-[\w]+/, '');
+      if (theme) document.body.classList.add(`theme-${theme}`);
+      resolve();
+    });
+    newEl.href = url;
+    // NOTE: Can't listen for the `load` state on a link element that's already
+    // loaded, regardless if the `href` was updated. So I have to replace the
+    // entire element with a 
+    currEl.parentNode.replaceChild(newEl, currEl);
+  });
 }
 
 export async function syncOfflineData(creds) {
@@ -262,7 +279,8 @@ export async function syncOfflineData(creds) {
       noteGroups.set(notesData);
       recentlyViewed.set(recent);
       userPreferences.set(preferences);
-      loadThemeCSS(preferences.theme);
+      await tick(); // ensure components have rendered changes
+      await loadThemeCSS(preferences.theme);
       
       // if (offlineChangesExist) {
       //   const diffs = diffData(serverData, offlineData.data);

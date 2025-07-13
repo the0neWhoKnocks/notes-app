@@ -159,7 +159,7 @@ test.describe('Notes', () => {
   
   test('Add Full Test Note', async ({ app }) => {
     await app.exec(`rm -rf ${PATH__DATA}/data_*`);
-    await app.loadPage('', true);
+    await app.loadPage();
     
     await note.clickAdd();
     
@@ -445,7 +445,7 @@ test.describe('Notes', () => {
       await app.screenshot('[draft] created from unsaved new note');
       
       // Ensure Draft data is being used in Search =============================
-      await app.loadPage('', true);
+      await app.loadPage();
       const results = await search.find(NOTE_TITLE);
       await expect(results).toHaveCount(1);
       await app.screenshot('[draft] data used in search results');

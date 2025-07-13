@@ -1,7 +1,4 @@
-import {
-  BASE_DATA_NODE,
-  NAMESPACE__LOGGER,
-} from '@src/constants';
+import { BASE_DATA_NODE } from '@src/constants';
 import BaseFixture, { createTest, expect } from './BaseFixture';
 
 export const CREDS__PASS = 'pass';
@@ -29,17 +26,6 @@ class AppFixture extends BaseFixture {
         }, state);
       },
     };
-    
-    page.consoleLogs = [];
-    page.on('console', (msg) => {
-      if (msg.text().includes(`${NAMESPACE__LOGGER}:`)) {
-        page.consoleLogs.push(msg.text().split(`${NAMESPACE__LOGGER}:`)[1]);
-      }
-    })
-  }
-  
-  clearLogs() {
-    this.fx.page.consoleLogs = [];
   }
   
   async clearStorage() {
@@ -158,30 +144,8 @@ class AppFixture extends BaseFixture {
   }
   
   async loadNotePage(noteName, parentPath = BASE_DATA_NODE) {
-    await this.loadPage(`?note=${encodeURIComponent(`${parentPath}/${noteName}`.toLowerCase().replaceAll(' ', '-'))}`, true);
+    await this.loadPage(`?note=${encodeURIComponent(`${parentPath}/${noteName}`.toLowerCase().replaceAll(' ', '-'))}`);
     await expect(this.getElBySelector('.full-note')).toHaveCount(1);
-  }
-  
-  async loadPage(str, waitForLoginCheck) {
-    if (waitForLoginCheck) this.clearLogs();
-    
-    await super.loadPage(str);
-    
-    if (waitForLoginCheck) {
-      await this.logDispatched('logged in');
-      await this.logDispatched('Notes loaded and formatted');
-    }
-  }
-  
-  async logDispatched(msg) {
-    await expect(async () => {
-      // Since the logs contain styling codes, I can only check that the log contains text, not exact.
-      const firstMatch = this.fx.page.consoleLogs.toReversed().find((m) => m.includes(msg));
-      await expect(firstMatch).toContain(msg);
-    }).toPass({
-      intervals: [100, 500, 1000, 2000],
-      timeout: 4000,
-    });
   }
   
   async logIn(opts) {
@@ -194,8 +158,6 @@ class AppFixture extends BaseFixture {
     
     const { overwrite, pass, screenshot, user, willFail = false } = opts;
     const textFn = (overwrite) ? 'fill' : 'type';
-    
-    this.clearLogs();
     
     let dialog = await this.waitForDialog(SELECTOR__LOGIN_FORM);
     await dialog.locator('[name="username"]')[textFn](user);
@@ -222,8 +184,7 @@ class AppFixture extends BaseFixture {
       await uResp;
       console.log(`${LOG_PREFIX} User data response recieved`);
       await expect(dialog).not.toBeAttached();
-      await expect(this.getElBySelector('.user-nav .username')).toContainText(CREDS__USER);
-      await this.logDispatched('Notes loaded and formatted');
+      await expect(this.getElBySelector('.app')).toContainClass('is--loaded');
     }
     
     return dialog;

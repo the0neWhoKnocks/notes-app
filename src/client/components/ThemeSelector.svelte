@@ -19,8 +19,8 @@
   
   function handleThemeSelect({ target: { value } }) {
     if (value !== undefined) {
-      loadThemeCSS(value);
       userPreferences.setPreference('theme', value);
+      loadThemeCSS(value);
     }
   }
 </script>
