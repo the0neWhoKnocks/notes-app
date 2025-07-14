@@ -1,4 +1,10 @@
-import { BASE_DATA_NODE } from '@src/constants';
+import {
+  BASE_DATA_NODE,
+  DATA_ACTION__EDIT,
+  DATA_ACTION__IMPORT,
+  DATA_TYPE__ALL,
+  DATA_TYPE__PREFS,
+} from '@src/constants';
 import {
   CREDS__PASS,
   CREDS__USER,
@@ -390,7 +396,7 @@ test.describe('Notes', () => {
     
     await expect(app.getElBySelector(SELECTOR__START_MSG)).toBeAttached();
     
-    await app.waitForDataUpdate({ action: 'importData', type: 'all' }, async () => {
+    await app.waitForDataUpdate({ action: DATA_ACTION__IMPORT, type: DATA_TYPE__ALL }, async () => {
       await app.chooseFile(backupFilePath, async () => {
         await userBtn.click();
         await app.getElBySelector('.user-nav :text-is("Import")').click();
@@ -408,7 +414,7 @@ test.describe('Notes', () => {
     const opts = await app.getElBySelector('.theme-opt:not(.current)').all();
     for (const opt of opts) {
       const theme = await opt.getAttribute('value');
-      await app.waitForDataUpdate({ action: 'edit', type: 'preferences' }, async () => {
+      await app.waitForDataUpdate({ action: DATA_ACTION__EDIT, type: DATA_TYPE__PREFS }, async () => {
         await opt.click();
       });
       await expect(app.getElBySelector(`body.theme-${theme}`)).toHaveCount(1);

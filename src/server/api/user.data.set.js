@@ -1,3 +1,8 @@
+const { 
+  DATA_ACTION__ADD,
+  DATA_ACTION__EDIT,
+  DATA_TYPE__NOTE,
+} = require('../../constants');
 const { writeFile } = require('fs');
 const log = require('../../utils/logger')('api.user.data.set');
 const { getNoteNode } = require('../../utils/dataNodeUtils');
@@ -37,13 +42,13 @@ module.exports = async function setData(req, res) {
     log.info(logMsg);
     
     if (
-      type === 'note'
+      type === DATA_TYPE__NOTE
       && (
-        action === 'add'
-        || action === 'edit'
+        action === DATA_ACTION__ADD
+        || action === DATA_ACTION__EDIT
       )
     ) {
-      const nPath = (action === 'add') ? `${reqBody.path}/${nodeId}` : reqBody.path;
+      const nPath = (action === DATA_ACTION__ADD) ? `${reqBody.path}/${nodeId}` : reqBody.path;
       const { note } = getNoteNode(data.notesData, nPath);
       res.json({ ...data, newData: note, newPath: nPath });
     }

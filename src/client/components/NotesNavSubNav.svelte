@@ -1,5 +1,9 @@
 <script>
-  import { BASE_DATA_NODE } from '../../constants';
+  import {
+    BASE_DATA_NODE,
+    DATA_ACTION__ADD,
+    DATA_TYPE__GROUP,
+  } from '../../constants';
   import logger from '../../utils/logger';
   import {
     dialogDataForGroup,
@@ -15,18 +19,18 @@
   export let id = undefined;
   export let path = BASE_DATA_NODE;
   export let root = false;
-  export let type = 'group';
+  export let type = DATA_TYPE__GROUP;
   
   const log = logger('NotesNavSubNav');
   
   function addGroup() {
     log.info(`ADD: Group in "${path}"`);
-    dialogDataForGroup.set({ action: 'add', path });
+    dialogDataForGroup.set({ action: DATA_ACTION__ADD, path });
   }
   
   function addNote() {
     log.info(`ADD: Note in "${path}"`);
-    dialogDataForNote.set({ action: 'add', path });
+    dialogDataForNote.set({ action: DATA_ACTION__ADD, path });
   }
 </script>
 
@@ -34,7 +38,7 @@
   {#if !root}
     <ModifyNav {draft} {id} {path} {type} />
   {/if}
-  {#if type === 'group'}
+  {#if type === DATA_TYPE__GROUP}
     <button
       title="Add Group"
       on:click={addGroup}

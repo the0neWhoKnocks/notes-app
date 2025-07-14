@@ -1,5 +1,9 @@
 <script>
-  import { BASE_DATA_NODE } from '../../constants';
+  import {
+    BASE_DATA_NODE,
+    DATA_ACTION__DELETE,
+    DATA_TYPE__GROUP,
+  } from '../../constants';
   import parsePath from '../../utils/parsePath';
   import {
     deleteNoteData,
@@ -33,7 +37,7 @@
   $: if ($dialogDataForDelete) {
     const { path, type } = $dialogDataForDelete;
     
-    if (type === 'group') {
+    if (type === DATA_TYPE__GROUP) {
       groupPath = (path.replace(BASE_DATA_NODE, '') || '/');
     }
     else {
@@ -56,7 +60,7 @@
     >
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value="delete" />
+      <input type="hidden" name="action" value={DATA_ACTION__DELETE} />
       <input type="hidden" name="id" value={$dialogDataForDelete.id} />
       <input type="hidden" name="path" value={$dialogDataForDelete.path} />
       <input type="hidden" name="type" value={$dialogDataForDelete.type} />

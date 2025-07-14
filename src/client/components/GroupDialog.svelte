@@ -1,5 +1,9 @@
 <script>
   import {
+    DATA_ACTION__EDIT,
+    DATA_TYPE__GROUP,
+  } from '../../constants';
+  import {
     dialogDataForGroup,
     setUserData,
     userData,
@@ -37,7 +41,7 @@
   }
   
   $: if ($dialogDataForGroup) {
-    editingGroup = $dialogDataForGroup.action === 'edit';
+    editingGroup = $dialogDataForGroup.action === DATA_ACTION__EDIT;
     saveBtnDisabled = editingGroup;
   }
 </script>
@@ -60,7 +64,7 @@
       <input type="hidden" name="password" value={$userData.password} />
       <input type="hidden" name="action" value={$dialogDataForGroup.action} />
       <input type="hidden" name="path" value={$dialogDataForGroup.path} />
-      <input type="hidden" name="type" value="group" />
+      <input type="hidden" name="type" value={DATA_TYPE__GROUP} />
       
       <GroupNoteNameInput
         editing={editingGroup}

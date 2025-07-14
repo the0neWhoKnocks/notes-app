@@ -1,4 +1,7 @@
-const { BASE_DATA_NODE } = require('../../constants');
+const {
+  BASE_DATA_NODE,
+  DATA_TYPE__NOTE,
+} = require('../../constants');
 
 const tallyGroupNotes = (group) => {
   let count = 0;
@@ -61,7 +64,7 @@ module.exports = function transformNoteData(
           name: noteRef.title,
           nameComponent: itemComponent,
           path,
-          type: 'note',
+          type: DATA_TYPE__NOTE,
         });
       }
     }

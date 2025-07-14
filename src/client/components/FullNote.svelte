@@ -1,6 +1,9 @@
 <script>
   import { beforeUpdate } from 'svelte';
-  import { PRISMAJS__COPY_TEXT } from '../../constants';
+  import {
+    DATA_TYPE__NOTE,
+    PRISMAJS__COPY_TEXT,
+  } from '../../constants';
   import {
     currentNote,
     recentlyViewedOpen,
@@ -52,7 +55,7 @@
           draft={$currentNote.draft}
           id={$currentNote.id}
           path={$currentNote.path}
-          type="note"
+          type={DATA_TYPE__NOTE}
         />
         <button on:click={handlePrintClick} title="Print Note">
           <Icon type="{ICON__PRINT}" />

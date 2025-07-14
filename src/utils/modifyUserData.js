@@ -1,7 +1,20 @@
 // NOTE: Since this file is used by the SW as well as the Server, NodeJS built-ins
 // can't be utilized (since WP may package up a huge chunk of code).
 
-const { BASE_DATA_NODE } = require('../constants');
+const {
+  BASE_DATA_NODE,
+  DATA_ACTION__ADD,
+  DATA_ACTION__APPLY_OFFLINE_CHANGES,
+  DATA_ACTION__DELETE,
+  DATA_ACTION__EDIT,
+  DATA_ACTION__IMPORT,
+  DATA_ACTION__MOVE,
+  DATA_TYPE__ALL,
+  DATA_TYPE__GROUP,
+  DATA_TYPE__NOTE,
+  DATA_TYPE__PREFS,
+  DATA_TYPE__RECENT,
+} = require('../constants');
 const groupNodeShape = require('../utils/groupNodeShape');
 const parseTags = require('../utils/parseTags');
 const { getGroupNode, getNoteNode } = require('./dataNodeUtils');
@@ -128,7 +141,7 @@ function updateRecentlyViewed({
 }) {
   let updated = [...recent];
   
-  if (type === 'group') {
+  if (type === DATA_TYPE__GROUP) {
     const _path = deletePath || oldParentPath;
     
     iterateData(notesData, _path, ({ note, noteId }) => {
@@ -205,37 +218,37 @@ module.exports = async function modifyUserData({
     
     if (!action) return { error: { code: 400, msg: 'Missing `action`' } };
     else if (![
-      'add', 
-      'applyOfflineChanges', 
-      'edit', 
-      'delete',
-      'importData',
-      'move',
+      DATA_ACTION__ADD,
+      DATA_ACTION__APPLY_OFFLINE_CHANGES,
+      DATA_ACTION__DELETE,
+      DATA_ACTION__EDIT,
+      DATA_ACTION__IMPORT,
+      DATA_ACTION__MOVE,
     ].includes(action)) return { error: { code: 400, msg: `The \`action\` "${action}" is unknown` } };
     else if (!type) return { error: { code: 400, msg: 'Missing `type`' } };
     else if (!username && !password) return { error: { code: 400, msg: 'Missing `username` and `password`' } };
     else if (!username) return { error: { code: 400, msg: 'Missing `username`' } };
     else if (!password) return { error: { code: 400, msg: 'Missing `password`' } };
     else if (![
-      'all',
-      'group', 
-      'note',
-      'preferences',
-      'recentlyViewed',
+      DATA_TYPE__ALL,
+      DATA_TYPE__GROUP,
+      DATA_TYPE__NOTE,
+      DATA_TYPE__PREFS,
+      DATA_TYPE__RECENT,
     ].includes(type)) return { error: { code: 400, msg: `The \`type\` "${type}" is unknown` } };
-    else if (type === 'note') {
+    else if (type === DATA_TYPE__NOTE) {
       let required = ['path', 'title'];
       
       switch (action) {
-        case 'edit': {
+        case DATA_ACTION__EDIT: {
           required.push('oldTitle');
           break;
         }
-        case 'delete': {
+        case DATA_ACTION__DELETE: {
           required = ['id', 'path'];
           break;
         }
-        case 'move': {
+        case DATA_ACTION__MOVE: {
           required = ['id', 'oldParentPath', 'newParentPath', 'type'];
           break;
         }
@@ -243,19 +256,19 @@ module.exports = async function modifyUserData({
       
       missingRequiredItems = getMissingRequiredItems(required, reqBody);
     }
-    else if (type === 'group') {
+    else if (type === DATA_TYPE__GROUP) {
       let required = ['path', 'name'];
       
       switch (action) {
-        case 'edit': {
+        case DATA_ACTION__EDIT: {
           required.push('oldName');
           break;
         }
-        case 'delete': {
+        case DATA_ACTION__DELETE: {
           required = ['id', 'path'];
           break;
         }
-        case 'move': {
+        case DATA_ACTION__MOVE: {
           required = ['id', 'oldParentPath', 'newParentPath', 'type'];
           break;
         }
@@ -263,11 +276,11 @@ module.exports = async function modifyUserData({
       
       missingRequiredItems = getMissingRequiredItems(required, reqBody);
     }
-    else if (type === 'preferences') {
+    else if (type === DATA_TYPE__PREFS) {
       const required = ['prefs'];
       missingRequiredItems = getMissingRequiredItems(required, reqBody);
     }
-    else if (type === 'all') {
+    else if (type === DATA_TYPE__ALL) {
       const required = ['?importedData?', '?offlineChanges?'];
       missingRequiredItems = getMissingRequiredItems(required, reqBody);
     }
@@ -280,10 +293,10 @@ module.exports = async function modifyUserData({
     let logMsg = 'Data set';
     
     switch (action) {
-      case 'add': {
+      case DATA_ACTION__ADD: {
         const creationDate = Date.now();
         
-        if (type === 'note') {
+        if (type === DATA_TYPE__NOTE) {
           const { notes } = getNoteNode(notesData, `${path}/${id}`);
           nodeId = kebabCase(title);
           
@@ -304,7 +317,7 @@ module.exports = async function modifyUserData({
           }
           else return { error: { code: 400, msg: `Note with title "${title}" already exists in "${path}"` } };
         }
-        else if (type === 'group') {
+        else if (type === DATA_TYPE__GROUP) {
           const { groups } = getGroupNode(notesData, path);
           nodeId = kebabCase(name);
           
@@ -322,8 +335,8 @@ module.exports = async function modifyUserData({
         
         break;
       }
-      case 'edit': {
-        if (type === 'note') {
+      case DATA_ACTION__EDIT: {
+        if (type === DATA_TYPE__NOTE) {
           const { rawPrefix: groupPath } = parsePath(path);
           const { note, notes } = getNoteNode(notesData, path);
           const oldNote = { ...note };
@@ -386,7 +399,7 @@ module.exports = async function modifyUserData({
           
           allTags = compileTags(notesData);
         }
-        else if (type === 'group') {
+        else if (type === DATA_TYPE__GROUP) {
           const { rawPrefix: parentPath } = parsePath(path)
           const { groups } = getGroupNode(notesData, parentPath);
           nodeId = kebabCase(oldName);
@@ -421,7 +434,7 @@ module.exports = async function modifyUserData({
           
           logMsg = `Renamed group from "${oldName}" to "${name}" in "${parentPath}"`;
         }
-        else if (type === 'preferences') {
+        else if (type === DATA_TYPE__PREFS) {
           data.preferences = {
             ...data.preferences,
             ...prefs,
@@ -429,16 +442,16 @@ module.exports = async function modifyUserData({
           
           logMsg = `Updated preferences for ${Object.keys(prefs).map(pref => `"${pref}"`).join(', ')}`;
         }
-        else if (type === 'recentlyViewed') {
+        else if (type === DATA_TYPE__RECENT) {
           data.recentlyViewed = recent;
           logMsg = 'Updated recentlyViewed';
         }
         
         break;
       }
-      case 'delete': {
+      case DATA_ACTION__DELETE: {
         const { rawPrefix: parentPath } = parsePath(path);
-        const nodeItems = (type === 'group')
+        const nodeItems = (type === DATA_TYPE__GROUP)
           ? getGroupNode(notesData, parentPath).groups
           : getNoteNode(notesData, path).notes;
         
@@ -458,7 +471,7 @@ module.exports = async function modifyUserData({
         
         break;
       }
-      case 'applyOfflineChanges': {
+      case DATA_ACTION__APPLY_OFFLINE_CHANGES: {
         try {
           const msgLines = [];
           
@@ -555,15 +568,15 @@ module.exports = async function modifyUserData({
         
         break;
       }
-      case 'importData': {
+      case DATA_ACTION__IMPORT: {
         return finalizeData(
           importedData.data,
           `Imported data for "${username}"`
         );
       }
-      case 'move': {
+      case DATA_ACTION__MOVE: {
         let oldNodeItems, newNodeItems;
-        if (type === 'group') {
+        if (type === DATA_TYPE__GROUP) {
           oldNodeItems = getGroupNode(notesData, oldParentPath).groups;
           newNodeItems = getGroupNode(notesData, newParentPath).groups;
         }

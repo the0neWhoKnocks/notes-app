@@ -1,5 +1,9 @@
 <script>
   import {
+    DATA_ACTION__IMPORT,
+    DATA_TYPE__ALL,
+  } from '../../constants';
+  import {
     setUserData,
     userData,
     userNavOpen,
@@ -15,9 +19,9 @@
       if (data) {
         await setUserData({
           ...$userData,
-          action: 'importData',
+          action: DATA_ACTION__IMPORT,
           importedData: data,
-          type: 'all',
+          type: DATA_TYPE__ALL,
         });
       }
     }

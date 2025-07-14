@@ -1,5 +1,10 @@
 <script>
   import {
+    DATA_ACTION__APPLY_OFFLINE_CHANGES,
+    DATA_TYPE__ALL,
+    DATA_TYPE__PREFS,
+  } from '../../constants';
+  import {
     dialogDataForDiff,
     setUserData,
     userData,
@@ -101,8 +106,8 @@
     >
       <input type="hidden" name="username" value={$userData.username} />
       <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value="applyOfflineChanges" />
-      <input type="hidden" name="type" value="all" />
+      <input type="hidden" name="action" value={DATA_ACTION__APPLY_OFFLINE_CHANGES} />
+      <input type="hidden" name="type" value={DATA_TYPE__ALL} />
       
       Looks like you made some changes while you were offline.
       <ul>
@@ -118,7 +123,7 @@
         )}
           <div class="diff-form__section">
             <header>Preferences</header>
-            <Diffs diffs={$dialogDataForDiff.prefsDiff} type="preferences" />
+            <Diffs diffs={$dialogDataForDiff.prefsDiff} type={DATA_TYPE__PREFS} />
           </div>
         {/if}
         {#if (

@@ -1,5 +1,9 @@
 <script>
-  import { BASE_DATA_NODE } from '../../constants';
+  import {
+    BASE_DATA_NODE,
+    DATA_TYPE__GROUP,
+    DATA_TYPE__NOTE,
+  } from '../../constants';
   import {
     allTags,
     noteGroups,
@@ -35,7 +39,7 @@
         if (groupId.toLowerCase().includes(query)) {
           const title = group.groupName.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>');
           matches.groups.push({
-            type: 'group',
+            type: DATA_TYPE__GROUP,
             path: _path,
             subTitle: _path.replace(BASE_DATA_NODE, ''),
             title,
@@ -55,7 +59,7 @@
         if (matchedTitle || matchedContent) {
           const _path = `${path}/${noteId}`;
           const obj = {
-            type: 'note',
+            type: DATA_TYPE__NOTE,
             path: _path,
             subTitle: _path.replace(BASE_DATA_NODE, ''),
           };

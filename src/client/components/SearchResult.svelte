@@ -1,5 +1,9 @@
 <script>
   import {
+    DATA_TYPE__GROUP,
+    DATA_TYPE__NOTE,
+  } from '../../constants';
+  import {
     loadNote,
     loadTaggedNotes,
   } from '../stores';
@@ -17,20 +21,20 @@
   export let type = undefined;
   
   function handleClick() {
-    if (type === 'note') loadNote(path);
+    if (type === DATA_TYPE__NOTE) loadNote(path);
     else loadTaggedNotes(tag);
   }
 </script>
 
 <button
   class="search-result"
-  disabled={type === 'group'}
+  disabled={type === DATA_TYPE__GROUP}
   data-path={path}
   data-tag={tag}
   on:click={handleClick}
 >
   <div class="search-result__header">
-    {#if type === 'group'}
+    {#if type === DATA_TYPE__GROUP}
       <Icon type={ICON__FOLDER} />
     {:else if type === 'tag'}
       <NoteTag rounded text="&nbsp;" />

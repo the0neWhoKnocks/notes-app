@@ -2,6 +2,11 @@ import { tick } from 'svelte';
 import { get as getStoreValue, writable } from 'svelte/store';
 import {
   BASE_DATA_NODE,
+  DATA_ACTION__EDIT,
+  DATA_ACTION__MOVE,
+  DATA_TYPE__GROUP,
+  DATA_TYPE__PREFS,
+  DATA_TYPE__RECENT,
   NAMESPACE__STORAGE__USER,
   ROUTE__API__USER__DATA__GET,
   ROUTE__API__USER__DATA__SET,
@@ -115,9 +120,9 @@ export const currentNote = (function curentNoteStore() {
         if (changed) {
           await setUserData({
             ...getStoreValue(userData),
-            action: 'edit',
+            action: DATA_ACTION__EDIT,
             recent,
-            type: 'recentlyViewed',
+            type: DATA_TYPE__RECENT,
           });
         }
       }
@@ -127,11 +132,11 @@ export const currentNote = (function curentNoteStore() {
 
 export function editItem({ id, path, type } = {}) {
   const _noteGroups = getStoreValue(noteGroups);
-  const base = { action: 'edit', path };
+  const base = { action: DATA_ACTION__EDIT, path };
   
   log.info(`Edit ${type} "${id}"`);
   
-  if (type === 'group') {
+  if (type === DATA_TYPE__GROUP) {
     const { groupName } = getGroupNode(_noteGroups, path).group;
     dialogDataForGroup.set({ ...base, id, name: groupName });
   }
@@ -155,7 +160,7 @@ export function deleteItem({ id, path, type } = {}) {
   const _noteGroups = getStoreValue(noteGroups);
   let groupName, title;
   
-  if (type === 'group') {
+  if (type === DATA_TYPE__GROUP) {
     ({ groupName, title } = getGroupNode(_noteGroups, path).group);
   }
   else {
@@ -179,9 +184,9 @@ export const userPreferences = (function createPrefsStore() {
       try {
         await setUserData({
           ...getStoreValue(userData),
-          action: 'edit',
+          action: DATA_ACTION__EDIT,
           prefs: { [prop]: value },
-          type: 'preferences',
+          type: DATA_TYPE__PREFS,
         });
       }
       catch ({ message }) { alert(`Error saving preference for "${prop}"\n${message}`); }
@@ -437,7 +442,7 @@ export async function updateItemPath(payload) {
     await setUserData({
       ...getStoreValue(userData),
       ...payload,
-      action: 'move',
+      action: DATA_ACTION__MOVE,
     });
     
     // If a Note is open, update the URL
@@ -462,7 +467,7 @@ export async function deleteNoteData(data) {
   await setUserData(data);
   
   if (
-    type === 'group'
+    type === DATA_TYPE__GROUP
     && cN
     && cN.path.startsWith(`${path}/${id}/`)
   ) {

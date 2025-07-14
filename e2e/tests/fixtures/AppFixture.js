@@ -1,4 +1,9 @@
-import { BASE_DATA_NODE } from '@src/constants';
+import {
+  BASE_DATA_NODE,
+  DATA_ACTION__DELETE,
+  DATA_ACTION__MOVE,
+  DATA_TYPE__GROUP,
+} from '@src/constants';
 import BaseFixture, { createTest, expect } from './BaseFixture';
 
 export const CREDS__PASS = 'pass';
@@ -75,8 +80,8 @@ class AppFixture extends BaseFixture {
   }
   
   async getItemNav(type, selector, itemName) {
-    const labelSelector = type === 'group' ? '.group__name-text' : '.item__label-text';
-    const parentSelector = type === 'group' ? '.group' : '.item';
+    const labelSelector = type === DATA_TYPE__GROUP ? '.group__name-text' : '.item__label-text';
+    const parentSelector = type === DATA_TYPE__GROUP ? '.group' : '.item';
     const _selector = `${selector} ${labelSelector}`;
     const label = this.getElBySelector(`${selector} ${labelSelector}:text-is("${itemName}")`);
     let subNav;
@@ -104,7 +109,7 @@ class AppFixture extends BaseFixture {
               && req.method() === 'POST'
               && req.url().includes('/api/user/data/set')
             ) {
-              return req.postDataJSON().action === 'delete';
+              return req.postDataJSON().action === DATA_ACTION__DELETE;
             }
           });
           
@@ -123,7 +128,7 @@ class AppFixture extends BaseFixture {
               && req.method() === 'POST'
               && req.url().includes('/api/user/data/set')
             ) {
-              return req.postDataJSON().action === 'move';
+              return req.postDataJSON().action === DATA_ACTION__MOVE;
             }
           });
           

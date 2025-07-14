@@ -1,6 +1,11 @@
 <script>
   import { tick } from 'svelte';
-  import { PRISMAJS__COPY_TEXT } from '../../constants';
+  import {
+    DATA_ACTION__ADD,
+    DATA_ACTION__EDIT,
+    DATA_TYPE__NOTE,
+    PRISMAJS__COPY_TEXT,
+  } from '../../constants';
   import { getNoteNode } from '../../utils/dataNodeUtils';
   import kebabCase from '../../utils/kebabCase';
   const serializeForm = require('../utils/serializeForm');
@@ -265,7 +270,7 @@
       const { id, note } = getNoteNode($noteGroups, payload.path);
       
       if (!note.title) {
-        return deleteItem({ id, path: payload.path, type: 'note' });
+        return deleteItem({ id, path: payload.path, type: DATA_TYPE__NOTE });
       }
     }
     
@@ -293,8 +298,8 @@
         // 'add' means they were creating a new note, switched tabs, and a draft
         // was saved, so now it should switch to 'edit' since adding the same note
         // isn't allowed.
-        if (action === 'add') {
-          editItem({ id: noteId, path: newPath, type: 'note' });
+        if (action === DATA_ACTION__ADD) {
+          editItem({ id: noteId, path: newPath, type: DATA_TYPE__NOTE });
         }
       }
     }
@@ -777,7 +782,7 @@
     tags = _tags;
     oldTags = (_tags || []).join(', ');
     titleValue = title;
-    editingNote = action === 'edit';
+    editingNote = action === DATA_ACTION__EDIT;
     saveBtnDisabled = editingNote;
     contentText = content || '';
     
@@ -838,7 +843,7 @@
       <input type="hidden" name="password" value={$userData.password} />
       <input type="hidden" name="action" value={$dialogDataForNote.action} />
       <input type="hidden" name="path" value={$dialogDataForNote.path} />
-      <input type="hidden" name="type" value="note" />
+      <input type="hidden" name="type" value={DATA_TYPE__NOTE} />
       
       <GroupNoteNameInput
         editing={editingNote}
