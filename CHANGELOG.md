@@ -1,6 +1,20 @@
 # Changelog
 ---
 
+## v2.0.0
+
+<details>
+  <summary>Expand for v2.0.0 Details</summary>
+
+  **Bugfixes**
+  - [262b6f8](/the0neWhoKnocks/notes-app/commit/262b6f8): Setting preferences is slow
+
+  **Dev-Ops**
+  - [3153cf2](/the0neWhoKnocks/notes-app/commit/3153cf2): Switch all 'action' and 'type' vars to constants
+</details>
+
+---
+
 ## v1.14.0
 
 <details>
