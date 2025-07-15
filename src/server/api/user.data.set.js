@@ -3,13 +3,11 @@ const {
   DATA_ACTION__EDIT,
   DATA_TYPE__NOTE,
 } = require('../../constants');
-const { writeFile } = require('fs');
 const log = require('../../utils/logger')('api.user.data.set');
 const { getNoteNode } = require('../../utils/dataNodeUtils');
 const modifyUserData = require('../../utils/modifyUserData');
-const encrypt = require('../utils/encrypt');
-const getUserDataPath = require('../utils/getUserDataPath');
 const loadUserData = require('../utils/loadUserData');
+const saveUserData = require('../utils/saveUserData');
 
 module.exports = async function setData(req, res) {
   const { appConfig, body: reqBody } = req;
@@ -17,9 +15,8 @@ module.exports = async function setData(req, res) {
   
   const { data, error, logMsg, nodeId } = await modifyUserData({
     loadCurrentData: async () => {
-      return await loadUserData(appConfig, username, password);
+      return await loadUserData(appConfig, username, password, type);
     },
-    logMsg: 'Data set',
     reqBody,
   });
   
@@ -28,19 +25,11 @@ module.exports = async function setData(req, res) {
     return res.error(code, msg);
   }
   
-  const { valueHex: encryptedUsername } = await encrypt(appConfig, username);
-  const filePath = getUserDataPath(encryptedUsername);
-  const { combined: encryptedData } = (await encrypt(appConfig, data, password));
-  
-  writeFile(filePath, JSON.stringify(encryptedData, null, 2), 'utf8', (err) => {
-    if (err) {
-      const msg = `Error writing data to "${filePath}"\n${err.stack}`;
-      log.error(msg);
-      return res.error(500, msg);
-    }
-  
-    log.info(logMsg);
+  try {
+    await saveUserData({ appConfig, data, password, type, username });
     
+    log.info(logMsg);
+  
     if (
       type === DATA_TYPE__NOTE
       && (
@@ -55,5 +44,8 @@ module.exports = async function setData(req, res) {
     else {
       res.json({ ...data });
     }
-  });
+  }
+  catch (err) {
+    res.error(500, err);
+  }
 }

@@ -61,7 +61,7 @@
           loginPassword = password;
           closeCreateAccount();
         })
-        .catch(({ error }) => { alert(error); });
+        .catch(({ message }) => { alert(message); });
     }
     else {
       alert("Your passwords don't match");

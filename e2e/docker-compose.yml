@@ -35,6 +35,7 @@ services:
         condition: service_healthy
     environment:
       BASE_URL: "https://tests.lan:3000" # <PROTOCOL>://<CONTAINER_NAME>:<CONTAINER_PORT>
+      DATA_PATH: /e2e/mnt/data # so that `constants.js` paths resolve correctly
       DISPLAY: $TEST_DISPLAY
     hostname: e2etests
     ipc: host # Using `--ipc=host` is recommended when using Chrome (Docker docs). Chrome can run out of memory without this flag.
@@ -47,5 +48,6 @@ services:
       - "${PWD}/certs:/certs:r"
       - "${PWD}/e2e:/e2e"
       - "${PWD}/src/constants.js:/node_modules/@src/constants.js:r" # map local modules to the fake `@src` parent
+      - "${PWD}/src/server/utils/encrypt.js:/node_modules/@src/server/utils/encrypt.js:r" # map local modules to the fake `@src` parent
       - $VOL_DBUS
       - $VOL_X11

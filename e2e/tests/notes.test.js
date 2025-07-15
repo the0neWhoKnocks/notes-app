@@ -1,19 +1,25 @@
+import { existsSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import {
   BASE_DATA_NODE,
   DATA_ACTION__EDIT,
   DATA_ACTION__IMPORT,
   DATA_TYPE__ALL,
   DATA_TYPE__PREFS,
+  PATH__CONFIG,
+  PATH__DATA,
 } from '@src/constants';
+import encrypt from '@src/server/utils/encrypt';
 import {
   CREDS__PASS,
   CREDS__USER,
-  PATH__DATA,
   expect,
   test,
 } from './fixtures/AppFixture';
 
 const SELECTOR__FLYOUT__CLOSE_BTN = '.flyout__close-btn';
+const SELECTOR__FULLNOTE__CONTENT = '.full-note__body';
+const SELECTOR__FULLNOTE__TITLE = '.full-note header';
 const SELECTOR__START_MSG = '.start-msg';
 
 test.describe.configure({ mode: 'serial' }); // Required to stop tests on failure.
@@ -54,6 +60,14 @@ test.describe('Init', () => {
     });
   });
   
+  test("Don't Create the Same User Twice", async ({ app }) => {
+    await app.loadPage();
+    await app.createUser({
+      user: CREDS__USER, pass: CREDS__PASS,
+      errorMsg: `User "${CREDS__USER}" already exists`,
+    });
+  });
+  
   test('Display Message When No Notes Exist', async ({ app }) => {
     await app.loadPage();
     await app.logIn();
@@ -66,10 +80,56 @@ test.describe('Init', () => {
   });
 });
 
+test('Migrate Data to New Schema', async ({ app }) => {
+  // Ensure base files are generated ===========================================
+  await app.loadPage();
+  await app.logIn();
+  
+  // Generate 1.0.0 file =======================================================
+  const NOTE_TITLE = 'Old Format';
+  const NOTE_ID = 'old-format';
+  const NOTE_CONTENT = 'Old content, blah blah blah.';
+  const [ userFolder ] = await app.getUserDataFolders();
+  const [ , uid ] = userFolder.split('user_');
+  const data = {
+    allTags: {},
+    notesData: {
+      [BASE_DATA_NODE]: {
+        groups: {},
+        notes: {
+          [NOTE_ID]: {
+            content: NOTE_CONTENT,
+            created: 1642016304599,
+            tags: [],
+            title: NOTE_TITLE,
+          }
+        },
+      },
+    },
+    preferences: { theme: 'twilight' },
+    recentlyViewed: [],
+  };
+  const filePath = `${PATH__DATA}/data_${uid}.json`;
+  const config = JSON.parse(await readFile(PATH__CONFIG, 'utf8'));
+  const { combined: encryptedData } = await encrypt(config, data, CREDS__PASS);
+  await writeFile(filePath, JSON.stringify(encryptedData), 'utf8');
+  await expect(existsSync(filePath)).toBeTruthy();
+  await app.deleteUserData();
+  
+  await app.loadNotePage(NOTE_TITLE);
+  await expect(app.getElBySelector('.app')).toContainClass('is--loaded');
+  await expect(existsSync(filePath)).toBeFalsy();
+  await expect(existsSync(`${filePath}.bak`)).toBeTruthy();
+  await expect(existsSync(`${PATH__DATA}/${userFolder}`)).toBeTruthy();
+  await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+  await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+  await app.screenshot('old data migrated');
+});
+
 test.describe('Notes', () => {
   const GROUP_NAME = 'Test Group';
   const NOTE_NAME = 'Full Test Note';
-  let note, notesBtn, search, searchBtn, themeBtn, userBtn;
+  let note, notesBtn, search, searchBtn, themeBtn;
   let cancelBtn, content, deleteDraftBtn, form, saveBtn, title, toolbar,
     wysiwygBoldBtn, wysiwygCodeBlockBtn, wysiwygCodeBtn, wysiwygHRBtn,
     wysiwygIndentBtn, wysiwygItalicBtn, wysiwygLinkBtn, wysiwygOLBtn,
@@ -110,7 +170,6 @@ test.describe('Notes', () => {
     notesBtn = app.getElBySelector('.top-nav .notes-menu-btn');
     searchBtn = app.getElBySelector('.top-nav .search-btn');
     themeBtn = app.getElBySelector('.top-nav :text-is("Theme")');
-    userBtn = app.getElBySelector('.top-nav .user-nav .drop-down__toggle');
     
     note = {
       async clickAdd() {
@@ -164,7 +223,7 @@ test.describe('Notes', () => {
   });
   
   test('Add Full Test Note', async ({ app }) => {
-    await app.exec(`rm -rf ${PATH__DATA}/data_*`);
+    await app.deleteUserData();
     await app.loadPage();
     
     await note.clickAdd();
@@ -388,17 +447,17 @@ test.describe('Notes', () => {
   
   test('Export and Import User Data', async ({ app }) => {
     const backupFilePath = await app.downloadFile(async () => {
-      await userBtn.click();
+      await app.getUserBtn().click();
       await app.getElBySelector('.user-nav :text-is("Export")').click();
     });
     
-    await app.deleteUserData();
+    await app.deleteUserData(true);
     
     await expect(app.getElBySelector(SELECTOR__START_MSG)).toBeAttached();
     
     await app.waitForDataUpdate({ action: DATA_ACTION__IMPORT, type: DATA_TYPE__ALL }, async () => {
       await app.chooseFile(backupFilePath, async () => {
-        await userBtn.click();
+        await app.getUserBtn().click();
         await app.getElBySelector('.user-nav :text-is("Import")').click();
       });
     });
@@ -433,7 +492,7 @@ test.describe('Notes', () => {
       const NOTE_ID = 'draft-note'
       const NOTE_CONTENT = 'asdf asdf asdf asdf asdf sadf';
       
-      // await app.exec(`rm -rf ${PATH__DATA}/data_*`); // NOTE: uncomment when tweaking test to get past partially created data
+      // await app.deleteUserData(true); // NOTE: uncomment when tweaking test to get past partially created data
       
       // Create and start filling out note =====================================
       await note.clickAdd();
@@ -458,8 +517,8 @@ test.describe('Notes', () => {
       
       // Load and verify note from Search ======================================
       await app.getElBySelector(`.search-result[data-path="${BASE_DATA_NODE}/${NOTE_ID}"]`).click();
-      await expect(app.getElBySelector('.full-note header')).toContainText(NOTE_TITLE);
-      await expect(app.getElBySelector('.full-note__body')).toContainText(NOTE_CONTENT);
+      await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+      await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
       await app.screenshot('[draft] content used in note view');
       
       // Delete draft and verify it's deletion =================================
@@ -483,8 +542,8 @@ test.describe('Notes', () => {
       await saveBtn.click();
       await app.getElBySelector(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
       await expect(app.getElBySelector('.flyout')).toBeHidden();
-      await expect(app.getElBySelector('.full-note header')).toContainText(NOTE_TITLE);
-      await expect(app.getElBySelector('.full-note__body')).toContainText(NOTE_CONTENT);
+      await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+      await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
       await app.screenshot('[draft] data converted to note data');
     });
       
@@ -501,6 +560,7 @@ test.describe('Notes', () => {
       // edit note ===============================================================
       const origTxt = await content.inputValue();
       await content.fill(origTxt.replace('::TOC::', CHANGED_TXT));
+      await expect(saveBtn).toBeEnabled();
       
       // create new tab and close tab w note edits ===============================
       await app.createPage(); // new blank tab
@@ -529,5 +589,39 @@ test.describe('Notes', () => {
       await expect(txt).not.toContain(CHANGED_TXT);
       await app.screenshot('[draft] Editor reverted to original content');
     });
+  });
+  
+  test('User Data Should Be Accessible After Credentials Updated', async ({ app }) => {
+    const NOTE_TITLE = 'Changed User Info';
+    const NOTE_CONTENT = 'Super important info, hopefully it exists after I change my username & password.';
+    const CREDS__CHANGED_USER = 'uzer';
+    const CREDS__CHANGED_PASS = 'pazz';
+    
+    await note.clickAdd();
+    await title.fill(NOTE_TITLE);
+    await content.fill(NOTE_CONTENT);
+    await saveBtn.click();
+    await expect(app.getElBySelector('.note-form')).toBeHidden();
+    await app.getElBySelector(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
+    await expect(app.getElBySelector('.flyout')).toBeHidden();
+    
+    // NOTE: Since the config generates unique data on creation, I can only verify
+    // that User folder names are changing, not that they equal a static value.
+    const [ oldFolder ] = await app.getUserDataFolders();
+    await app.updateUserCreds({ user: CREDS__CHANGED_USER, pass: CREDS__CHANGED_PASS });
+    const [ newFolder ] = await app.getUserDataFolders();
+    await expect(newFolder).not.toEqual(oldFolder);
+    await app.loadNotePage(NOTE_TITLE);
+    await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+    await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+    await app.screenshot('user credentials changed');
+    
+    await app.updateUserCreds({ user: CREDS__USER, pass: CREDS__PASS });
+    const [ resetFolder ] = await app.getUserDataFolders();
+    await expect(resetFolder).toEqual(oldFolder);
+    await app.loadNotePage(NOTE_TITLE);
+    await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+    await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+    await app.screenshot('user credentials reverted');
   });
 });

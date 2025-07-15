@@ -186,8 +186,11 @@ export default class BaseFixture {
   }
   
   async switchToPage(pageNum) {
+    await this.pageVisibility.hide(); // old page hidden
+    
     this.fx = this.testCtx.fixtures[pageNum - 1];
     await this.fx.page.bringToFront();
+    await this.pageVisibility.show(); // current page visible
     await expect(this.getElBySelector('body')).toBeAttached();
   }
   

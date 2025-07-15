@@ -288,8 +288,8 @@ module.exports = async function modifyUserData({
     if (missingRequiredItems) return { error: { code: 400, msg: `Missing ${missingRequiredItems}` } };
     
     let data = await loadCurrentData();
-    let allTags = JSON.parse(JSON.stringify(data.allTags));
-    const notesData = JSON.parse(JSON.stringify(data.notesData));
+    let allTags = data.allTags && JSON.parse(JSON.stringify(data.allTags));
+    const notesData = data.notesData && JSON.parse(JSON.stringify(data.notesData));
     let logMsg = 'Data set';
     
     switch (action) {
@@ -435,8 +435,8 @@ module.exports = async function modifyUserData({
           logMsg = `Renamed group from "${oldName}" to "${name}" in "${parentPath}"`;
         }
         else if (type === DATA_TYPE__PREFS) {
-          data.preferences = {
-            ...data.preferences,
+          data[DATA_TYPE__PREFS] = {
+            ...data[DATA_TYPE__PREFS],
             ...prefs,
           };
           
@@ -570,7 +570,7 @@ module.exports = async function modifyUserData({
       }
       case DATA_ACTION__IMPORT: {
         return finalizeData(
-          importedData.data,
+          importedData,
           `Imported data for "${username}"`
         );
       }
@@ -616,8 +616,8 @@ module.exports = async function modifyUserData({
     
     // NOTE: Comment out the below lines when testing new/fragile code that could
     // corrupt the data in some way.
-    data.allTags = allTags;
-    data.notesData = notesData;
+    if (allTags) data.allTags = allTags;
+    if (notesData) data.notesData = notesData;
     
     if (data.recentlyViewed) data.recentlyViewed = data.recentlyViewed.filter((r) => !!r);
     

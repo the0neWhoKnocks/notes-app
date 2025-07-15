@@ -3,13 +3,13 @@ import {
   DATA_ACTION__DELETE,
   DATA_ACTION__MOVE,
   DATA_TYPE__GROUP,
+  PATH__DATA,
 } from '@src/constants';
 import BaseFixture, { createTest, expect } from './BaseFixture';
 
 export const CREDS__PASS = 'pass';
 export const CREDS__USER = 'user';
 const LOG_PREFIX = '[AppFixture]';
-export const PATH__DATA = `/e2e/mnt/data`;
 const SELECTOR__LOGIN_FORM = '.login-form';
 
 class AppFixture extends BaseFixture {
@@ -49,7 +49,7 @@ class AppFixture extends BaseFixture {
     await this.waitForDialog(SELECTOR__LOGIN_FORM);
   }
   
-  async createUser({ user, pass } = {}) {
+  async createUser({ user, pass, errorMsg } = {}) {
     let dialog = await this.waitForDialog(SELECTOR__LOGIN_FORM);
     await dialog.locator('button[value="create"]').click();
     await expect(dialog).not.toBeAttached();
@@ -59,10 +59,18 @@ class AppFixture extends BaseFixture {
     await dialog.locator('[name="password"]').fill(pass);
     await dialog.locator('[name="passwordConfirmed"]').fill(pass);
     await this.fx.screenshot('[create_user] filled out');
-    await dialog.locator('button[value="create"]').click();
-    await expect(dialog).not.toBeAttached();
     
-    await this.waitForDialog(SELECTOR__LOGIN_FORM);
+    const createBtn = dialog.locator('button[value="create"]');
+    if (errorMsg) {
+      await this.validateAlert(errorMsg, async () => {
+        await createBtn.click();
+      });
+    }
+    else {
+      await createBtn.click();
+      await expect(dialog).not.toBeAttached();
+      await this.waitForDialog(SELECTOR__LOGIN_FORM);
+    }
   }
   
   async deleteGroup(groupName, selector = '.group') {
@@ -73,10 +81,10 @@ class AppFixture extends BaseFixture {
     await (await this.getItemNav('note', selector, noteName)).delete();
   }
   
-  async deleteUserData() {
-    await this.exec(`rm -rf ${PATH__DATA}/data_*.json`);
+  async deleteUserData(reload = false) {
+    await this.exec(`rm -rf ${PATH__DATA}/user_*`);
     console.log(`${LOG_PREFIX} [DELETED] User data`);
-    await this.fx.page.reload();
+    if (reload) await this.fx.page.reload();
   }
   
   async getItemNav(type, selector, itemName) {
@@ -148,6 +156,15 @@ class AppFixture extends BaseFixture {
     };
   }
   
+  getUserBtn() {
+    return this.getElBySelector('.top-nav .user-nav .drop-down__toggle');
+  }
+  
+  async getUserDataFolders() {
+    const { stdout: result } = await this.exec(`find "${PATH__DATA}" -name "user_*" -type d`);
+    return result.split('\n').filter((i) => !!i).map((i) => i.replace(`${PATH__DATA}/`, ''));
+  }
+  
   async loadNotePage(noteName, parentPath = BASE_DATA_NODE) {
     await this.loadPage(`?note=${encodeURIComponent(`${parentPath}/${noteName}`.toLowerCase().replaceAll(' ', '-'))}`);
     await expect(this.getElBySelector('.full-note')).toHaveCount(1);
@@ -190,6 +207,7 @@ class AppFixture extends BaseFixture {
       console.log(`${LOG_PREFIX} User data response recieved`);
       await expect(dialog).not.toBeAttached();
       await expect(this.getElBySelector('.app')).toContainClass('is--loaded');
+      await expect(this.getElBySelector('.user-nav .username')).toContainText(user);
     }
     
     return dialog;
@@ -197,6 +215,23 @@ class AppFixture extends BaseFixture {
   
   async moveNote(noteName, moveToPath, selector = '.item') {
     await (await this.getItemNav('note', selector, noteName)).move(moveToPath);
+  }
+  
+  async updateUserCreds({ user, pass }) {
+    await this.getUserBtn().click();
+    await this.getElBySelector('.user-nav :text-is("Profile")').click();
+    const profileForm = this.getElBySelector('.user-profile-form');
+    const updateBtn = profileForm.locator('nav button:text-is("Update")');
+    
+    await expect(updateBtn).toBeDisabled();
+    await profileForm.locator('[name="username"]').fill(user);
+    await profileForm.locator('[name="password"]').fill(pass);
+    await expect(updateBtn).toBeEnabled();
+    await updateBtn.click();
+    
+    await this.getUserBtn().click();
+    await this.getElBySelector('.user-nav :text-is("Logout")').click();
+    await this.logIn({ user, pass });
   }
   
   async waitForDataUpdate({ action, type }, fn) {

@@ -15,12 +15,14 @@
     userNavOpen.set(false);
     
     try {
-      const data = await pickJSONFile();
-      if (data) {
+      let importedData = await pickJSONFile();
+      if (importedData) {
+        if (importedData.app?.schema === '1.0.0') importedData = importedData.data;
+        
         await setUserData({
           ...$userData,
           action: DATA_ACTION__IMPORT,
-          importedData: data,
+          importedData,
           type: DATA_TYPE__ALL,
         });
       }

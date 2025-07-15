@@ -19,10 +19,8 @@
     
     saveFile({
       data: JSON.stringify({
-        app: {
-          schema: SCHEMA_VERSION__EXPORTED_DATA,
-        },  
-        data: serverData,
+        schema: SCHEMA_VERSION__EXPORTED_DATA,
+        ...serverData,
       }, null, 2),
       name: `notes-backup-${timestamp({ format: '[y]-[mo]-[d]-[h][mi][s]' })}.json`,
       type: FILE_TYPE__JSON,

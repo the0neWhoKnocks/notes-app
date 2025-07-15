@@ -4,7 +4,7 @@ const loadUserData = require('../utils/loadUserData');
 module.exports = async function getData(req, res) {
   const {
     appConfig,
-    body: { password, username },
+    body: { password, type, username },
   } = req;
   
   if (!username && !password) return res.error(400, 'Missing `username` and `password`');
@@ -12,7 +12,7 @@ module.exports = async function getData(req, res) {
   else if (!password) return res.error(400, 'Missing `password`');
   
   try {
-    const data = await loadUserData(appConfig, username, password);
+    const data = await loadUserData(appConfig, username, password, type);
     
     log.info('Got data');
     res.json(data);

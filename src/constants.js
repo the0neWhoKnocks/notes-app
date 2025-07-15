@@ -31,7 +31,7 @@ const constants = {
   ROUTE__API__USER__PROFILE__DELETE: `${API_PREFIX}/user/profile/delete`,
   ROUTE__API__USER__PROFILE__GET: `${API_PREFIX}/user/profile`,
   ROUTE__API__USER__PROFILE__SET: `${API_PREFIX}/user/profile/set`,
-  SCHEMA_VERSION__EXPORTED_DATA: '1.0.0',
+  SCHEMA_VERSION__EXPORTED_DATA: '2.0.0',
   SW__CHANNEL__INIT_API_DATA: 'sw_initAPIData',
   SW__CHANNEL__MESSAGES: 'sw_messages',
   SW__CHANNEL__OFFLINE_DATA: 'sw_offlineData',

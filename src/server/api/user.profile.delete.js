@@ -20,11 +20,11 @@ module.exports = async function deleteProfile(req, res) {
     
     const { valueHex: encryptedUsername } = (await encrypt(appConfig, username));
     const users = await loadUsers();
-    const DATA_PATH = getUserDataPath(encryptedUsername);
+    const { userDataPath } = getUserDataPath(encryptedUsername);
     
-    if (existsSync(DATA_PATH)) {
-      unlinkSync(DATA_PATH);
-      log.info(`Removed User data at "${DATA_PATH}"`);
+    if (existsSync(userDataPath)) {
+      unlinkSync(userDataPath);
+      log.info(`Removed User data at "${userDataPath}"`);
     }
     
     delete users[encryptedUsername];
