@@ -103,6 +103,10 @@
           renderResults(contentClone.innerHTML);
           selectMatch();
         }
+        else {
+          resetMatches();
+          renderResults(domSnapshot.innerHTML);
+        }
       }, 300);
     }
     else {
