@@ -91,7 +91,9 @@
   }
   .diff .from,
   .diff .to {
+    max-height: 20em;
     white-space: pre-line;
+    overflow: auto;
     padding: 0.5em;
     border-top: solid 2px var(--diff--ui--bg-color);
   }
