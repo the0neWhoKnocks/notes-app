@@ -1,6 +1,18 @@
 # Changelog
 ---
 
+## v2.1.1
+
+<details>
+  <summary>Expand for v2.1.1 Details</summary>
+
+  **Bugfixes**
+  - [700c60f](/the0neWhoKnocks/notes-app/commit/700c60f): Diffs overflowing out of parent dialog
+  - [776ed2d](/the0neWhoKnocks/notes-app/commit/776ed2d): RangeError when SW encodes large payload
+</details>
+
+---
+
 ## v2.1.0
 
 <details>
