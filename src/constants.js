@@ -44,16 +44,18 @@ if (!process.env.FOR_CLIENT_BUNDLE) {
   const ROOT_PATH = resolve(__dirname, './');
   const DATA_PATH = process.env.DATA_PATH || `${ROOT_PATH}/../data`;
   
-  constants.CRYPT__ALGORITHM = 'aes-256-gcm';
-  constants.CRYPT__LENGTH__BYTES = 16;
-  constants.CRYPT__LENGTH__KEY = 32;
-  constants.CRYPT__ENCODING = 'hex';
-  constants.DISCONNECT_TIMEOUT = 5000;
-  constants.PATH__CONFIG = `${DATA_PATH}/config.json`;
-  constants.PATH__DATA = DATA_PATH;
-  constants.PATH__PUBLIC = `${ROOT_PATH}/public`;
-  constants.PATH__USERS = `${DATA_PATH}/users.json`;
-  constants.SERVER__PORT = +process.env.SERVER_PORT || 3000;
+  Object.assign(constants, {
+    CRYPT__ALGORITHM: 'aes-256-gcm',
+    CRYPT__LENGTH__BYTES: 16,
+    CRYPT__LENGTH__KEY: 32,
+    CRYPT__ENCODING: 'hex',
+    DISCONNECT_TIMEOUT: 5000,
+    PATH__CONFIG: `${DATA_PATH}/config.json`,
+    PATH__DATA: DATA_PATH,
+    PATH__PUBLIC: `${ROOT_PATH}/public`,
+    PATH__USERS: `${DATA_PATH}/users.json`,
+    SERVER__PORT: +process.env.SERVER_PORT || 3000,
+  });
 }
 
 module.exports = constants;
