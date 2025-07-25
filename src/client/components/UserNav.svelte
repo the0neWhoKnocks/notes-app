@@ -35,4 +35,7 @@
     display: flex;
     justify-content: space-around;
   }
+  :global(.user-nav nav button:disabled) {
+    opacity: 0.5;
+  }
 </style>

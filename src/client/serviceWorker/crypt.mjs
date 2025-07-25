@@ -1,6 +1,6 @@
 import {
   CRYPT__IV_LENGTH,
-} from './constants';
+} from './constants.mjs';
 const LOG_PREFIX = '[CRYPT]';
 const PASSWORD_BASED_KEY_VERSION = 'PBKDF2';
 const enc = new TextEncoder();
@@ -34,7 +34,9 @@ const deriveKey = (passwordKey, salt, keyUsage) => {
 export const bufferToBase64 = (buff) => btoa(String.fromCharCode.apply(null, buff));
 export const base64ToBuffer = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(null));
 
-export async function encrypt({ iv, salt }, data, password) {
+export async function encrypt({ iv, salt } = {}, data, password) {
+  if (!iv || !salt) throw Error(`${LOG_PREFIX} No ''`);
+  
   try {
     const passwordKey = await getPasswordKey(password);
     const aesKey = await deriveKey(passwordKey, salt, ['encrypt']);
@@ -61,7 +63,7 @@ export async function encrypt({ iv, salt }, data, password) {
   }
 }
 
-export async function decrypt({ iv, salt }, encryptedData, password) {
+export async function decrypt({ iv, salt } = {}, encryptedData, password) {
   try {
     const encryptedDataBuff = base64ToBuffer(encryptedData);
     const data = encryptedDataBuff.slice(CRYPT__IV_LENGTH);

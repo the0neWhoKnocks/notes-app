@@ -94,22 +94,30 @@ const waitForFileBeforeStart = args[1];
 const fileGate = (waitForFileBeforeStart)
   ? fileCheck(waitForFileBeforeStart)
   : Promise.resolve();
-const watchedServerFiles = [
-  './src/client/sw.js',
+
+const watchedFiles = [
+  './src/client/serviceWorker/**/*.mjs',
   './src/server/**/*.js',
   './src/utils/**/*.js',
   './src/constants.js',
 ];
+const watchedClientFiles = [
+  'dist/public/js/sw/**/*.mjs', // SW files copied over
+  'dist/public/manifest.json', // WP generated bundles
+];
+const ignoredFiles = [
+  './src/client/serviceWorker/constants.mjs',
+  './src/client/serviceWorker/register.mjs',
+];
 
-const pollForFileChanges = !!process.env.WSL_INTEROP; // related to WSL2: https://github.com/microsoft/WSL/issues/4739
 const chokidarOpts = {
   ignoreInitial: true,
-  usePolling: pollForFileChanges,
+  ignored: ignoredFiles,
 };
 
 fileGate
   .then(() => {
-    const serverFilesWatcher = chokidar.watch(watchedServerFiles, chokidarOpts);
+    const serverFilesWatcher = chokidar.watch(watchedFiles, chokidarOpts);
     serverFilesWatcher
       .on('ready', () => {
         logger.info('Watching for Server changes');
@@ -136,10 +144,10 @@ fileGate
       delay: 500,
       exec: 'node --inspect=0.0.0.0',
       ext: 'js json',
-      legacyWatch: pollForFileChanges,
+      ignore: ignoredFiles,
       script: './dist/server',
       // verbose: true,
-      watch: watchedServerFiles,
+      watch: watchedFiles,
     })
       .on('restart', () => {
         logger.info('Server restarting because file(s) changed');
@@ -155,9 +163,7 @@ fileGate
       });
     // https://www.browsersync.io/docs/options
     browserSync.init({
-      files: [
-        'dist/public/manifest.json',
-      ],
+      files: watchedClientFiles,
       ghostMode: false, // don't mirror interactions in other browsers
       https: bSyncHTTPS,
       // logLevel: 'debug',

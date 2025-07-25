@@ -1,5 +1,5 @@
-const { STATUS_CODES } = require('http');
-const { readFileSync, existsSync } = require('fs');
+const { STATUS_CODES } = require('node:http');
+const { readFileSync, existsSync } = require('node:fs');
 const compression = require('compression');
 const glob = require('fast-glob');
 const sirv = require('sirv');
@@ -46,6 +46,10 @@ const ABS_LANGS_PATH = `${__dirname}/../public/${CLIENT_LANGS_PATH}`;
 const ABS_THEMES_PATH = `${__dirname}/../public/${CLIENT_THEMES_PATH}`;
 const langFiles = (glob.sync('*.js', { cwd: ABS_LANGS_PATH })).map(lang => `/${CLIENT_LANGS_PATH}/${lang}`);
 const themeFiles = (glob.sync('*.css', { cwd: ABS_THEMES_PATH })).map(theme => `/${CLIENT_THEMES_PATH}/${theme}`);
+const swEnvVars = JSON.stringify({
+  allowedDomains: process.env.SW__ALLOWED_DOMAINS?.split(' ').filter((d) => !!d),
+  appId: process.env.SW__APP_ID,
+});
 
 function app(req, res) {
   const [url] = req.url.split('?');
@@ -146,7 +150,13 @@ app
   
     next();
   })
-  .get('/js/sw.js', (req, res, next) => {
+  // Dynamically generating a 'file' for env vars since SWs can't dynamically
+  // import files and can't access the `window` object.
+  .get('/js/sw/envVars.mjs', async (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.end(`export default ${swEnvVars}`);
+  })
+  .get('/js/sw/worker.mjs', (req, res, next) => {
     // Allow for having a SW file in a nested directory, but with a higher scope.
     res.setHeader('service-worker-allowed', '/');
     next();
@@ -186,7 +196,7 @@ app
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-copy-to-clipboard.min.js`,
         `/${PUBLIC_JS_VENDOR}/purify.min.js`,
         manifest['vendor.js'],
-        // manifest['sw.register.js'],
+        manifest['sw.register.js'],
         manifest[`${VIEW}.js`],
       ],
       styles: [
@@ -209,6 +219,7 @@ app
         appTitle: APP__TITLE,
         configExists: !!req.appConfig,
       },
+      swEnvVars,
     }));
   });
 

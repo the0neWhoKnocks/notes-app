@@ -5,6 +5,7 @@
   import initMarked from '../marked/init';
   import {
     checkLoggedInState,
+    clearOfflineChanges,
     initialUserDataLoaded,
     loadNote,
     loadTaggedNotes,
@@ -18,7 +19,7 @@
   } from '../stores';
   import getParams from '../utils/getParams';
   import DeleteDialog from './DeleteDialog.svelte';
-  // import DiffDialog from './DiffDialog.svelte';
+  import DiffDialog from './DiffDialog.svelte';
   import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import ImportButton from './ImportButton.svelte';
@@ -42,103 +43,8 @@
   let swActivated = false;
   let swError = false;
   let swInstalling = false;
-  // let ignoreOfflineChanges = false;
-  
-  // function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
-  //   let _objB = objB;
-  //   if (!_objB) {
-  //     const objBKeys = Object.keys(parentObjB);
-  //     for (let i=0; i<objBKeys.length; i++) {
-  //       const prop = objBKeys[i];
-  //       const obj = parentObjB[prop];
-  //       if (obj.created === objA.created) {
-  //         _objB = obj;
-  //         break;
-  //       }
-  //     }
-  //   }
-  // 
-  //   const objAKeys = Object.keys(objA);
-  //   const _diffs = diffs || {
-  //     added: [],
-  //     modified: [],
-  //     removed: [],
-  //   };
-  // 
-  //   if (!_objB) {
-  //     _diffs.added.push({ obj: objA, path: parentPath });
-  //   }
-  //   else {
-  //     const objBKeys = Object.keys(_objB);
-  // 
-  //     if (objBKeys.length > objAKeys.length) {
-  //       objBKeys.forEach((prop) => {
-  //         if (!objA[prop]) {
-  //           const _parentPath = parentPath ? `${parentPath}/${prop}` : prop;
-  //           _diffs.removed.push({ obj: _objB[prop], path: _parentPath });
-  //         }
-  //       });
-  //     }
-  // 
-  //     objAKeys.forEach(prop => {
-  //       const valA = objA[prop];
-  //       const valB = _objB[prop];
-  // 
-  //       if (
-  //         typeof valA === 'boolean'
-  //         || typeof valA === 'number'
-  //         || typeof valA === 'string'
-  //       ) {
-  //         if (
-  //           prop !== 'modified' // already know that it's changed, don't need to track this
-  //           && valA !== valB
-  //         ) {
-  //           _diffs.modified.push({
-  //             from: valB,
-  //             path: parentPath ? parentPath : prop,
-  //             prop,
-  //             to: valA,
-  //           });
-  //         }
-  //       }
-  //       else {
-  //         diff(valA, valB, {
-  //           diffs: _diffs,
-  //           parentObjB: _objB,
-  //           parentPath: parentPath ? `${parentPath}/${prop}` : prop,
-  //         });
-  //       }
-  //     });
-  //   }
-  // 
-  //   return _diffs;
-  // }
-  
-  // function diffData(serverData, offlineData) {
-  //   const serverJSON = JSON.stringify(serverData);
-  //   const offlineJSON = JSON.stringify(offlineData);
-  // 
-  //   if (serverJSON !== offlineJSON) {
-  //     const {
-  //       notesData: serverNotesData,
-  //       preferences: serverPreferences,
-  //     } = serverData;
-  //     const {
-  //       notesData: offlineNotesData,
-  //       preferences: offlinePreferences,
-  //     } = offlineData;
-  // 
-  //     try {
-  //       return {
-  //         notesDiff: diff(offlineNotesData, serverNotesData),
-  //         prefsDiff: diff(offlinePreferences, serverPreferences),
-  //       };
-  //     }
-  //     catch (err) {
-  //       console.error(err);
-  //     }
-  //   }
-  // }
+  let swLoadingUpdate = false;
+  let swUpdateAvailable = false;
   
   async function loadNotes() {
     try {
@@ -150,23 +56,71 @@
       log.info('Notes loaded and formatted');
       
       const { note, tag } = getParams(location.href);
-      if (note) loadNote(note);
-      else if (tag) loadTaggedNotes(tag);
+      if (note) await loadNote(note);
+      else if (tag) await loadTaggedNotes(tag);
       
       initialUserDataLoaded.set(true);
     }
     catch ({ message }) { alert(message); }
   }
   
-  // async function discardOfflineChanges() {
-  //   ignoreOfflineChanges = true;
-  //   await loadNotes();
-  //   ignoreOfflineChanges = false;
-  // }
+  async function discardOfflineChanges() {
+    await clearOfflineChanges();
+    await loadNotes();
+  }
   
   function handleAppTitleClick(ev) {
     ev.preventDefault();
     updateHistory();
+  }
+  
+  function handleIgnoreWorkerUpdateClick() {
+    swUpdateAvailable = false;
+  }
+  
+  function handleUpdateWorkerClick() {
+    swUpdateAvailable = false;
+    swLoadingUpdate = true;
+    window.sw.updateWorker();
+  }
+  
+  async function startSW() {
+    if (window.sw?.register) {
+      const ensureDB = () => window.sw.initAPIData($userData);
+      
+      window.sw.onActivated(async () => {
+        swInstalling = false;
+        swUpdateAvailable = false;
+        swActivated = true;
+        
+        await ensureDB();
+        
+        swActivated = false;
+      });
+      
+      window.sw.onError(() => {
+        swError = true;
+      });
+      
+      window.sw.onInstall(() => {
+        if (!swUpdateAvailable) swInstalling = true;
+      });
+      
+      window.sw.onUpdateAvailable(() => {
+        swInstalling = false;
+        swUpdateAvailable = true;
+      });
+      
+      try {
+        await window.sw.register();
+        await ensureDB();
+      }
+      catch (err) {
+        if (!(err instanceof window.sw.NotAllowedError)) {
+          log.error(`Problem initializing SW:\n${err.stack}`);
+        }
+      }
+    }
   }
   
   $: if ($userIsLoggedIn) loadNotes();
@@ -176,39 +130,18 @@
     
     initMarked();
     trackNetworkStatus();
-    
-    // function ensureDB() {
-    //   return window.sw.initAPIData($userData);
-    // }
-    // window.sw.onActivated(async () => {
-    //   swInstalling = false;
-    //   swActivated = true;
-    // 
-    //   await ensureDB();
-    // 
-    //   setTimeout(() => {
-    //     swActivated = false;
-    //   }, 1000);
-    // });
-    // window.sw.onError(() => {
-    //   swError = true;
-    // });
-    // window.sw.onInstall(() => {
-    //   swInstalling = true;
-    // });
-    // window.sw.onRegistered(async () => {
-    //   await ensureDB();
-    //   loadNotes();
-    // });
-    // window.sw.register();
-    
+    await startSW();
     checkLoggedInState();
     
     mounted = true;
   });
 </script>
 
-<div class="app" class:is--loaded={$initialUserDataLoaded}>
+<div
+  class="app"
+  class:is--loaded={$initialUserDataLoaded}
+  class:sw--updating={swLoadingUpdate}
+>
   {#if mounted}
     {#if $userIsLoggedIn && $initialUserDataLoaded}
       <nav class="top-nav">
@@ -250,31 +183,35 @@
       </section>
     {/if}
   {/if}
-  
-  <div
-    class="status-msg"
-    class:error={swError}
-    class:offline={$offline}
-    class:sw-actived={swActivated}
-    class:sw-installing={swInstalling}
-  >
-    <div class="status-msg__txt">
-      {#if swError}
-        [SW] Error
-      {:else if swInstalling}
-        [SW] Installing
-      {:else if swActivated}
-        [SW] Activated
-      {:else if $offline}
-        Offline
-      {:else}
-        &nbsp;
-      {/if}
-    </div>
+</div>
+<div
+  class="status-msg"
+  class:error={swError}
+  class:offline={$offline}
+  class:sw-activated={swActivated}
+  class:sw-installing={swInstalling}
+  class:sw-update={swUpdateAvailable}
+>
+  <div class="status-msg__txt">
+    {#if swError}
+      [SW] Error
+    {:else if $offline}
+      Offline
+    {:else if swActivated}
+      [SW] Activated
+    {:else if swUpdateAvailable}
+      New Version:
+      <button on:click={handleIgnoreWorkerUpdateClick}>Ignore</button>
+      <button on:click={handleUpdateWorkerClick}>Load</button>
+    {:else if swInstalling}
+      [SW] Installing
+    {:else}
+      &nbsp;
+    {/if}
   </div>
 </div>
 <DeleteDialog />
-<!-- <DiffDialog onDiscard={discardOfflineChanges} /> -->
+<DiffDialog onDiscard={discardOfflineChanges} />
 <GroupDialog />
 <MoveDialog />
 <NoteDialog />
@@ -285,6 +222,7 @@
 
 <style>
   :global(body) {
+    --app--max-width: 800px;
     --color--app--bg: #ffffff;
     --color--app--fg: #000000;
     --color--app--highlight: #dadada;
@@ -406,7 +344,7 @@
   
   :global(.root) {
     width: 100vw;
-    max-width: 800px;
+    max-width: var(--app--max-width);
     margin: auto;
     box-shadow: 0 0 3em 2em rgb(0, 0, 0, 0.35);
     position: relative;
@@ -426,38 +364,61 @@
   }
   
   .status-msg {
-    backdrop-filter: blur(10px);
+    border-top: solid 1px rgb(255 255 255 / 10%);
+    border-radius: 0.5em 0 0 0.5em;
+    background: rgb(255 255 255 / 10%);
+    backdrop-filter: blur(5px);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: fixed;
-    inset: 0;
     z-index: 50;
+    right: 0;
+    bottom: 0.5em;
+    transition: transform 100ms;
+    transform: translateX(0%);
   }
   .status-msg:not(:where(
     .error,
     .offline,
-    .sw-actived,
-    .sw-installing
+    .sw-activated,
+    .sw-installing,
+    .sw-update
   )) {
-    display: none;
+    transform: translateX(100%);
   }
   .status-msg__txt {
+    font-weight: bold;
     padding: 0.25em 0.5em;
-    border: dashed 1px #9a4900;
+    border: solid 3px #333;
     border-radius: 0.5em;
-    background: #ffc800;
+    margin: 0.5em;
+    background: #fff;
+  }
+  .status-msg.error {
+    background: rgb(255 0 0 / 10%);
   }
   .status-msg.error .status-msg__txt {
-    color: yellow;
-    font-weight: bold;
+    color: #ffe18d;
     text-shadow: 0px 2px 5px black;
-    border-color: yellow;
-    border-width: 2px;
+    border-color: #ffe18d;
+    border-width: 0.25em;
     border-style: double;
     background: #ff4545;
   }
+  .status-msg.offline {
+    background: rgb(255 224 0 / 10%);
+  }
+  .status-msg.offline .status-msg__txt {
+    border: dashed 1px #9a4900;
+    background: #ffc800;
+  }  
+  .status-msg.sw-update .status-msg__txt {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+  }  
 
   .app {
     width: 100%;
@@ -471,6 +432,30 @@
   }
   .app:not(.is--loaded) {
     display: none;
+  }
+  .app.sw--updating {
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.5;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  :global(#view):has(.app.sw--updating)::after {
+    content: '';
+    width: 2em;
+    height: 2em;
+    border: solid 2px rgb(0 0 0 / 25%);
+    border-top-color: #000;
+    border-radius: 100%;
+    outline: solid 4px #fff;
+    background: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 300ms linear infinite;
   }
   
   .app__title {

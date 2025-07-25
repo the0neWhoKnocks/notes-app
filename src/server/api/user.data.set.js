@@ -1,11 +1,9 @@
-const { 
-  DATA_ACTION__ADD,
-  DATA_ACTION__EDIT,
-  DATA_TYPE__NOTE,
-} = require('../../constants');
 const log = require('../../utils/logger')('api.user.data.set');
-const { getNoteNode } = require('../../utils/dataNodeUtils');
-const modifyUserData = require('../../utils/modifyUserData');
+const {
+  EP__SET__USER_DATA,
+  default: genAPIPayload,
+} = require('../../utils/genAPIPayload');
+const modifyUserData = require('../../utils/modifyUserData').default;
 const loadUserData = require('../utils/loadUserData');
 const saveUserData = require('../utils/saveUserData');
 
@@ -29,21 +27,15 @@ module.exports = async function setData(req, res) {
     await saveUserData({ appConfig, data, password, type, username });
     
     log.info(logMsg);
-  
-    if (
-      type === DATA_TYPE__NOTE
-      && (
-        action === DATA_ACTION__ADD
-        || action === DATA_ACTION__EDIT
-      )
-    ) {
-      const nPath = (action === DATA_ACTION__ADD) ? `${reqBody.path}/${nodeId}` : reqBody.path;
-      const { note } = getNoteNode(data.notesData, nPath);
-      res.json({ ...data, newData: note, newPath: nPath });
-    }
-    else {
-      res.json({ ...data });
-    }
+    
+    res.json(genAPIPayload({
+      action,
+      data,
+      endpoint: EP__SET__USER_DATA,
+      nodeId,
+      nodePath: reqBody.path,
+      type,
+    }));
   }
   catch (err) {
     res.error(500, err);

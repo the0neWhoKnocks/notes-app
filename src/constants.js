@@ -3,6 +3,7 @@ const NAMESPACE__STORAGE = 'notes';
 
 // Shared by both Client and Server
 const constants = {
+  API_PREFIX,
   APP__TITLE: 'Notes',
   BASE_DATA_NODE: 'root',
   DATA_ACTION__ADD: 'add',

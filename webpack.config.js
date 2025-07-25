@@ -120,8 +120,22 @@ const conf = {
   devtool: dev && 'eval-source-map',
   entry: {
     'js/app': resolve(__dirname, './src/client/index.js'),
-    'js/sw': resolve(__dirname, './src/client/serviceWorker/sw.js'),
-    'js/sw.register': resolve(__dirname, './src/client/serviceWorker/register.js'),
+    'js/sw/constants.mjs': {
+      import: resolve(__dirname, './src/client/serviceWorker/constants.mjs'),
+      library: { type: 'module' },
+    },
+    'js/sw/genAPIPayload.mjs': {
+      import: resolve(__dirname, './src/utils/genAPIPayload.js'),
+      library: { type: 'module' },
+    },
+    'js/sw/modifyUserData.mjs': {
+      import: resolve(__dirname, './src/utils/modifyUserData.js'),
+      library: { type: 'module' },
+    },
+    'js/sw.register': resolve(__dirname, './src/client/serviceWorker/register.mjs'),
+  },
+  experiments: {
+    outputModule: true,
   },
   mode,
   module: {
@@ -193,11 +207,10 @@ const conf = {
         '!imgs',
         '!imgs/**/*',
         '!js',
+        '!js/sw',
+        '!js/sw/**/*',
         '!js/vendor',
         '!js/vendor/**/*',
-        '!serviceWorker',
-        '!serviceWorker/**/*',
-        '!sw.js',
       ],
       cleanStaleWebpackAssets: false, // Cleaning after rebuilds doesn't play nice with `mini-css-extract-plugin`
     }),

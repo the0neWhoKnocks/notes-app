@@ -87,6 +87,19 @@ class AppFixture extends BaseFixture {
     if (reload) await this.fx.page.reload();
   }
   
+  genDeleteNoteReqPromise() {
+    return this.fx.page.waitForResponse((res) => {
+      const req = res.request();
+      if (
+        res.status() === 200
+        && req.method() === 'POST'
+        && req.url().includes('/api/user/data/set')
+      ) {
+        return req.postDataJSON().action === DATA_ACTION__DELETE;
+      }
+    });
+  }
+  
   async getItemNav(type, selector, itemName) {
     const labelSelector = type === DATA_TYPE__GROUP ? '.group__name-text' : '.item__label-text';
     const parentSelector = type === DATA_TYPE__GROUP ? '.group' : '.item';
@@ -110,17 +123,7 @@ class AppFixture extends BaseFixture {
     return {
       delete: async () => {
         if (subNav) {
-          const resp = this.fx.page.waitForResponse((res) => {
-            const req = res.request();
-            if (
-              res.status() === 200
-              && req.method() === 'POST'
-              && req.url().includes('/api/user/data/set')
-            ) {
-              return req.postDataJSON().action === DATA_ACTION__DELETE;
-            }
-          });
-          
+          const resp = this.genDeleteNoteReqPromise();
           await subNav.locator('.modify-nav [title="Delete"]').click();
           await this.getElBySelector('.delete-form__btm-nav :text-is("Yes")').click();
           await resp;

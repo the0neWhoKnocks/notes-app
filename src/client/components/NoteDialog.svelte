@@ -7,7 +7,6 @@
     PRISMAJS__COPY_TEXT,
   } from '../../constants';
   import { getNoteNode } from '../../utils/dataNodeUtils';
-  import kebabCase from '../../utils/kebabCase';
   const serializeForm = require('../utils/serializeForm');
   import {
     allTags,
@@ -278,23 +277,13 @@
     const { action, id } = $dialogDataForNote;
     
     if (newData) {
-      const dataRef = (newData.draft) ? newData.draft : newData;
-      const noteId = kebabCase(dataRef?.title) || id;
+      const { noteId } = await updateCurrNote({
+        id,
+        newData,
+        params: queryParams,
+      });
       
       if (noteId) {
-        updateCurrNote({
-          id: noteId,
-          noteData: {
-            ...$currentNote,
-            content: dataRef.content,
-            draft: newData.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
-            id: noteId,
-            tags: dataRef.tags,
-            title: dataRef.title,
-          },
-          params: queryParams,
-        });
-        
         // 'add' means they were creating a new note, switched tabs, and a draft
         // was saved, so now it should switch to 'edit' since adding the same note
         // isn't allowed.

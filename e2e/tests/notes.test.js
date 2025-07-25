@@ -528,7 +528,9 @@ test.describe('Notes', () => {
       await deleteDraftBtn.click();
       await app.waitForDialog('.delete-form');
       await expect(app.getElBySelector('.delete-form__msg')).toContainText(`Delete note ${NOTE_TITLE} from /?`);
+      const delResp = app.genDeleteNoteReqPromise();
       await app.getElBySelector('.delete-form__btm-nav :text-is("Yes")').click();
+      await delResp;
       await note.openNotesFlyout();
       await expect(app.getElBySelector(`.notes .item__label:text-is("${NOTE_TITLE}")`)).toHaveCount(0);
       await app.screenshot('[draft] deletion deletes note since there was no previous data');
@@ -539,6 +541,7 @@ test.describe('Notes', () => {
       await content.fill(NOTE_CONTENT);
       await app.pageVisibility.hide();
       await app.pageVisibility.show();
+      await expect(app.getElBySelector('.dialog__title')).toContainText('Edit Note');
       await saveBtn.click();
       await app.getElBySelector(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
       await expect(app.getElBySelector('.flyout')).toBeHidden();

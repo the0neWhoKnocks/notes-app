@@ -36,14 +36,14 @@
 
 <style>
   .diff-group {
-    border: solid 1px var(--color--app--bg);
+    border: solid 1px var(--diff--ui--bg-color);
     margin: 0.5em;
   }
   .diff-group header {
-    color: var(--color--app--fg);
+    color: var(--diff--ui--fg-color);
     text-transform: capitalize;
     padding: 0.25em 0.5em;
-    background: var(--color--app--bg);
+    background: var(--diff--ui--bg-color);
   }
 
   .diff {
@@ -60,8 +60,8 @@
   }
   .diff .path {
     grid-area: path;
-    color: var(--color--app--fg);
-    background: var(--color--app--bg);
+    color: var(--diff--ui--fg-color);
+    background: var(--diff--ui--bg-color);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -76,25 +76,24 @@
     width: 100%;
     line-height: 1em;
     padding: 6px;
-    text-shadow: 1px 1px 6px #001d5a, -1px 2px 6px #001d5a;
-    background: linear-gradient(180deg, #1c2e4a, #90afde);
   }
   .diff .prop {
     grid-area: prop;
-    color: var(--color--app--bg);
+    color: var(--diff--ui--bg-color);
     font-size: 0.8em;
     font-weight: bold;
     line-height: 1em;
     text-align: center;
     padding: 0.25em 0.5em;
-    border-top: solid 2px var(--color--app--bg);
+    border-top: solid 2px var(--diff--ui--bg-color);
     background: #fff;
     display: inline-block;
   }
   .diff .from,
   .diff .to {
+    white-space: pre-line;
     padding: 0.5em;
-    border-top: solid 2px var(--color--app--bg);
+    border-top: solid 2px var(--diff--ui--bg-color);
   }
   .diff .from {
     grid-area: old;

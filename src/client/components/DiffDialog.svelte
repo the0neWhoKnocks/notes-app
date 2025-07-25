@@ -115,7 +115,7 @@
         <li>Any unchecked changes will be discarded.</li>
       </ul>
       
-      <div>
+      <div class="diff-form__sections">
         {#if (
           $dialogDataForDiff.prefsDiff.added.length
           || $dialogDataForDiff.prefsDiff.modified.length
@@ -151,8 +151,13 @@
 {/if}
 
 <style>
+  :root {
+    --diff--ui--bg-color: #333;
+    --diff--ui--fg-color: #eee;
+  }
+  
   .diff-form {
-    width: 30vw;
+    width: calc(var(--app--max-width) - 4em);
     max-height: 80vh;
     overflow: auto;
     padding: 1em;
@@ -164,13 +169,19 @@
     margin-top: 0.25em;
   }
   
+  .diff-form__sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+  }
+  
   .diff-form__section {
-    border: solid 1px var(--color--app--bg);
+    border: solid 1px var(--diff--ui--bg-color);
   }
   .diff-form header {
-    color: var(--color--app--fg);
+    color: var(--diff--ui--fg-color);
     padding: 0.25em 0.5em;
-    background: var(--color--app--bg);
+    background: var(--diff--ui--bg-color);
   }
   
   .diff-form__btm-nav {
@@ -179,5 +190,11 @@
   }
   .diff-form__btm-nav button {
     width: 49%;
+    color: var(--diff--ui--fg-color);
+    background-color: var(--diff--ui--bg-color);
+  }
+  .diff-form__btm-nav button:not(:disabled):hover,
+  .diff-form__btm-nav button:not(:disabled):focus {
+    outline-color: var(--diff--ui--fg-color);
   }
 </style>

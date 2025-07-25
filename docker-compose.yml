@@ -7,6 +7,8 @@ services:
     environment:
       DATA_PATH: /app_data
       NODE_EXTRA_CA_CERTS: /home/node/certs/localhost.crt
+      SW__ALLOWED_DOMAINS: localhost # 192.168.X.X notes.example.com 
+      SW__APP_ID: notes
       TZ: America/Los_Angeles
     image: theonewhoknocks/notes
     ports:

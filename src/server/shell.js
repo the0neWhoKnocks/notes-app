@@ -34,29 +34,11 @@ const addNodes = (type, arr) => {
   return _arr.join('\n');
 };
 
-// window.sw = {
-//   assetsToCache: ${
-//     JSON.stringify(
-//       [
-//         '/',
-//         ...head.styles,
-//         ...body.styles,
-//         ...body.asyncStyles,
-//         ...head.scripts,
-//         ...body.scripts,
-//         ...body.asyncScripts,
-//       ]
-//       .map(asset => {
-//         return (typeof asset === 'object') ? asset.url : asset;
-//       })
-//     )
-//   },
-// };
-
 const shell = ({
   body,
   head,
   props,
+  swEnvVars,
 } = {}) => {
   return `
     <!doctype html>
@@ -298,6 +280,25 @@ const shell = ({
       <script>
         window.app = {
           props: ${JSON.stringify(props || {})},
+        };
+        window.sw = {
+          assetsToCache: ${
+            JSON.stringify(
+              [
+                '/',
+                ...head.styles,
+                ...body.styles,
+                ...body.asyncStyles,
+                ...head.scripts,
+                ...body.scripts,
+                ...body.asyncScripts,
+              ]
+              .map(asset => {
+                return (typeof asset === 'object') ? asset.url : asset;
+              })
+            )
+          },
+          envVars: ${swEnvVars},
         };
       </script>
       ${addNodes('script', head.scripts)}

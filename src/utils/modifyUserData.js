@@ -15,11 +15,11 @@ const {
   DATA_TYPE__PREFS,
   DATA_TYPE__RECENT,
 } = require('../constants');
-const groupNodeShape = require('../utils/groupNodeShape');
-const parseTags = require('../utils/parseTags');
 const { getGroupNode, getNoteNode } = require('./dataNodeUtils');
+const groupNodeShape = require('./groupNodeShape');
 const kebabCase = require('./kebabCase');
 const parsePath = require('./parsePath');
+const parseTags = require('./parseTags');
 
 const getMissingRequiredItems = (required, propObj) => {
   const groupedProps = required.reduce((obj, prop) => {
@@ -186,7 +186,8 @@ const finalizeData = (data, logMsg) => ({
   logMsg,
 });
 
-module.exports = async function modifyUserData({
+// NOTE: Need to specify `default` so that WP can convert this into an ES module.
+exports.default = async function modifyUserData({
   loadCurrentData,
   reqBody,
 }) {
@@ -629,4 +630,4 @@ module.exports = async function modifyUserData({
   catch (err) {
     return { error: { code: 500, msg: err.stack } };
   }
-};
+}

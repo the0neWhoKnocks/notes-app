@@ -12,6 +12,11 @@ import {
   ROUTE__API__USER__DATA__SET,
 } from '../constants';
 import { getGroupNode, getNoteNode } from '../utils/dataNodeUtils';
+import {
+  MSG_TYPE__CLEAR_OFFLINE_DATA,
+  MSG_TYPE__GET_OFFLINE_DATA,
+} from './serviceWorker/constants.mjs';
+import kebabCase from '../utils/kebabCase';
 import logger from '../utils/logger';
 import postData from './utils/postData';
 import {
@@ -217,11 +222,11 @@ export function login({ data, persistent }) {
   checkLoggedInState();
 }
 
-export function logout() {
+export async function logout() {
   const storageType = getStoreValue(userStorageType);
   window[storageType].removeItem(NAMESPACE__STORAGE__USER);
   
-  currentNote.set();
+  await currentNote.set();
   initialUserDataLoaded.set(false);
   loggedInStateChecked.set(true);
   noteGroups.set();
@@ -262,46 +267,164 @@ export function loadThemeCSS(theme) {
   });
 }
 
+function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
+  const _diffs = diffs || {
+    added: [],
+    modified: [],
+    removed: [],
+  };
+  
+  if (!objA) return _diffs;
+  const objAKeys = Object.keys(objA);
+  
+  let _objB = objB;
+  if (!_objB) {
+    const objBKeys = Object.keys(parentObjB);
+    for (let i=0; i<objBKeys.length; i++) {
+      const prop = objBKeys[i];
+      const obj = parentObjB[prop];
+      if (obj.created === objA.created) {
+        _objB = obj;
+        break;
+      }
+    }
+  }
+
+  if (!_objB) {
+    _diffs.added.push({ obj: objA, path: parentPath });
+  }
+  else {
+    const objBKeys = Object.keys(_objB);
+
+    if (objBKeys.length > objAKeys.length) {
+      objBKeys.forEach((prop) => {
+        if (!objA[prop]) {
+          const _parentPath = parentPath ? `${parentPath}/${prop}` : prop;
+          _diffs.removed.push({ obj: _objB[prop], path: _parentPath });
+        }
+      });
+    }
+
+    objAKeys.forEach(prop => {
+      const valA = objA[prop];
+      const valB = _objB[prop];
+
+      if (
+        typeof valA === 'boolean'
+        || typeof valA === 'number'
+        || typeof valA === 'string'
+      ) {
+        if (
+          prop !== 'modified' // already know that it's changed, don't need to track this
+          && valA !== valB
+        ) {
+          _diffs.modified.push({
+            from: valB,
+            path: parentPath ? parentPath : prop,
+            prop,
+            to: valA,
+          });
+        }
+      }
+      else {
+        diff(valA, valB, {
+          diffs: _diffs,
+          parentObjB: _objB,
+          parentPath: parentPath ? `${parentPath}/${prop}` : prop,
+        });
+      }
+    });
+  }
+
+  return _diffs;
+}
+
+function diffData(serverData, offlineData) {
+  const serverJSON = JSON.stringify(serverData);
+  const offlineJSON = JSON.stringify(offlineData);
+  
+  if (serverJSON !== offlineJSON) {
+    const {
+      notesData: serverNotesData,
+      preferences: serverPreferences,
+    } = serverData;
+    const {
+      notesData: offlineNotesData,
+      preferences: offlinePreferences,
+    } = offlineData;
+
+    try {
+      return {
+        notesDiff: diff(offlineNotesData, serverNotesData),
+        prefsDiff: diff(offlinePreferences, serverPreferences),
+      };
+    }
+    catch (err) {
+      log.error(err);
+    }
+  }
+}
+
+export async function clearOfflineChanges() {
+  const creds = getStoreValue(userData);
+  
+  await window.sw.postOfflineDataMessage({
+    creds,
+    type: MSG_TYPE__CLEAR_OFFLINE_DATA,
+  });
+}
+
 export async function syncOfflineData(creds) {
   if (creds) {
     try {
-      // const offlineData = (ignoreOfflineChanges)
-      //   ? undefined
-      //   : await window.sw.getOfflineData(creds);
-      // const offlineChangesExist = offlineData && offlineData.data;
-      // const serverData = await postData(ROUTE__API__USER__DATA__GET, {
-      //   ...creds,
-      //   offlineChangesExist,
-      // });
+      let offlineChangesExist = false;
+      let offlineData;
+      if (window.sw?.activated?.()) {
+        offlineData = await window.sw.postOfflineDataMessage({
+          creds,
+          type: MSG_TYPE__GET_OFFLINE_DATA,
+        });
+        offlineChangesExist = !!offlineData;
+      }
+      
+      const serverData = await postData(ROUTE__API__USER__DATA__GET, {
+        ...creds,
+        offlineChangesExist,
+      });
+        
+      if (offlineChangesExist) {
+        const diffs = diffData(serverData, offlineData);
+        const somethingChanged = Object.values(diffs)
+          .reduce((arr, obj) => {
+            arr.push(...Object.values(obj));
+            return arr;
+          }, [])
+          .find((arr) => arr.length);
+        
+        // User could have made changes but then removed them (like adding a
+        // note but then deleting it), so verify the Diff dialog actually needs
+        // to be displayed.
+        if (somethingChanged) dialogDataForDiff.set(diffs);
+        else await clearOfflineChanges();
+      }
       
       const {
         allTags: tags,
         notesData,
         preferences,
         recentlyViewed: recent,
-      } = await postData(ROUTE__API__USER__DATA__GET, creds);
+      } = serverData;
       allTags.set(tags);
       noteGroups.set(notesData);
       recentlyViewed.set(recent);
       userPreferences.set(preferences);
       await tick(); // ensure components have rendered changes
       await loadThemeCSS(preferences.theme);
-      
-      // if (offlineChangesExist) {
-      //   const diffs = diffData(serverData, offlineData.data);
-      //   dialogDataForDiff.set(diffs);
-      // }
-      // else {
-      //   const {
-      //     notesData,
-      //     preferences,
-      //   } = serverData;
-      //   noteGroups.set(notesData);
-      //   userPreferences.set(preferences);
-      //   loadThemeCSS(preferences.theme);
-      // }
     }
-    catch ({ message }) { alert(message); }
+    catch ({ message, stack }) {
+      log.error(stack);
+      alert(stack);
+    }
   } 
 }
 
@@ -338,7 +461,7 @@ export function closeUserProfile() {
   userProfileOpened.set(false);
 }
 
-export function updateHistory({ params, path } = {}) {
+export async function updateHistory({ params, path } = {}) {
   const _url = new URL(window.location);
   _url.pathname = path || '/';
   _url.search = '';
@@ -350,7 +473,7 @@ export function updateHistory({ params, path } = {}) {
   }
   
   if (_url.pathname === '/' && !_url.search) {
-    currentNote.set();
+    await currentNote.set();
     currentTag.set();
   }
   
@@ -381,25 +504,41 @@ export async function loadNote(notePath) {
   }
 }
 
-export function updateCurrNote({ id, noteData, params } = {}) {
+export async function updateCurrNote({ id, newData, params } = {}) {
   const cN = getStoreValue(currentNote);
+  const dataRef = (newData?.draft) ? newData.draft : newData;
+  const noteId = kebabCase(dataRef?.title) || id;
   
-  // For the case where another note is open, and the User decided to 
+  let noteData;
+  if (newData) {
+    noteData = {
+      ...cN,
+      content: dataRef.content,
+      draft: newData?.draft || null, // could be set in the currentNote, but undefined after a deletion so ensure it's overwritten in currentNote.
+      id: noteId,
+      tags: dataRef.tags,
+      title: dataRef.title,
+    };
+  }
+  
+  // For the case where the User is on a Full Note page, and the User decided to 
   // edit/delete a note from the NotesNav, only update the URL and the currently
   // open note's data if the ids match.
   if (cN?.id === id) {
-    currentNote.set(noteData);
+    if (noteData) await currentNote.set(noteData);
     updateHistory({ params });
   }
+  
+  return { noteId };
 }
 
-export function loadTaggedNotes(tag) {
+export async function loadTaggedNotes(tag) {
   const aT = getStoreValue(allTags);
   const cN = getStoreValue(currentNote);
   const nNFO = getStoreValue(notesNavFlyoutOpen);
   const sFO = getStoreValue(searchFlyoutOpen);
   
-  if (cN) currentNote.set();
+  if (cN) await currentNote.set();
   
   if (nNFO) notesNavFlyoutOpen.set(false);
   else if (sFO) searchFlyoutOpen.set(false);

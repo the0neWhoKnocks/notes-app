@@ -4,7 +4,16 @@ mkdir -p \
   ./dist \
   ./dist/public/css \
   ./dist/public/imgs \
+  ./dist/public/js/sw \
   ./dist/public/js/vendor
+
+# Sync Service Worker files. Have to use imports so that it can import the
+# dynamically generated env file from the Server.
+rsync -avh \
+  --exclude 'constants.mjs' \
+  --exclude 'register.mjs' \
+  ./src/client/serviceWorker/* \
+  ./dist/public/js/sw --delete
 
 # Sync Server files, delete anything that doesn't exist anymore.
 # These paths may need to be echoed in `watcher.js > watchedServerFiles`.

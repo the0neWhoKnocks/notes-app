@@ -3,10 +3,11 @@ import {
   CRYPT__IV_LENGTH,
   DB_NAME,
   DB_VERSION,
-} from './constants';
-import { bufferToBase64 } from './crypt';
+} from './constants.mjs';
+import { bufferToBase64 } from './crypt.mjs';
+import l from './logger.mjs';
 
-const LOG_PREFIX = '[SW_DB]';
+const log = l('db');
 let dbRef;
 
 const dbAPI = {
@@ -25,18 +26,18 @@ const dbAPI = {
           if (!req.result) {
             (failSilently)
               ? resolve(undefined)
-              : reject(`${LOG_PREFIX}[get] No 'keyPath' matching "${storeKey}" found in "${store.name}"`);
+              : reject(`[get] No 'keyPath' matching "${storeKey}" found in "${store.name}"`);
           }
           else resolve(req.result);
         };
         req.onerror = () => {
           (failSilently)
             ? resolve(undefined)
-            : reject(`${LOG_PREFIX}[get] ${req.error}`);
+            : reject(`[get] ${req.error}`);
         };
       });
     }
-    else if (!failSilently) throw Error(`${LOG_PREFIX} Store hasn't been selected`);
+    else if (!failSilently) throw Error(`Store hasn't been selected`);
   },
   selectStore: (storeName) => {
     if (dbRef) {
@@ -51,7 +52,7 @@ const dbAPI = {
       };
     }
     else {
-      throw Error(`${LOG_PREFIX} No DB reference found`);
+      throw Error('No DB reference found');
     }
     
     return dbAPI;
@@ -65,11 +66,11 @@ const dbAPI = {
         // a value already exists with the same `keyPath`.
         const req = store.put(data);
         req.onsuccess = () => { resolve(req.result); };
-        req.onerror = () => { reject(`${LOG_PREFIX}[set] ${req.error}`); };
+        req.onerror = () => { reject(`[set] ${req.error}`); };
       });
     }
     else {
-      throw Error(`${LOG_PREFIX} Store hasn't been selected`);
+      throw Error(`Store hasn't been selected`);
     }
   },
 };
@@ -89,10 +90,10 @@ export function initDB() {
       const userDataStore = db.result.createObjectStore('userData', { keyPath: 'username' });
       userDataStore.createIndex('username', 'username', { unique: true });
       
-      console.log(`${LOG_PREFIX} Added base data`);
+      log.info('Added base data');
     };
     db.onsuccess = async () => {
-      console.log(`${LOG_PREFIX} Opened "${DB_NAME}"`);
+      log.info(`Opened "${DB_NAME}"`);
       dbRef = db.result;
       
       try {
@@ -110,10 +111,10 @@ export function initDB() {
         
         resolve(dbAPI);
       }
-      catch (err) { reject(`${LOG_PREFIX} Error adding crypt data:\n${err}`); }
+      catch (err) { reject(`Error adding crypt data:\n${err}`); }
     };
     db.onerror = () => {
-      reject(`${LOG_PREFIX} Error opening "${DB_NAME}@v${DB_VERSION}":\n${db.error}`);
+      reject(`Error opening "${DB_NAME}@v${DB_VERSION}":\n${db.error}`);
     };
   });
 }
