@@ -31,7 +31,13 @@ const deriveKey = (passwordKey, salt, keyUsage) => {
   );
 }
 
-export const bufferToBase64 = (buff) => btoa(String.fromCharCode.apply(null, buff));
+export const bufferToBase64 = (buff) => {
+  // NOTE: Was getting a RangeError when dealing with large payloads. Apparently
+  // there's a 30k byte limit for ArrayBuffers. Came across [this gist](https://gist.github.com/jonleighton/958841)
+  // and went with the fix outlined in https://gist.github.com/jonleighton/958841?permalink_comment_id=2915919#gistcomment-2915919.
+  
+  return btoa(new Uint8Array(buff).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+}
 export const base64ToBuffer = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(null));
 
 export async function encrypt({ iv, salt } = {}, data, password) {
