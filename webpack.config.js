@@ -62,60 +62,6 @@ const outputFilename = ({ chunk: { name }, contentHashType }) => {
   return _name;
 };
 
-class RemoveDupeCSSClassPlugin {
-  constructor() {
-    this.SVELTE_RULE_REGEX = /\.svelte-[a-z0-9]+/g;
-  }
-  
-  apply(compiler) {
-    compiler.hooks.emit.tapAsync('RemoveDupeCSSClassPlugin', (compilation, callback) => {
-      const { assets } = compilation;
-      const files = Object.keys(assets).filter(a => a.startsWith('css/'));
-      
-      files.forEach((f) => {
-        const asset = assets[f];
-        let items;
-        
-        // normalize items to an Array to simplifiy processing
-        if (asset.constructor.name === 'CachedSource') items = asset._source._children;
-        else items = [asset];
-        
-        items.forEach((src) => {
-          let valKey;
-          
-          if (src.constructor.name === 'RawSource') valKey = '_value';
-          else if (src.constructor.name === 'SourceMapSource') valKey = '_valueAsString';
-          
-          const ruleMatches = (src[valKey].match(this.SVELTE_RULE_REGEX) || []);
-          const rules = [...(new Set(ruleMatches)).values()];
-          const matchedDupes = rules.reduce((arr, rule) => {
-            const dupeRuleRegEx = new RegExp(`${rule}${rule}${Array(10).fill(`(?:${rule})?`).join('')}`, 'g');
-            const matches = src[valKey].match(dupeRuleRegEx);
-            
-            if (matches) arr.push(...matches);
-            
-            return arr;
-          }, []);
-          // sort and reverse so that the longer dupe rules get replaced first
-          const uniqueDupes = [...(new Set(matchedDupes)).values()].sort().reverse();
-          
-          uniqueDupes.forEach((dupeRule) => {
-            const singleRule = `.${dupeRule.split('.')[1]}`;
-            const regEx = new RegExp(dupeRule, 'g');
-            
-            src._valueAsBuffer = Buffer.from(
-              src._valueAsBuffer.toString().replace(regEx, singleRule),
-              'utf8'
-            );
-          });
-        });
-      });
-      
-      callback();
-    });
-  }
-}
-
 const conf = {
   devtool: dev && 'eval-source-map',
   entry: {
@@ -161,6 +107,8 @@ const conf = {
             loader: 'css-loader',
             options: { sourceMap: dev },
           },
+          // remove duplicate svelte classes
+          { loader: resolve('./.webpack/loader.remove-duplicate-svelte-classes') },
         ],
       },
     ],
@@ -222,7 +170,6 @@ const conf = {
       chunkFilename: outputFilename,
       filename: outputFilename,
     }),
-    new RemoveDupeCSSClassPlugin(),
     /**
      * WP tries to emit the JS files for extracted CSS files, this prevents that
      */
