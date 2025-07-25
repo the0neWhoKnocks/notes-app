@@ -7,6 +7,8 @@ const IgnoreEmitPlugin = require('ignore-emit-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
+const ENTRY_PREFIX__CSS = 'css/'; // folder path to dump CSS files in after compilation
+const ENTRY_PREFIX__JS = 'js/'; // folder path to dump JS files in after compilation
 const HASH_LENGTH = 5;
 const alias = {
   svelte: resolve('node_modules', 'svelte/src/runtime'),
@@ -35,15 +37,24 @@ const dev = mode === 'development';
 const outputFilename = ({ chunk: { name }, contentHashType }) => {
   let _name;
   
+  // Account for dynamic imports that likely won't have path prefixes.
+  if (!name.includes('/')) {
+    name = `${ENTRY_PREFIX__JS}${name}`;
+  }
+  
   switch (contentHashType) {
     case 'css/mini-extract': {
       // dump CSS files in a 'css' folder
-      const newName = name.replace(/^js\//, 'css/');
-      _name = `${newName}_[chunkhash:${HASH_LENGTH}].css`;
+      const newName = name.replace(new RegExp(`^${ENTRY_PREFIX__JS}`), ENTRY_PREFIX__CSS);
+      _name = (name.endsWith('.css'))
+        ? '[name]'
+        : `${newName}_[contenthash:${HASH_LENGTH}].css`;
       break;
     }
     case 'javascript': {
-      _name = `[name]_[chunkhash:${HASH_LENGTH}].js`;
+      _name = (/\.(c|m)?js$/.test(name))
+        ? '[name]'
+        : `[name]_[contenthash:${HASH_LENGTH}].js`;
       break;
     }
   }
