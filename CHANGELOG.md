@@ -1,6 +1,28 @@
 # Changelog
 ---
 
+## v2.1.0
+
+<details>
+  <summary>Expand for v2.1.0 Details</summary>
+
+  **Bugfixes**
+  - [5578d35](/the0neWhoKnocks/notes-app/commit/5578d35): Code block language labels overlapping border
+  - [a667438](/the0neWhoKnocks/notes-app/commit/a667438): Partial matches of Search on Full Note remain when there are no matches
+  - [1ed9ec9](/the0neWhoKnocks/notes-app/commit/1ed9ec9): Running kebabCase on an already cased string strips the dashes
+
+  **Dev-Ops**
+  - [121dfa0](/the0neWhoKnocks/notes-app/commit/121dfa0): Update browserslist
+  - [2bd938f](/the0neWhoKnocks/notes-app/commit/2bd938f): Brought in updated WP duplicate class remover
+  - [fd8e2c3](/the0neWhoKnocks/notes-app/commit/fd8e2c3): Update how WP generates file names
+  - [8c118a1](/the0neWhoKnocks/notes-app/commit/8c118a1): Object.assign for Server constants
+
+  **Features**
+  - [3c678db](/the0neWhoKnocks/notes-app/commit/3c678db): ServiceWorker v2
+</details>
+
+---
+
 ## v2.0.0
 
 <details>
