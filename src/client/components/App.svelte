@@ -290,7 +290,7 @@
     --color--app--highlight: #dadada;
     --color--prism--code-text: #626262;
     --color--prism--lang-bg: #f5f2f0;
-    --color--prism--lang-top: 2.5em;
+    --color--prism--lang-top: 2.8em;
     --color--prism--ln-bg: var(--color--prism--lang-bg);
     --color--prism--ln-left: 0;
     --color--prism--ln-top: 3.2em;
@@ -322,7 +322,7 @@
     --color--app--highlight: #bea387;
     --color--prism--code-text: #fff;
     --color--prism--lang-bg: #4d4033;
-    --color--prism--lang-top: 2.8em;
+    --color--prism--lang-top: 3em;
     --color--prism--ln-bg: linear-gradient(90deg, #1f1f1f, #4d4033 17%);
     --color--prism--ln-left: 0.25em;
     --color--prism--ln-top: 3.4em;

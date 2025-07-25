@@ -268,7 +268,7 @@ const shell = ({
           right: unset;
         }
         :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar > .toolbar-item > button {
-          font-family: revert;
+          font-family: FiraCode;
           font-size: 1em;
           color: inherit;
           outline-color: currentColor;
