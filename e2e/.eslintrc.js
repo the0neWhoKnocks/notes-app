@@ -11,7 +11,8 @@ module.exports = {
     'node/no-missing-import': ['error', {
       allowModules: [
         '@playwright/test', // NOTE: There's a known issue where new modules with an `exports` section don't resolve in eslint: https://github.com/import-js/eslint-plugin-import/issues/1810
-        '@src/*', // NOTE: mapped from `docker-compose` file
+        '@src/constants', // NOTE: mapped from `docker-compose` file
+        '@src/server/utils/encrypt',
       ],
     }],
     'playwright/expect-expect': ['error', {
