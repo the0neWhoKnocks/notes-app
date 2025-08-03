@@ -15,22 +15,6 @@ const SELECTOR__LOGIN_FORM = '.login-form';
 class AppFixture extends BaseFixture {
   constructor({ browser, context, page, testCtx, testInfo }) {
     super({ browser, context, page, testCtx, testInfo });
-    
-    // `visibilitychange` doesn't work when creating new pages. All pages are
-    // considered active and don't go into a background state. This is a known
-    // issue/feature: https://github.com/microsoft/playwright/issues/3570.
-    // This hack, gets around that for now.
-    this.pageVisibility = {
-      hide: () => this.pageVisibility.toggle('hide'),
-      show: () => this.pageVisibility.toggle('show'),
-      toggle: (state) => {
-        return this.fx.page.evaluate((state) => {
-          Object.defineProperty(document, 'visibilityState', { value: (state === 'hide') ? 'hidden' : 'visible', writable: true });
-          Object.defineProperty(document, 'hidden', { value: state === 'hide', writable: true });
-          document.dispatchEvent(new Event('visibilitychange'));
-        }, state);
-      },
-    };
   }
   
   async clearStorage() {
