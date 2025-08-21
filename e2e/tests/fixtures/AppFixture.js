@@ -4,7 +4,7 @@ import {
   DATA_ACTION__MOVE,
   DATA_TYPE__GROUP,
   PATH__DATA,
-} from '@src/constants';
+} from '@src/constants'; // eslint-disable-line n/no-missing-import
 import BaseFixture, { createTest, expect } from './BaseFixture';
 
 export const CREDS__PASS = 'pass';
@@ -12,7 +12,7 @@ export const CREDS__USER = 'user';
 const LOG_PREFIX = '[AppFixture]';
 const SELECTOR__LOGIN_FORM = '.login-form';
 
-class AppFixture extends BaseFixture {
+export class AppFixture extends BaseFixture {
   constructor({ browser, context, page, testCtx, testInfo }) {
     super({ browser, context, page, testCtx, testInfo });
   }
@@ -25,10 +25,10 @@ class AppFixture extends BaseFixture {
   }
   
   async createConfig() {
-    await this.getElBySelector('input[name="cipherKey"]').fill('zeffer');
-    await this.getElBySelector('input[name="salt"]').fill('pepper');
+    await this.getEl('input[name="cipherKey"]').fill('zeffer');
+    await this.getEl('input[name="salt"]').fill('pepper');
     await this.fx.screenshot('[config] filled out');
-    await this.getElBySelector('button[value="create"]').click();
+    await this.getEl('button[value="create"]').click();
     
     await this.waitForDialog(SELECTOR__LOGIN_FORM);
   }
@@ -46,9 +46,10 @@ class AppFixture extends BaseFixture {
     
     const createBtn = dialog.locator('button[value="create"]');
     if (errorMsg) {
-      await this.validateAlert(errorMsg, async () => {
-        await createBtn.click();
-      });
+      await expect(this.fx.page).toHaveAlertMsg(
+        async () => { await createBtn.click(); },
+        errorMsg
+      );
     }
     else {
       await createBtn.click();
@@ -66,7 +67,7 @@ class AppFixture extends BaseFixture {
   }
   
   async deleteUserData(reload = false) {
-    await this.exec(`rm -rf ${PATH__DATA}/user_*`);
+    await AppFixture.exec(`rm -rf ${PATH__DATA}/user_*`);
     console.log(`${LOG_PREFIX} [DELETED] User data`);
     if (reload) await this.fx.page.reload();
   }
@@ -88,7 +89,7 @@ class AppFixture extends BaseFixture {
     const labelSelector = type === DATA_TYPE__GROUP ? '.group__name-text' : '.item__label-text';
     const parentSelector = type === DATA_TYPE__GROUP ? '.group' : '.item';
     const _selector = `${selector} ${labelSelector}`;
-    const label = this.getElBySelector(`${selector} ${labelSelector}:text-is("${itemName}")`);
+    const label = this.getEl(`${selector} ${labelSelector}:text-is("${itemName}")`);
     let subNav;
     
     if (await label.count()) {
@@ -109,7 +110,7 @@ class AppFixture extends BaseFixture {
         if (subNav) {
           const resp = this.genDeleteNoteReqPromise();
           await subNav.locator('.modify-nav [title="Delete"]').click();
-          await this.getElBySelector('.delete-form__btm-nav :text-is("Yes")').click();
+          await this.getEl('.delete-form__btm-nav :text-is("Yes")').click();
           await resp;
         }
         else console.log(`${LOG_PREFIX} Skipping delete, no nav found`);
@@ -128,15 +129,15 @@ class AppFixture extends BaseFixture {
           });
           
           await subNav.locator('.modify-nav [title="Move"]').click();
-          await this.getElBySelector('.move-to .group__name')
+          await this.getEl('.move-to .group__name')
             .filter({
-              has: this.getElBySelector(`.group__name-text:text-is("${moveToPath}")`),
+              has: this.getEl(`.group__name-text:text-is("${moveToPath}")`),
             })
             .locator('.move-nav :text-is("Here")')
             .click();
-          await this.getElBySelector('.move-to__btm-nav :text-is("Move")').click();
+          await this.getEl('.move-to__btm-nav :text-is("Move")').click();
           await resp;
-          await expect(this.getElBySelector('.move-to')).not.toBeAttached();
+          await expect(this.getEl('.move-to')).not.toBeAttached();
         }
         else console.log(`${LOG_PREFIX} Skipping move, no nav found`);
       },
@@ -144,17 +145,17 @@ class AppFixture extends BaseFixture {
   }
   
   getUserBtn() {
-    return this.getElBySelector('.top-nav .user-nav .drop-down__toggle');
+    return this.getEl('.top-nav .user-nav .drop-down__toggle');
   }
   
   async getUserDataFolders() {
-    const { stdout: result } = await this.exec(`find "${PATH__DATA}" -name "user_*" -type d`);
+    const result = await AppFixture.exec(`find "${PATH__DATA}" -name "user_*" -type d`);
     return result.split('\n').filter((i) => !!i).map((i) => i.replace(`${PATH__DATA}/`, ''));
   }
   
   async loadNotePage(noteName, parentPath = BASE_DATA_NODE) {
     await this.loadPage(`?note=${encodeURIComponent(`${parentPath}/${noteName}`.toLowerCase().replaceAll(' ', '-'))}`);
-    await expect(this.getElBySelector('.full-note')).toHaveCount(1);
+    await expect(this.getEl('.full-note')).toHaveCount(1);
   }
   
   async logIn(opts) {
@@ -193,8 +194,8 @@ class AppFixture extends BaseFixture {
       await uResp;
       console.log(`${LOG_PREFIX} User data response recieved`);
       await expect(dialog).not.toBeAttached();
-      await expect(this.getElBySelector('.app')).toContainClass('is--loaded');
-      await expect(this.getElBySelector('.user-nav .username')).toContainText(user);
+      await expect(this.getEl('.app')).toContainClass('is--loaded');
+      await expect(this.getEl('.user-nav .username')).toContainText(user);
     }
     
     return dialog;
@@ -206,8 +207,8 @@ class AppFixture extends BaseFixture {
   
   async updateUserCreds({ user, pass }) {
     await this.getUserBtn().click();
-    await this.getElBySelector('.user-nav :text-is("Profile")').click();
-    const profileForm = this.getElBySelector('.user-profile-form');
+    await this.getEl('.user-nav :text-is("Profile")').click();
+    const profileForm = this.getEl('.user-profile-form');
     const updateBtn = profileForm.locator('nav button:text-is("Update")');
     
     await expect(updateBtn).toBeDisabled();
@@ -217,7 +218,7 @@ class AppFixture extends BaseFixture {
     await updateBtn.click();
     
     await this.getUserBtn().click();
-    await this.getElBySelector('.user-nav :text-is("Logout")').click();
+    await this.getEl('.user-nav :text-is("Logout")').click();
     await this.logIn({ user, pass });
   }
   

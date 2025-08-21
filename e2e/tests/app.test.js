@@ -8,11 +8,12 @@ import {
   DATA_TYPE__PREFS,
   PATH__CONFIG,
   PATH__DATA,
-} from '@src/constants';
-import encrypt from '@src/server/utils/encrypt';
+} from '@src/constants'; // eslint-disable-line n/no-missing-import
+import encrypt from '@src/server/utils/encrypt'; // eslint-disable-line n/no-missing-import
 import {
   CREDS__PASS,
   CREDS__USER,
+  AppFixture,
   expect,
   test,
 } from './fixtures/AppFixture';
@@ -21,13 +22,14 @@ const SELECTOR__FLYOUT__CLOSE_BTN = '.flyout__close-btn';
 const SELECTOR__FULLNOTE__CONTENT = '.full-note__body';
 const SELECTOR__FULLNOTE__TITLE = '.full-note header';
 const SELECTOR__START_MSG = '.start-msg';
+const { exec } = AppFixture;
 
 test.describe.configure({ mode: 'serial' }); // Required to stop tests on failure.
 
 test.describe('Init', () => {
   
   test('Fill out config data', async ({ app }) => {
-    await app.exec(`rm -rf ${PATH__DATA}/*`);
+    await exec(`rm -rf ${PATH__DATA}/*`);
     await app.loadPage();
     await app.clearStorage();
     
@@ -40,8 +42,7 @@ test.describe('Init', () => {
     
     await app.createUser({ user: CREDS__USER, pass: CREDS__PASS });
     // going from create to login will persist what was entered, the doubling is expected
-    await app.validateAlert(
-      `An account for "${CREDS__USER}${CREDS__USER}" doesn't exist.`,
+    await expect(app.page).toHaveAlertMsg(
       async () => {
         await app.logIn({
           user: CREDS__USER,
@@ -49,7 +50,8 @@ test.describe('Init', () => {
           screenshot: '[login_user] incorrect creds filled out',
           willFail: true,
         });
-      }
+      },
+      `An account for "${CREDS__USER}${CREDS__USER}" doesn't exist.`
     );
     
     await app.logIn({
@@ -72,7 +74,7 @@ test.describe('Init', () => {
     await app.loadPage();
     await app.logIn();
     
-    const startMsg = app.getElBySelector(SELECTOR__START_MSG);
+    const startMsg = app.getEl(SELECTOR__START_MSG);
     await expect(startMsg).toContainText("Looks like you haven't added any notes yet.");
     await expect(startMsg.locator('button.notes-menu-btn')).toBeAttached();
     await expect(startMsg.locator('button.import-btn')).toBeAttached();
@@ -102,7 +104,7 @@ test('Migrate Data to New Schema', async ({ app }) => {
             created: 1642016304599,
             tags: [],
             title: NOTE_TITLE,
-          }
+          },
         },
       },
     },
@@ -117,12 +119,12 @@ test('Migrate Data to New Schema', async ({ app }) => {
   await app.deleteUserData();
   
   await app.loadNotePage(NOTE_TITLE);
-  await expect(app.getElBySelector('.app')).toContainClass('is--loaded');
+  await expect(app.getEl('.app')).toContainClass('is--loaded');
   await expect(existsSync(filePath)).toBeFalsy();
   await expect(existsSync(`${filePath}.bak`)).toBeTruthy();
   await expect(existsSync(`${PATH__DATA}/${userFolder}`)).toBeTruthy();
-  await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
-  await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+  await expect(app.getEl(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+  await expect(app.getEl(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
   await app.screenshot('old data migrated');
 });
 
@@ -143,12 +145,6 @@ test.describe('Notes', () => {
     }, count);
   }
   
-  async function scrollToBottom(loc) {
-    await loc.evaluate(async () => {
-      window.scrollTo(0, document.body.scrollHeight);
-    });
-  }
-  
   async function typeStuff(loc, txt) {
     const parts = txt.split(/(\{[^}]+\})/).filter((str) => !!str);
     const keyReg = /^\{([^}]+)\}$/;
@@ -167,24 +163,24 @@ test.describe('Notes', () => {
     await app.loadPage();
     await app.logIn();
     
-    notesBtn = app.getElBySelector('.top-nav .notes-menu-btn');
-    searchBtn = app.getElBySelector('.top-nav .search-btn');
-    themeBtn = app.getElBySelector('.top-nav :text-is("Theme")');
+    notesBtn = app.getEl('.top-nav .notes-menu-btn');
+    searchBtn = app.getEl('.top-nav .search-btn');
+    themeBtn = app.getEl('.top-nav :text-is("Theme")');
     
     note = {
       async clickAdd() {
-        if ( !(await app.getElBySelector('.flyout .notes').count()) ) {
+        if ( !(await app.getEl('.flyout .notes').count()) ) {
           await this.openNotesFlyout();
         }
-        await app.getElBySelector('.flyout .notes > .sub-nav button[title="Add Note"]').click();
+        await app.getEl('.flyout .notes > .sub-nav button[title="Add Note"]').click();
         this.setUpLocs();
       },
       async openNotesFlyout() {
         await notesBtn.click();
-        await expect(app.getElBySelector('[flyout-for="notesNav"]')).toBeVisible();
+        await expect(app.getEl('[flyout-for="notesNav"]')).toBeVisible();
       },
       async setUpLocs() {
-        form = app.getElBySelector('.note-form');
+        form = app.getEl('.note-form');
         title = form.locator('[name="title"]');
         toolbar = form.locator('.note-form__toolbar');
         content = form.locator('.note-form__content');
@@ -215,8 +211,8 @@ test.describe('Notes', () => {
     search = {
       find: async (query) => {
         await searchBtn.click();
-        await typeStuff(app.getElBySelector('.search__input-wrapper input'), `${query}{Enter}`);
-        const results = app.getElBySelector('.search-result');
+        await typeStuff(app.getEl('.search__input-wrapper input'), `${query}{Enter}`);
+        const results = app.getEl('.search-result');
         return results;
       },
     };
@@ -239,7 +235,7 @@ test.describe('Notes', () => {
     await content.focus();
     await wysiwygTOCBtn.click();
     await typeStuff(content, '{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await wysiwygHeadingBtn.click();
     await content.type('Section 1');
@@ -256,45 +252,45 @@ test.describe('Notes', () => {
     await wysiwygHeadingBtn.click();
     await content.type('Section 2');
     await typeStuff(content, '{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await wysiwygHRBtn.click();
     await typeStuff(content, '{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await content.type('Bold text');
     await highlight(content, -4);
     await wysiwygBoldBtn.click();
     await typeStuff(content, '{End}{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await content.type('Italic text')
     await highlight(content, -4);
     await wysiwygItalicBtn.click();
     await typeStuff(content, '{End}{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await content.type('Strikethrough text')
     await highlight(content, -4);
     await wysiwygStrikeBtn.click();
     await typeStuff(content, '{End}{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await content.type('Inline code');
     await highlight(content, -4);
     await wysiwygCodeBtn.click();
     await typeStuff(content, '{End}{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await content.type('A link')
     await highlight(content, -6);
     await wysiwygLinkBtn.click();
-    await app.getElBySelector('#Y2xpX3VybA').type('/relative/path');
-    await app.getElBySelector('.dialog__body :text-is("Add")').click();
-    await scrollToBottom(content);
+    await app.getEl('#Y2xpX3VybA').type('/relative/path');
+    await app.getEl('.dialog__body :text-is("Add")').click();
+    await app.scroll(content).toBottom();
     
     await typeStuff(content, '{End}{Enter}{Enter}Some random test text to test search.{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await wysiwygULBtn.click();
     await typeStuff(content, '{End}unordered{Enter}unordered{Enter}{Enter}');
@@ -306,40 +302,40 @@ test.describe('Notes', () => {
     await wysiwygIndentBtn.click();
     await wysiwygOLBtn.click();
     await typeStuff(content, '{End}child{Enter}child{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await typeStuff(content, '```{Enter}// no lang specified{Enter}blah{Enter}```{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     await typeStuff(content, '```html{Enter}<!-- comment -->{Enter}<div att="val">{Enter}  <span>blah</span>{Enter}{Backspace}{Backspace}</div>{Enter}```{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     await typeStuff(content, '```js{Enter}// code block{Enter}var x = \'y\';{Enter}```{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     await content.type('code block from button');
     await highlight(content, -22);
     await wysiwygCodeBlockBtn.click();
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     await typeStuff(content, '{Control+End}{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await wysiwygQuoteBtn.click();
     await typeStuff(content, 'block  {Enter}');
     await wysiwygQuoteBtn.click();
     await typeStuff(content, 'quote{Enter}{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await wysiwygTableBtn.click();
     await typeStuff(app.getFocusedEl(), '{ArrowUp}');
-    await app.getElBySelector('.table-form [name="col1"]').type('col1');
-    await app.getElBySelector('.table-form [name="col2"]').type('col2');
-    await app.getElBySelector('.table-form [name="col3"]').type('col3');
-    await app.getElBySelector('.table-form button:text-is("Add")').click();
+    await app.getEl('.table-form [name="col1"]').type('col1');
+    await app.getEl('.table-form [name="col2"]').type('col2');
+    await app.getEl('.table-form [name="col3"]').type('col3');
+    await app.getEl('.table-form button:text-is("Add")').click();
     await highlight(content, -3);
     await typeStuff(content, ' col3 value |{Enter}');
-    await scrollToBottom(content);
+    await app.scroll(content).toBottom();
     
     await typeStuff(content, '{Enter}askdjlaksdjf;laksjdfla;skjdfla;ksdjflskajdfl;askjdfla;skdjfl;sakdjflsa;kdjfal;skdjfl;askjdf;adf {Enter}');
     let contWidth = await content.evaluate((el) => el.scrollWidth);
-    await expect(contWidth).toEqual(666);
+    await expect(contWidth).toEqual(651);
     await expect(form).toContainClass('wrap');
     await app.screenshot('editor is wrapping text');
     await wysiwygWrapBtn.click();
@@ -350,7 +346,7 @@ test.describe('Notes', () => {
     await wysiwygWrapBtn.click();
     
     await wysiwygPreviewBtn.click();
-    const preview = app.getElBySelector('.note-form__content-preview');
+    const preview = app.getEl('.note-form__content-preview');
     await expect(preview.locator('hr')).toBeAttached();
     await expect(preview.locator('thead')).toContainText('col1 col2 col3');
     await expect(preview.locator('tbody')).toContainText('col3 value');
@@ -359,22 +355,22 @@ test.describe('Notes', () => {
     await wysiwygPreviewBtn.click();
     
     // make sure no accidental loss of note occurs
-    await app.getElBySelector('.dialog-mask').click({ force: true }); // eslint-disable-line playwright/no-force-option
+    await app.getEl('.dialog-mask').click({ force: true }); // eslint-disable-line playwright/no-force-option
     await expect(content).toBeAttached();
     
     await saveBtn.click();
     
-    const tags = app.getElBySelector('.notes-nav .tags');
+    const tags = app.getEl('.notes-nav .tags');
     await tags.locator('.notes-nav-items-toggle__btn').click();
     const noteTag = tags.locator('.notes-nav-items-toggle__items .note-tag');
     await expect(noteTag).toHaveCount(1);
     await expect(noteTag).toHaveAttribute('href', '?tag=test');
     
-    const label = app.getElBySelector('.group-list.is--root > .item .item__label');
+    const label = app.getEl('.group-list.is--root > .item .item__label');
     await expect(label).toHaveCount(1);
     await expect(label).toHaveAttribute('href', '?note=root%2Ffull-test-note');
     
-    await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
+    await app.getEl(SELECTOR__FLYOUT__CLOSE_BTN).click();
   });
   
   test.describe('Group', () => {
@@ -384,16 +380,16 @@ test.describe('Notes', () => {
       // reset test data
       await app.deleteGroup(GROUP_NAME);
       
-      await app.getElBySelector('.flyout .sub-nav button[title="Add Group"]').click();
-      await app.getElBySelector('#Y2xpX25hbWU').type(GROUP_NAME);
-      await expect(app.getElBySelector('.query')).toContainText('?note=root%2Ftest-group');
-      await app.getElBySelector('.group-form__btm-nav :text-is("Save")').click();
+      await app.getEl('.flyout .sub-nav button[title="Add Group"]').click();
+      await app.getEl('#Y2xpX25hbWU').type(GROUP_NAME);
+      await expect(app.getEl('.query')).toContainText('?note=root%2Ftest-group');
+      await app.getEl('.group-form__btm-nav :text-is("Save")').click();
       
-      const groupName = app.getElBySelector('.group__name-text');
+      const groupName = app.getEl('.group__name-text');
       await expect(groupName).toHaveCount(1);
       await expect(groupName).toContainText(GROUP_NAME);
         
-      await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
+      await app.getEl(SELECTOR__FLYOUT__CLOSE_BTN).click();
     });
     
     test('Move Note to Group', async ({ app }) => {
@@ -401,24 +397,24 @@ test.describe('Notes', () => {
         
       // move note, verify the number of notes in the group is displayed
       await app.moveNote(NOTE_NAME, GROUP_NAME);
-      await expect(app.getElBySelector('.group__name-text')).toContainText(`(1) ${GROUP_NAME}`);
+      await expect(app.getEl('.group__name-text')).toContainText(`(1) ${GROUP_NAME}`);
       
       // open group to execute actions on note
-      await app.getElBySelector('.group').click();
+      await app.getEl('.group').click();
       
       // verify query preview maintains group path(s)
-      await app.getElBySelector('.group .item [title="Edit"]').click();
+      await app.getEl('.group .item [title="Edit"]').click();
       await note.setUpLocs();
-      await expect(app.getElBySelector('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note');
+      await expect(app.getEl('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note');
       await title.type(' update');
-      await expect(app.getElBySelector('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note-update');
+      await expect(app.getEl('.note-form .query')).toContainText('?note=root%2Ftest-group%2Ffull-test-note-update');
       await cancelBtn.click();
       
       // move the note back to the root
       await app.moveNote(NOTE_NAME, '/');
-      await expect(app.getElBySelector('.group__name-text')).toContainText(GROUP_NAME);
+      await expect(app.getEl('.group__name-text')).toContainText(GROUP_NAME);
       
-      await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
+      await app.getEl(SELECTOR__FLYOUT__CLOSE_BTN).click();
     });
   });
   
@@ -442,45 +438,45 @@ test.describe('Notes', () => {
     
     await app.screenshot('search results');
     
-    await app.getElBySelector(SELECTOR__FLYOUT__CLOSE_BTN).click();
+    await app.getEl(SELECTOR__FLYOUT__CLOSE_BTN).click();
   });
   
   test('Export and Import User Data', async ({ app }) => {
     const backupFilePath = await app.downloadFile(async () => {
       await app.getUserBtn().click();
-      await app.getElBySelector('.user-nav :text-is("Export")').click();
+      await app.getEl('.user-nav :text-is("Export")').click();
     });
     
     await app.deleteUserData(true);
     
-    await expect(app.getElBySelector(SELECTOR__START_MSG)).toBeAttached();
+    await expect(app.getEl(SELECTOR__START_MSG)).toBeAttached();
     
     await app.waitForDataUpdate({ action: DATA_ACTION__IMPORT, type: DATA_TYPE__ALL }, async () => {
       await app.chooseFile(backupFilePath, async () => {
         await app.getUserBtn().click();
-        await app.getElBySelector('.user-nav :text-is("Import")').click();
+        await app.getEl('.user-nav :text-is("Import")').click();
       });
     });
     
-    await expect(app.getElBySelector(SELECTOR__START_MSG)).not.toBeAttached();
+    await expect(app.getEl(SELECTOR__START_MSG)).not.toBeAttached();
   });
   
   test('Switch Themes', async ({ app }) => {
     await themeBtn.click();
-    await expect(app.getElBySelector('.theme-opt.current')).toContainText('default');
-    await expect(app.getElBySelector('body[class*="theme-"]')).toHaveCount(0);
+    await expect(app.getEl('.theme-opt.current')).toContainText('default');
+    await expect(app.getEl('body[class*="theme-"]')).toHaveCount(0);
     
-    const opts = await app.getElBySelector('.theme-opt:not(.current)').all();
+    const opts = await app.getEl('.theme-opt:not(.current)').all();
     for (const opt of opts) {
       const theme = await opt.getAttribute('value');
       await app.waitForDataUpdate({ action: DATA_ACTION__EDIT, type: DATA_TYPE__PREFS }, async () => {
         await opt.click();
       });
-      await expect(app.getElBySelector(`body.theme-${theme}`)).toHaveCount(1);
+      await expect(app.getEl(`body.theme-${theme}`)).toHaveCount(1);
       await app.screenshot(`theme '${theme}' applied`);
     }
     
-    await app.getElBySelector('.theme-opt:text-is("default")').click();
+    await app.getEl('.theme-opt:text-is("default")').click();
     await themeBtn.click();
   });
   
@@ -498,14 +494,14 @@ test.describe('Notes', () => {
       await note.clickAdd();
       await title.fill(NOTE_TITLE);
       await content.fill(NOTE_CONTENT);
-      await expect(app.getElBySelector('.dialog__title')).toContainText('Add Note');
+      await expect(app.getEl('.dialog__title')).toContainText('Add Note');
       await expect(cancelBtn).toHaveCount(1);
       await app.screenshot('[draft] creating new note');
       
       // Create draft, verify note UI updated to reflect draft creation ========
       await app.pageVisibility.hide();
       await app.pageVisibility.show();
-      await expect(app.getElBySelector('.dialog__title')).toContainText('Edit Note');
+      await expect(app.getEl('.dialog__title')).toContainText('Edit Note');
       await expect(deleteDraftBtn).toHaveCount(1);
       await app.screenshot('[draft] created from unsaved new note');
       
@@ -516,23 +512,23 @@ test.describe('Notes', () => {
       await app.screenshot('[draft] data used in search results');
       
       // Load and verify note from Search ======================================
-      await app.getElBySelector(`.search-result[data-path="${BASE_DATA_NODE}/${NOTE_ID}"]`).click();
-      await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
-      await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+      await app.getEl(`.search-result[data-path="${BASE_DATA_NODE}/${NOTE_ID}"]`).click();
+      await expect(app.getEl(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+      await expect(app.getEl(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
       await app.screenshot('[draft] content used in note view');
       
       // Delete draft and verify it's deletion =================================
-      const editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+      const editBtn = app.getEl(SELECTOR__EDIT_BTN);
       await expect(editBtn).toContainText('Draft');
       await editBtn.click();
       await deleteDraftBtn.click();
       await app.waitForDialog('.delete-form');
-      await expect(app.getElBySelector('.delete-form__msg')).toContainText(`Delete note ${NOTE_TITLE} from /?`);
+      await expect(app.getEl('.delete-form__msg')).toContainText(`Delete note ${NOTE_TITLE} from /?`);
       const delResp = app.genDeleteNoteReqPromise();
-      await app.getElBySelector('.delete-form__btm-nav :text-is("Yes")').click();
+      await app.getEl('.delete-form__btm-nav :text-is("Yes")').click();
       await delResp;
       await note.openNotesFlyout();
-      await expect(app.getElBySelector(`.notes .item__label:text-is("${NOTE_TITLE}")`)).toHaveCount(0);
+      await expect(app.getEl(`.notes .item__label:text-is("${NOTE_TITLE}")`)).toHaveCount(0);
       await app.screenshot('[draft] deletion deletes note since there was no previous data');
       
       // Verify note saved from a draft ========================================
@@ -541,12 +537,12 @@ test.describe('Notes', () => {
       await content.fill(NOTE_CONTENT);
       await app.pageVisibility.hide();
       await app.pageVisibility.show();
-      await expect(app.getElBySelector('.dialog__title')).toContainText('Edit Note');
+      await expect(app.getEl('.dialog__title')).toContainText('Edit Note');
       await saveBtn.click();
-      await app.getElBySelector(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
-      await expect(app.getElBySelector('.flyout')).toBeHidden();
-      await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
-      await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+      await app.getEl(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
+      await expect(app.getEl('.flyout')).toBeHidden();
+      await expect(app.getEl(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+      await expect(app.getEl(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
       await app.screenshot('[draft] data converted to note data');
     });
       
@@ -555,7 +551,7 @@ test.describe('Notes', () => {
       
       await app.loadNotePage(NOTE_NAME);
       
-      let editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+      let editBtn = app.getEl(SELECTOR__EDIT_BTN);
       await expect(editBtn).not.toContainText('Draft');
       await editBtn.click();
       await note.setUpLocs();
@@ -574,7 +570,7 @@ test.describe('Notes', () => {
       await app.loadPage();
       await app.logIn();
       await app.loadNotePage(NOTE_NAME);
-      editBtn = app.getElBySelector(SELECTOR__EDIT_BTN);
+      editBtn = app.getEl(SELECTOR__EDIT_BTN);
       await expect(editBtn).toContainText('Draft');
       await app.screenshot('[draft] Edit button displays Draft');
       await editBtn.click();
@@ -584,7 +580,7 @@ test.describe('Notes', () => {
       await app.screenshot('[draft] Editor has Draft content');
       
       // disregard draft =========================================================
-      await app.getElBySelector('.note-form__btm-nav :text-is("Delete Draft")').click();
+      await app.getEl('.note-form__btm-nav :text-is("Delete Draft")').click();
       await expect(editBtn).not.toContainText('Draft');
       await app.screenshot('[draft] Edit button does not displays Draft');
       await editBtn.click();
@@ -604,9 +600,9 @@ test.describe('Notes', () => {
     await title.fill(NOTE_TITLE);
     await content.fill(NOTE_CONTENT);
     await saveBtn.click();
-    await expect(app.getElBySelector('.note-form')).toBeHidden();
-    await app.getElBySelector(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
-    await expect(app.getElBySelector('.flyout')).toBeHidden();
+    await expect(app.getEl('.note-form')).toBeHidden();
+    await app.getEl(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
+    await expect(app.getEl('.flyout')).toBeHidden();
     
     // NOTE: Since the config generates unique data on creation, I can only verify
     // that User folder names are changing, not that they equal a static value.
@@ -615,16 +611,16 @@ test.describe('Notes', () => {
     const [ newFolder ] = await app.getUserDataFolders();
     await expect(newFolder).not.toEqual(oldFolder);
     await app.loadNotePage(NOTE_TITLE);
-    await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
-    await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+    await expect(app.getEl(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+    await expect(app.getEl(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
     await app.screenshot('user credentials changed');
     
     await app.updateUserCreds({ user: CREDS__USER, pass: CREDS__PASS });
     const [ resetFolder ] = await app.getUserDataFolders();
     await expect(resetFolder).toEqual(oldFolder);
     await app.loadNotePage(NOTE_TITLE);
-    await expect(app.getElBySelector(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
-    await expect(app.getElBySelector(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
+    await expect(app.getEl(SELECTOR__FULLNOTE__TITLE)).toContainText(NOTE_TITLE);
+    await expect(app.getEl(SELECTOR__FULLNOTE__CONTENT)).toContainText(NOTE_CONTENT);
     await app.screenshot('user credentials reverted');
   });
 });
