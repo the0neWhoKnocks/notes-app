@@ -6,7 +6,7 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    'plugin:node/recommended',
+    'plugin:n/recommended',
     'plugin:svelte/recommended',
   ],
   overrides: [],
@@ -14,40 +14,31 @@ module.exports = {
     ecmaVersion: 2020,
     sourceType: 'module',
   },
-  plugins: [],
+  plugins: [
+    '@stylistic',
+  ],
   rules: {
-    'comma-dangle': ['error', {
+    '@stylistic/comma-dangle': ['error', {
       arrays: 'always-multiline',
       exports: 'always-multiline',
       functions: 'only-multiline',
       imports: 'always-multiline',
       objects: 'always-multiline',
     }],
-    'keyword-spacing': ['error', { after: true, before: true }],
-    'no-process-exit': 'off',
-    'no-unused-vars': ['error', {
-      args: 'after-used',
-      argsIgnorePattern: "^_$",
-    }],
-    'node/no-missing-import': ['error', {
+    '@stylistic/keyword-spacing': ['error', { after: true, before: true }],
+    '@stylistic/space-before-blocks': ['error', 'always'],
+    'n/hashbang': 'off',
+    'n/no-missing-import': ['error', {
       allowModules: [
         'svelte', // NOTE: There's a known issue where new modules with an `exports` section don't resolve in eslint: https://github.com/import-js/eslint-plugin-import/issues/1810
       ],
     }],
-    'node/no-unpublished-import': 'off',
-    'node/no-unpublished-require': 'off',
-    'node/no-unsupported-features/es-syntax': ['error', {
-      version: '>=14.16.1',
-      ignores: [
-        'dynamicImport', // WP imports
-        'modules', // allow for import/export statements
-      ],
+    'n/no-process-exit': 'off',
+    'n/no-unpublished-import': 'off',
+    'n/no-unpublished-require': 'off',
+    'no-unused-vars': ['error', {
+      args: 'after-used',
+      argsIgnorePattern: "^_$",
     }],
-    'node/no-unsupported-features/node-builtins': ['error', {
-      version: '>=14.16.1',
-      ignores: ['inspector'],
-    }],
-    'node/shebang': 'off',
-    'space-before-blocks': ['error', 'always'],
   },
 };
