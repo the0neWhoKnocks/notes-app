@@ -34,6 +34,7 @@ export const dialogDataForGroup = writable();
 export const dialogDataForMove = writable();
 export const dialogDataForNote = writable();
 export const initialUserDataLoaded = writable(false);
+export const loadingTaggedNotes = writable(false);
 export const loggedInStateChecked = writable(false);
 export const noteGroups = writable();
 export const notesNavFlyoutOpen = writable(false);
@@ -538,6 +539,8 @@ export async function loadTaggedNotes(tag) {
   const nNFO = getStoreValue(notesNavFlyoutOpen);
   const sFO = getStoreValue(searchFlyoutOpen);
   
+  loadingTaggedNotes.set(true);
+  
   if (cN) await currentNote.set();
   
   if (nNFO) notesNavFlyoutOpen.set(false);
@@ -550,6 +553,8 @@ export async function loadTaggedNotes(tag) {
   }
   // no note found, so update URL
   else updateHistory();
+  
+  loadingTaggedNotes.set(false);
 }
 
 export function getNoteBlurbs(notePaths) {

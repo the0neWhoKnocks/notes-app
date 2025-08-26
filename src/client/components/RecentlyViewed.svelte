@@ -5,6 +5,7 @@
     currentTag,
     getNoteBlurbs,
     initialUserDataLoaded,
+    loadingTaggedNotes,
     recentlyViewed,
     recentlyViewedOpen,
   } from '../stores';
@@ -36,6 +37,7 @@
   $effect(() => {
     if (
       $initialUserDataLoaded
+      && !$loadingTaggedNotes
       && (!$currentNote && !$currentTag)
       && $recentlyViewed && $recentlyViewed.length
     ) {
