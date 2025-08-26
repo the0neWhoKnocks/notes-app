@@ -31,6 +31,6 @@
   }
 </script>
 
-<button class="import-btn" on:click={importData}>
-  <Icon type="{ICON__UPLOAD}" /> Import
+<button class="import-btn" onclick={importData}>
+  <Icon type={ICON__UPLOAD} /> Import
 </button>

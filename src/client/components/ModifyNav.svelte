@@ -10,10 +10,12 @@
     ICON__TRASH,
   } from './Icon.svelte';
   
-  export let draft = false;
-  export let id = undefined;
-  export let path = undefined;
-  export let type = undefined;
+  let {
+    draft = false,
+    id = undefined,
+    path = undefined,
+    type = undefined,
+  } = $props();
   
   function handleDeleteClick() {
     deleteItem({ id, path, type });
@@ -29,17 +31,17 @@
 </script>
 
 <nav class="modify-nav">
-  <button class:is--draft={draft} type="button" title="Edit" on:click={handleEditClick}>
-    <Icon type="{ICON__EDIT}" />
+  <button class:is--draft={draft} type="button" title="Edit" onclick={handleEditClick}>
+    <Icon type={ICON__EDIT} />
     {#if draft}
       <div class="modify-nav__draft-txt">Draft</div>
     {/if}
   </button>
-  <button type="button" title="Move" on:click={moveItem}>
-    <Icon type="{ICON__NEW_TAB}" />
+  <button type="button" title="Move" onclick={moveItem}>
+    <Icon type={ICON__NEW_TAB} />
   </button>
-  <button type="button" title="Delete" on:click={handleDeleteClick}>
-    <Icon type="{ICON__TRASH}" />
+  <button type="button" title="Delete" onclick={handleDeleteClick}>
+    <Icon type={ICON__TRASH} />
   </button>
 </nav>
 

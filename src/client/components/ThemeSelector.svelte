@@ -26,14 +26,14 @@
 </script>
 
 <DropDown bind:open={$themeSelectorOpen}>
-  <svelte:fragment slot="label">
+  {#snippet s_label()}
     <Icon type={ICON__THEME} />
     Theme
-  </svelte:fragment>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div on:click={handleThemeSelect}>
-    {#each themes as {label, value}}
+  {/snippet}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div onclick={handleThemeSelect}>
+    {#each themes as {label, value} (value)}
       <button
         type="button"
         class="theme-opt"

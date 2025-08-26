@@ -7,7 +7,7 @@
   }
 </script>
 
-<button class="search-btn" on:click={openFlyout}>
+<button class="search-btn" onclick={openFlyout}>
   <Icon type={ICON__SEARCH} />
   Search
 </button>

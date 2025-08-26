@@ -13,9 +13,9 @@
   import Dialog from './Dialog.svelte';
   import Diffs from './Diffs.svelte';
   
-  export let onDiscard = undefined;
+  let { onDiscard = undefined } = $props();
   
-  let formRef;
+  let formRef = $state();
   
   function closeDialog() {
     dialogDataForDiff.set();
@@ -38,7 +38,9 @@
     }, {});
   }
   
-  async function handleSubmit() {
+  async function handleSubmit(ev) {
+    ev.preventDefault();
+    
     const formData = serializeForm(formRef);
     
     if (!formData.changes) return discardChanges();
@@ -98,55 +100,56 @@
     modal
     title="Offline Changes"
   >
-    <form
-      class="diff-form"
-      slot="dialogBody"
-      bind:this={formRef}
-      on:submit|preventDefault={handleSubmit}
-    >
-      <input type="hidden" name="username" value={$userData.username} />
-      <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value={DATA_ACTION__APPLY_OFFLINE_CHANGES} />
-      <input type="hidden" name="type" value={DATA_TYPE__ALL} />
-      
-      Looks like you made some changes while you were offline.
-      <ul>
-        <li>All checked items will be saved.</li>
-        <li>Any unchecked changes will be discarded.</li>
-      </ul>
-      
-      <div class="diff-form__sections">
-        {#if (
-          $dialogDataForDiff.prefsDiff.added.length
-          || $dialogDataForDiff.prefsDiff.modified.length
-          || $dialogDataForDiff.prefsDiff.removed.length
-        )}
-          <div class="diff-form__section">
-            <header>Preferences</header>
-            <Diffs diffs={$dialogDataForDiff.prefsDiff} type={DATA_TYPE__PREFS} />
-          </div>
-        {/if}
-        {#if (
-          $dialogDataForDiff.notesDiff.added.length
-          || $dialogDataForDiff.notesDiff.modified.length
-          || $dialogDataForDiff.notesDiff.removed.length
-        )}
-          <div class="diff-form__section">
-            <header>Notes</header>
-            <Diffs
-              diffs={$dialogDataForDiff.notesDiff}
-              transformPath={transformNotePath}
-              type="notes"
-            />
-          </div>
-        {/if}
-      </div>
-      
-      <nav class="diff-form__btm-nav">
-        <button type="button" on:click={discardChanges}>Discard All</button>
-        <button>Apply</button>
-      </nav>
-    </form>
+    {#snippet s_dialogBody()}
+      <form
+        class="diff-form"
+        bind:this={formRef}
+        onsubmit={handleSubmit}
+      >
+        <input type="hidden" name="username" value={$userData.username} />
+        <input type="hidden" name="password" value={$userData.password} />
+        <input type="hidden" name="action" value={DATA_ACTION__APPLY_OFFLINE_CHANGES} />
+        <input type="hidden" name="type" value={DATA_TYPE__ALL} />
+        
+        Looks like you made some changes while you were offline.
+        <ul>
+          <li>All checked items will be saved.</li>
+          <li>Any unchecked changes will be discarded.</li>
+        </ul>
+        
+        <div class="diff-form__sections">
+          {#if (
+            $dialogDataForDiff.prefsDiff.added.length
+            || $dialogDataForDiff.prefsDiff.modified.length
+            || $dialogDataForDiff.prefsDiff.removed.length
+          )}
+            <div class="diff-form__section">
+              <header>Preferences</header>
+              <Diffs diffs={$dialogDataForDiff.prefsDiff} type={DATA_TYPE__PREFS} />
+            </div>
+          {/if}
+          {#if (
+            $dialogDataForDiff.notesDiff.added.length
+            || $dialogDataForDiff.notesDiff.modified.length
+            || $dialogDataForDiff.notesDiff.removed.length
+          )}
+            <div class="diff-form__section">
+              <header>Notes</header>
+              <Diffs
+                diffs={$dialogDataForDiff.notesDiff}
+                transformPath={transformNotePath}
+                type="notes"
+              />
+            </div>
+          {/if}
+        </div>
+        
+        <nav class="diff-form__btm-nav">
+          <button type="button" onclick={discardChanges}>Discard All</button>
+          <button>Apply</button>
+        </nav>
+      </form>
+    {/snippet}
   </Dialog>
 {/if}
 

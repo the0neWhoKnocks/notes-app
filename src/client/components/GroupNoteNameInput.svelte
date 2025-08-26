@@ -4,15 +4,17 @@
   import parsePath from '../../utils/parsePath';
   import LabeledInput from './LabeledInput.svelte';
 
-  export let editing = false;
-  export let label = undefined;
-  export let nameAttr = undefined;
-  export let oldNameAttr = undefined;
-  export let onQueryChange = undefined;
-  export let path = '';
-  export let valueAttr = undefined;
+  let {
+    editing = false,
+    label = undefined,
+    nameAttr = undefined,
+    oldNameAttr = undefined,
+    onQueryChange = undefined,
+    path = '',
+    valueAttr = undefined,
+  } = $props();
   
-  let query = '';
+  let query = $state.raw('');
   
   const genQuery = (str = '') => {
     const id = kebabCase(str);

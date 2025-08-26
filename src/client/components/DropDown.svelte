@@ -4,12 +4,15 @@
     ICON__ANGLE_UP,
   } from './Icon.svelte';
   
-  let _class = '';
-  export let open = false;
-  export { _class as class };
+  let {
+    children,
+    class: _class = '',
+    open = $bindable(false),
+    s_label,
+  } = $props();
   
   let ddRef;
-  let openedOnce = false;
+  let openedOnce = $state.raw(false);
   
   function handleToggle() {
     open = !open;
@@ -24,7 +27,7 @@
   }
 </script>
 
-<svelte:window on:click={handleOuterClick} />
+<svelte:window onclick={handleOuterClick} />
 
 <div
   class="{_class} drop-down"
@@ -32,8 +35,8 @@
   class:no-anim={!openedOnce}
   bind:this={ddRef}
 >
-  <button class="drop-down__toggle" on:click={handleToggle}>
-    <slot name="label" />
+  <button class="drop-down__toggle" onclick={handleToggle}>
+    {@render s_label?.()}
     {#if open}
       <Icon type={ICON__ANGLE_UP} />
     {:else}
@@ -41,7 +44,7 @@
     {/if}
   </button>
   <div class="drop-down__nav-wrapper">
-    <nav><slot /></nav>
+    <nav>{@render children?.()}</nav>
   </div>
 </div>
 

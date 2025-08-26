@@ -6,14 +6,14 @@
   } from '../stores';
   import NoteBlurb from './NoteBlurb.svelte';
   
-  $: list = ($currentTag) ? getNoteBlurbs($allTags[$currentTag]) : undefined;
+  let list = $derived(($currentTag) ? getNoteBlurbs($allTags[$currentTag]) : undefined);
 </script>
 
 {#if list}
   <div class="tagged-notes">
     <h3>{list.length} {#if list.length === 1}Note{:else}Notes{/if} Tagged with "{$currentTag}"</h3>
     <div class="tagged-notes__blurbs">
-      {#each list as item}
+      {#each list as item (item)}
         <NoteBlurb {...item} />
       {/each}
     </div>

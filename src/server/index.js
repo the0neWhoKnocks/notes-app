@@ -194,15 +194,14 @@ app
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-line-numbers.min.js`,
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-toolbar.min.js`,
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-copy-to-clipboard.min.js`,
-        `/${PUBLIC_JS_VENDOR}/purify.min.js`,
         manifest['vendor.js'],
         manifest['sw.register.js'],
         manifest[`${VIEW}.js`],
       ],
       styles: [
-        { attrs: { id: 'prismTheme' }, url: `/${PUBLIC_CSS_VENDOR}/prism/themes/prism.css` },
-        `/${PUBLIC_CSS_VENDOR}/prism/plugins/prism-line-numbers.css`,
-        `/${PUBLIC_CSS_VENDOR}/prism/plugins/prism-toolbar.css`,
+        { attrs: { id: 'prismTheme' }, url: `/${PUBLIC_CSS_VENDOR}/prism/themes/prism.min.css` },
+        `/${PUBLIC_CSS_VENDOR}/prism/plugins/prism-line-numbers.min.css`,
+        `/${PUBLIC_CSS_VENDOR}/prism/plugins/prism-toolbar.min.css`,
       ],
     };
     const head = {

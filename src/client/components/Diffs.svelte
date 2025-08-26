@@ -1,16 +1,18 @@
 <script>
-  export let diffs = undefined;
-  export let transformPath = undefined;
-  export let type = undefined;
+  let {
+    diffs = undefined,
+    transformPath = undefined,
+    type = undefined,
+  } = $props();
   
   const objKeys = Object.keys(diffs);
 </script>
 
-{#each objKeys as typeProp}
+{#each objKeys as typeProp (typeProp)}
   {#if diffs[typeProp].length}
     <div class={`diff-group for--${typeProp}`}>
       <header>{typeProp}</header>
-      {#each diffs[typeProp] as diff, ndx}
+      {#each diffs[typeProp] as diff, ndx (diff)}
         <div class="diff">
           <label class="path">
             <input type="checkbox" name={`changes[${type}][${typeProp}][]`} value={ndx} checked />

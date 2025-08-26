@@ -7,7 +7,7 @@
   }
 </script>
 
-<button class="notes-menu-btn" on:click={openFlyout}>
+<button class="notes-menu-btn" onclick={openFlyout}>
   <Icon type={ICON__MENU} />
   Notes
 </button>

@@ -10,7 +10,7 @@
   } from '../stores';
   import NoteBlurb from './NoteBlurb.svelte';
   
-  let recentItems;
+  let recentItems = $state.raw();
   
   const toggle = (_, { type } = {}) => {
     return {
@@ -33,15 +33,17 @@
     recentlyViewedOpen.set(false);
   }
   
-  $: if (
-    $initialUserDataLoaded
-    && (!$currentNote && !$currentTag)
-    && $recentlyViewed && $recentlyViewed.length
-  ) {
-    recentItems = getNoteBlurbs($recentlyViewed);
-    recentlyViewedOpen.set(true);
-  }
-  else recentItems = undefined;
+  $effect(() => {
+    if (
+      $initialUserDataLoaded
+      && (!$currentNote && !$currentTag)
+      && $recentlyViewed && $recentlyViewed.length
+    ) {
+      recentItems = getNoteBlurbs($recentlyViewed);
+      recentlyViewedOpen.set(true);
+    }
+    else recentItems = undefined;
+  });
 </script>
 
 {#if recentItems}
@@ -49,10 +51,10 @@
     class="recently-viewed"
     in:toggle={{ type: 'show' }}
     out:toggle={{}}
-    on:outroend={handleCloseEnd}
+    onoutroend={handleCloseEnd}
   >
     <h3>Recently Viewed</h3>
-    {#each recentItems as item}
+    {#each recentItems as item (item)}
       <NoteBlurb {...item} />
     {/each}
   </nav>

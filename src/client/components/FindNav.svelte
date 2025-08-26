@@ -5,18 +5,20 @@
     ICON__ARROW_UP,
   } from './Icon.svelte';
   
-  export let onClose = undefined;
-  export let onSearch = undefined;
-  export let selector = '';
+  let {
+    onClose = undefined,
+    onSearch = undefined,
+    selector = '',
+  } = $props();
   
-  let closing = false;
+  let closing = $state.raw(false);
   let contentEl;
-  let currentMatch = 1;
+  let currentMatch = $state.raw(1);
   let domSnapshot;
   let inputDebounce;
   let inputRef;
   let styleRef;
-  let totalMatches = 0;
+  let totalMatches = $state.raw(0);
   
   function encodeString(str) {
     return str.replace(/[\u00A0-\u9999<>&]/g, (i) => {
@@ -60,7 +62,7 @@
     `;
     
     await tick();
-    const yOffset = 15; 
+    const yOffset = 15;
     const matchEl = document.querySelector(matchSelector);
     
     if (matchEl) {
@@ -183,7 +185,7 @@
       type="text"
       placeholder="Find..."
       bind:this={inputRef}
-      on:input={handleInput}
+      oninput={handleInput}
     />
     {#if totalMatches}
       <div class="find-nav__matches">
@@ -191,13 +193,13 @@
       </div>
     {/if}
   </div>
-  <button on:click={handlePrevClick} title="Previous Match">
-    <Icon type="{ICON__ARROW_UP}" />
+  <button onclick={handlePrevClick} title="Previous Match">
+    <Icon type={ICON__ARROW_UP} />
   </button>
-  <button on:click={handleNextClick} title="Next Match">
-    <Icon type="{ICON__ARROW_DOWN}" />
+  <button onclick={handleNextClick} title="Next Match">
+    <Icon type={ICON__ARROW_DOWN} />
   </button>
-  <button on:click={handleClose} title="Close Find Nav">&#10005;</button>
+  <button onclick={handleClose} title="Close Find Nav">&#10005;</button>
 </nav>
 
 <style>
@@ -271,10 +273,10 @@
     pointer-events: none;
   }
   
-  .find-nav :is(button, input) {
+  .find-nav :is(:global(button, input)) {
     border: none;
   }
-  .find-nav :is(button, input):where(:focus, :hover) {
+  .find-nav :is(:global(button, input)):where(:global(:focus, :hover)) {
     border: none;
     outline: none;
     background-color: #eee;

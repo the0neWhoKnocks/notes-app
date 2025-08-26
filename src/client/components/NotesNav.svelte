@@ -18,7 +18,7 @@
   import NotesNavItemsToggle from './NotesNavItemsToggle.svelte';
   import NotesNavSubNav from './NotesNavSubNav.svelte';
   
-  let groupsData;
+  let groupsData = $state.raw();
   
   function handleNoteClick(el) {
     const { note } = getParams(el.href);
@@ -47,28 +47,29 @@
   {#if $recentlyViewed && $recentlyViewed.length}
     <section class="recent">
       <NotesNavItemsToggle>
-        <svelte:fragment slot="toggleLabel">
+        {#snippet s_toggleLabel()}
           <Icon type={ICON__EYE} /> Recently Viewed
-        </svelte:fragment>
-        <svelte:fragment slot="toggleItems">
-          {#each getNoteBlurbs($recentlyViewed) as item}
+        {/snippet}
+        {#snippet s_toggleItems()}
+          {#each getNoteBlurbs($recentlyViewed) as item (item)}
             <NoteBlurb {...item} />
           {/each}
-        </svelte:fragment>
+        {/snippet}
       </NotesNavItemsToggle>
     </section>
   {/if}
   {#if Object.keys($allTags).length}
     <section class="tags">
       <NotesNavItemsToggle>
-        <svelte:fragment slot="toggleLabel">
+        {#snippet s_toggleLabel()}
           <NoteTag rounded text="&nbsp;" />Tags
-        </svelte:fragment>
-        <svelte:fragment slot="toggleItems">
-          {#each Object.entries($allTags) as [tag, notePaths]}
+        {/snippet}
+        {#snippet s_toggleItems()}
+          {#each Object.entries($allTags) as item (item)}
+            {@const [ tag, notePaths ] = item}
             <NoteTag count="({notePaths.length}) " rounded text={tag} />
           {/each}
-        </svelte:fragment>
+        {/snippet}
       </NotesNavItemsToggle>
     </section>
   {/if}

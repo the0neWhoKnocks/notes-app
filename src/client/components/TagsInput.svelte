@@ -1,19 +1,21 @@
 <script>
   import { tick } from 'svelte';
 
-  export let autoCompleteItems = [];
-  export let onTagChange = undefined;
-  export let placeholder = 'Add Tag...';
-  export let tags = [];
+  let {
+    autoCompleteItems = [],
+    onTagChange = undefined,
+    placeholder = 'Add Tag...',
+    tags = $bindable([]),
+  } = $props();
   
   const KEY__ENTER = 13;
   const KEY__ESC = 27;
   const KEY__UP = 38;
   const KEY__DOWN = 40;
   let autoCompleteItemSelector = '.tags-input__auto-complete-btn';
-  let autoCompleteRef;
+  let autoCompleteRef = $state();
   let inputRef;
-  let items = [];
+  let items = $state.raw([]);
   let measureRef;
   
   function handleTagClick(ev) {
@@ -24,7 +26,7 @@
   function handleTagInput() {
     const val = inputRef.value || placeholder;
 
-    measureRef.textContent = val;
+    measureRef.textContent = val; // eslint-disable-line svelte/no-dom-manipulating
     inputRef.style.cssText = `width: ${measureRef.offsetWidth + 1}px`;
     
     items = autoCompleteItems
@@ -170,11 +172,11 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="tags-input__container"
-  on:click={handleTagClick}
+  onclick={handleTagClick}
 >
   <input
     type="hidden"
@@ -182,7 +184,7 @@
     value={tags.join(', ')}
   />
   
-  {#each tags as tag}
+  {#each tags as tag (tag)}
     <div class="tags-input__tag">
       <span class="tags-input__tag-text">{tag}</span>
       <button
@@ -198,24 +200,25 @@
     {placeholder}
     enterkeyhint="enter"
     bind:this={inputRef}
-    on:change={handleTagInput}
-    on:input={handleTagInput}
-    on:keydown={handleKeyDown}
-    on:keyup={handleKeyUp}
+    onchange={handleTagInput}
+    oninput={handleTagInput}
+    onkeydown={handleKeyDown}
+    onkeyup={handleKeyUp}
   />
   <div
     class="tags-input__measure"
     bind:this={measureRef}
   >{placeholder}</div>
   {#if items.length}
-    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <nav
       class="tags-input__auto-complete-list"
       bind:this={autoCompleteRef}
-      on:click={handleAutoCompleteSelect}
-      on:keydown={handleAutoCompleteSelect}
+      onclick={handleAutoCompleteSelect}
+      onkeydown={handleAutoCompleteSelect}
     >
-    {#each items as { start, middle, end, tag }}
+    {#each items as item (item)}
+      {@const { start, middle, end, tag } = item}
       <button
         type="button"
         class="tags-input__auto-complete-btn"

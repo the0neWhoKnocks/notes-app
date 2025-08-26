@@ -11,14 +11,14 @@
   import GroupList from './GroupList.svelte';
   import MoveNav from './MoveNav.svelte';
   
-  let currentPathPrefix = '';
-  let currentPathSuffix = '';
-  let moveGroupListData = [];
-  let newPathPrefix = '';
-  let newPathSuffix = '';
-  let newRawPath = '';
-  let path;
-  let type;
+  let currentPathPrefix = $state.raw('');
+  let currentPathSuffix = $state.raw('');
+  let moveGroupListData = $state.raw([]);
+  let newPathPrefix = $state.raw('');
+  let newPathSuffix = $state.raw('');
+  let newRawPath = $state.raw('');
+  let path = $state.raw();
+  let type = $state.raw();
   
   function closeMoveDialog() {
     moveGroupListData = [];
@@ -44,58 +44,62 @@
     newPathSuffix = suffix;
   }
   
-  $: if ($dialogDataForMove) {
-    const dDFM = $dialogDataForMove;
-    path = dDFM.path;
-    type = dDFM.type;
-    
-    const { prefix, suffix } = parsePath(path);
-    currentPathPrefix = prefix;
-    currentPathSuffix = suffix;
-    moveGroupListData = transformNoteData(
-      $noteGroups,
-      {
-        currentPath: path.replace(/\/[^/]+$/, ''),
-        groupComponent: MoveNav,
-        omitNotes: true,
-        onClick: handleMoveSelectClick,
-      }
-    );
-  }
-  else {
-    currentPathPrefix = '';
-    currentPathSuffix = '';
-    moveGroupListData = [];
-    newPathPrefix = '';
-    newPathSuffix = '';
-    newRawPath = '';
-  }
+  $effect(() => {
+    if ($dialogDataForMove) {
+      const dDFM = $dialogDataForMove;
+      path = dDFM.path;
+      type = dDFM.type;
+      
+      const { prefix, suffix } = parsePath(path);
+      currentPathPrefix = prefix;
+      currentPathSuffix = suffix;
+      moveGroupListData = transformNoteData(
+        $noteGroups,
+        {
+          currentPath: path.replace(/\/[^/]+$/, ''),
+          groupComponent: MoveNav,
+          omitNotes: true,
+          onClick: handleMoveSelectClick,
+        }
+      );
+    }
+    else {
+      currentPathPrefix = '';
+      currentPathSuffix = '';
+      moveGroupListData = [];
+      newPathPrefix = '';
+      newPathSuffix = '';
+      newRawPath = '';
+    }
+  });
 </script>
 
 {#if $dialogDataForMove}
   <Dialog for="moveTo" onCloseClick={closeMoveDialog}>
-    <div class="move-to" slot="dialogBody">
-      <div class="move-to__title">
-        Move {type}
-        <code>
-          {currentPathPrefix}<mark>{currentPathSuffix}</mark>
-        </code>
-        to:
-        {#if newPathSuffix}
+    {#snippet s_dialogBody()}
+      <div class="move-to">
+        <div class="move-to__title">
+          Move {type}
           <code>
-            {newPathPrefix}<mark>{newPathSuffix}</mark>
+            {currentPathPrefix}<mark>{currentPathSuffix}</mark>
           </code>
-        {/if}
+          to:
+          {#if newPathSuffix}
+            <code>
+              {newPathPrefix}<mark>{newPathSuffix}</mark>
+            </code>
+          {/if}
+        </div>
+        <GroupList data={moveGroupListData} expanded />
+        <nav class="move-to__btm-nav">
+          <button onclick={closeMoveDialog}>Cancel</button>
+          <button
+            disabled={!newPathSuffix}
+            onclick={handleMoveSubmit}
+          >Move</button>
+        </nav>
       </div>
-      <GroupList data={moveGroupListData} expanded />
-      <nav class="move-to__btm-nav">
-        <button on:click={closeMoveDialog}>Cancel</button>
-        <button
-          disabled={!newPathSuffix}
-          on:click={handleMoveSubmit}
-        >Move</button>
-      </nav>
-    </div>
+    {/snippet}
   </Dialog>
 {/if}
 

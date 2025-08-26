@@ -11,14 +11,16 @@
   import LogoutButton from './LogoutButton.svelte';
   import ProfileButton from './ProfileButton.svelte';
   
-  $: if ($userProfileOpened) userNavOpen.set(false);
+  $effect(() => {
+    if ($userProfileOpened) userNavOpen.set(false);
+  });
 </script>
 
 <DropDown bind:open={$userNavOpen} class="user-nav">
-  <svelte:fragment slot="label">
+  {#snippet s_label()}
     <Icon type={ICON__USER} />
     <div class="username">{$userData?.username}</div>
-  </svelte:fragment>
+  {/snippet}
   
   <ProfileButton />
   <ImportButton />

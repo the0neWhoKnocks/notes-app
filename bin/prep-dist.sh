@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# In case any old deps get removed/renamed, don't want any false positives if
+# code is referencing old files that shouldn't be getting used.
+rm -rf ./dist/public/js/vendor
+
 mkdir -p \
   ./dist \
   ./dist/public/css \
@@ -36,7 +40,6 @@ rsync -avh \
 # Sync Static module files (won't exist after a fresh clone)
 if [ -d ./node_modules ]; then
   rsync -avh \
-    ./node_modules/dompurify/dist/purify.min.js \
     ./node_modules/marked/marked.min.js \
     ./dist/public/js/vendor
 
@@ -51,18 +54,18 @@ if [ -d ./node_modules ]; then
     ./dist/public/js/vendor/prism/plugins
 
   rsync -avh \
-    ./node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css \
-    ./node_modules/prismjs/plugins/toolbar/prism-toolbar.css \
+    ./node_modules/prismjs/plugins/line-numbers/prism-line-numbers.min.css \
+    ./node_modules/prismjs/plugins/toolbar/prism-toolbar.min.css \
     ./dist/public/css/vendor/prism/plugins
   rsync -avh \
-    ./node_modules/prismjs/themes/prism-coy.css \
-    ./node_modules/prismjs/themes/prism-dark.css \
-    ./node_modules/prismjs/themes/prism-funky.css \
-    ./node_modules/prismjs/themes/prism-okaidia.css \
-    ./node_modules/prismjs/themes/prism-solarizedlight.css \
-    ./node_modules/prismjs/themes/prism-tomorrow.css \
-    ./node_modules/prismjs/themes/prism-twilight.css \
-    ./node_modules/prismjs/themes/prism.css \
+    ./node_modules/prismjs/themes/prism-coy.min.css \
+    ./node_modules/prismjs/themes/prism-dark.min.css \
+    ./node_modules/prismjs/themes/prism-funky.min.css \
+    ./node_modules/prismjs/themes/prism-okaidia.min.css \
+    ./node_modules/prismjs/themes/prism-solarizedlight.min.css \
+    ./node_modules/prismjs/themes/prism-tomorrow.min.css \
+    ./node_modules/prismjs/themes/prism-twilight.min.css \
+    ./node_modules/prismjs/themes/prism.min.css \
     ./dist/public/css/vendor/prism/themes
 
   rsync -avh \

@@ -1,13 +1,15 @@
 <script>
-  export let href = undefined;
-  export let onClick = undefined;
-  export let type = undefined;
-  let _class = '';
-  export { _class as class };
+  let {
+    children,
+    class: _class = '',
+    href = undefined,
+    onClick = undefined,
+    type = undefined,
+  } = $props();
 </script>
 
 {#if type === 'a'}
-  <a class={_class} {href} on:click={onClick}><slot /></a>
+  <a class={_class} {href} onclick={onClick}>{@render children?.()}</a>
 {:else}
-  <div class={_class}><slot /></div>
+  <div class={_class}>{@render children?.()}</div>
 {/if}

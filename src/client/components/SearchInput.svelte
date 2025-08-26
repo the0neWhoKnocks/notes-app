@@ -1,14 +1,16 @@
 <script>
   import { onMount } from 'svelte';
   
-  export let disabled = false;
-  export let focused = false;
-  export let placeholder = 'Query';
-  export let onInput = undefined;
-  export let onSearch = undefined;
+  let {
+    disabled = false,
+    focused = false,
+    placeholder = 'Query',
+    onInput = undefined,
+    onSearch = undefined,
+  } = $props();
   
   let searchInputRef;
-  let searchValue;
+  let searchValue = $state.raw();
   
   function handleSearch(ev) {
     ev.preventDefault();
@@ -36,7 +38,7 @@
 <form
   class="search"
   class:is--disabled={disabled}
-  on:submit={handleSearch}
+  onsubmit={handleSearch}
 >
   <div class="search__input-wrapper">
     <input
@@ -45,14 +47,15 @@
       type="text"
       {placeholder}
       disabled={disabled}
-      on:focus={handleFocus}
-      on:input={handleInput}
+      onfocus={handleFocus}
+      oninput={handleInput}
     />
     <button
       class="search__clear-btn"
       type="button"
+      aria-label="Clear Search"
       disabled={!searchValue}
-      on:click={handleClear}
+      onclick={handleClear}
     >
       <svg viewBox="0 0 100 100">
         <polyline points="0,0 100,100" />
@@ -73,40 +76,42 @@
     opacity: 0.75;
   }
   
-  * :where(button, input) {
-    font-size: 1.2rem;
-    line-height: 1em;
-    padding: var(--padding--input);
-    border: solid 2px;
-    background: #fff;
-  }
-  * :where(button, input):focus {
-    outline: solid 1px hsl(0deg 0% 0% / 50%);
-    outline-offset: -5px;
-  }
-  
   .search {
     display: flex;
-  }
-  .search > *:not(:last-child) {
-    margin-bottom: auto;
-  }
-  
-  .search input {
-    width: 100%;
-    height: 100%;
-    padding-right: 2.5em; /* account for clear button */
-    border-right: none;
-    border-radius: 0.5em 0 0 0.5em;
-    margin: 0;
-  }
-  
-  .search > button {
-    border-radius: 0 0.5em 0.5em 0;
+    
+    & :where(:global(button, input)) {
+      font-size: 1.2rem;
+      line-height: 1em;
+      padding: var(--padding--input);
+      border: solid 2px;
+      background: #fff;
+    }
+    
+    & :where(:global(button, input)):focus {
+      outline: solid 1px hsl(0deg 0% 0% / 50%);
+      outline-offset: -5px;
+    }
+    
+    & > *:not(:last-child) {
+      margin-bottom: 0;
+    }
+    
+    & input {
+      width: 100%;
+      height: 100%;
+      padding-right: 2.5em; /* account for clear button */
+      border-right: none;
+      border-radius: 0.5em 0 0 0.5em;
+      margin: 0;
+    }
+    
+    & > button {
+      border-radius: 0 0.5em 0.5em 0;
+    }
   }
   
   .search,
-  * :where(button, input) {
+  * :where(:global(button, input)) {
     transition: opacity 300ms;
   }
   

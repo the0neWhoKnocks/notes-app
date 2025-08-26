@@ -14,18 +14,20 @@
   import Dialog from './Dialog.svelte';
   import LabeledInput from './LabeledInput.svelte';
   
-  let oldPassword = '';
-  let oldUsername = '';
-  let password = '';
-  let username = '';
-  let dataLoaded = false;
-  let formRef;
+  let clickedDelete = $state.raw(false);
+  let dataLoaded = $state.raw(false);
+  let dataUpdated = $state.raw(false);
+  let formRef = $state();
+  let initialFormData = $state();
   let inputRef;
-  let dataUpdated = false;
-  let initialFormData;
-  let clickedDelete = false;
+  let oldPassword = $state.raw('');
+  let oldUsername = $state.raw('');
+  let password = $state.raw('');
+  let username = $state.raw('');
 
-  function handleSubmit() {
+  function handleSubmit(ev) {
+    ev.preventDefault();
+    
     postData(formRef.action, formRef)
       .then((data) => { profileUpdated(data); })
       .catch(({ message }) => { alert(message); });
@@ -70,11 +72,19 @@
     }
   }
   
-  $: if (dataLoaded && inputRef) inputRef.focus();
-  $: if (formRef && dataLoaded) {
-    initialFormData = [...new FormData(formRef).values()].join('');
-  }
-  $: if ($userProfileOpened) loadProfileData();
+  $effect(() => {
+    if (dataLoaded && inputRef) inputRef.focus();
+  });
+  
+  $effect(() => {
+    if (formRef && dataLoaded) {
+      initialFormData = [...new FormData(formRef).values()].join('');
+    }
+  });
+  
+  $effect(() => {
+    if ($userProfileOpened) loadProfileData();
+  });
 </script>
 
 {#if $userProfileOpened && dataLoaded}
@@ -82,37 +92,38 @@
     onCloseClick={handleCloseClick}
     title="User Profile"
   >
-    <form
-      class="user-profile-form"
-      action={ROUTE__API__USER__PROFILE__SET}
-      method="POST"
-      slot="dialogBody"
-      bind:this={formRef}
-      on:input={handleChange}
-      on:submit|preventDefault={handleSubmit}
-    >
-      <input type="hidden" name="oldPassword" value={oldPassword} />
-      <input type="hidden" name="oldUsername" value={oldUsername} />
-      <LabeledInput label="Username" name="username" value={username} autoFocus required />
-      <LabeledInput label="Password" name="password" value={password} required />
-      <nav>
-        <button disabled={!dataUpdated}>Update</button>
-      </nav>
-      
-      <div
-        class="delete-profile"
-        class:clicked-once={clickedDelete}
+    {#snippet s_dialogBody()}
+      <form
+        class="user-profile-form"
+        action={ROUTE__API__USER__PROFILE__SET}
+        method="POST"
+        bind:this={formRef}
+        oninput={handleChange}
+        onsubmit={handleSubmit}
       >
-        Delete Profile. This can't be undone.
-        <button type="button" on:click={deleteProfile}>
-          {#if clickedDelete}
-            Confirm Delete
-          {:else}
-            Delete
-          {/if}
-        </button>
-      </div>
-    </form>
+        <input type="hidden" name="oldPassword" value={oldPassword} />
+        <input type="hidden" name="oldUsername" value={oldUsername} />
+        <LabeledInput label="Username" name="username" value={username} autoFocus required />
+        <LabeledInput label="Password" name="password" value={password} required />
+        <nav>
+          <button disabled={!dataUpdated}>Update</button>
+        </nav>
+        
+        <div
+          class="delete-profile"
+          class:clicked-once={clickedDelete}
+        >
+          Delete Profile. This can't be undone.
+          <button type="button" onclick={deleteProfile}>
+            {#if clickedDelete}
+              Confirm Delete
+            {:else}
+              Delete
+            {/if}
+          </button>
+        </div>
+      </form>
+    {/snippet}
   </Dialog>
 {/if}
 

@@ -1,7 +1,8 @@
 <script>
-  export let label = '';
-  let _class = '';
-  export { _class as class };
+  let {
+    class: _class = '',
+    label = '',
+  } = $props();
 </script>
 
 <div class="hr-with-text {_class}">
@@ -30,4 +31,3 @@
     background: #eeeeee;
   }
 </style>
-  

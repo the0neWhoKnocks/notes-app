@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   export const ICON__ANGLE_DOWN = 'angle-down';
   export const ICON__ANGLE_UP = 'angle-up';
   export const ICON__ARROW_DOWN = 'arrow-down';
@@ -38,7 +38,7 @@
   export const ICON__USER = 'user';
 </script>
 <script>
-  export let type = undefined;
+  let { type = undefined } = $props();
 </script>
 
 <svg class="svg-icon for--{type}">

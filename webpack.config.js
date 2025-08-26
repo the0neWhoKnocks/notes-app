@@ -10,25 +10,23 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const ENTRY_PREFIX__CSS = 'css/'; // folder path to dump CSS files in after compilation
 const ENTRY_PREFIX__JS = 'js/'; // folder path to dump JS files in after compilation
 const HASH_LENGTH = 5;
-const alias = {
-  svelte: resolve('node_modules', 'svelte/src/runtime'),
-};
 const conditionNames = [
+  'svelte',
+  'browser',
   'require',
   'node',
-  'svelte',
 ];
 const extensions = [
-  '.svelte',
   '.mjs',
   '.js',
+  '.svelte',
   '.json',
   '.html',
 ];
 const mainFields = [
   'svelte',
-  'module',
   'browser',
+  'module',
   'main',
 ];
 const mode = process.env.NODE_ENV || 'development';
@@ -63,7 +61,7 @@ const outputFilename = ({ chunk: { name }, contentHashType }) => {
 };
 
 const conf = {
-  devtool: dev && 'eval-source-map',
+  devtool: dev && 'source-map',
   entry: {
     'js/app': resolve(__dirname, './src/client/index.js'),
     'js/sw/constants.mjs': {
@@ -92,7 +90,7 @@ const conf = {
           loader: 'svelte-loader',
           // Svelte compiler options: https://svelte.dev/docs#svelte_compile
           options: {
-            dev,
+            compilerOptions: { dev },
             emitCss: true,
             hotReload: false, // pending https://github.com/sveltejs/svelte/issues/2377
           },
@@ -107,8 +105,6 @@ const conf = {
             loader: 'css-loader',
             options: { sourceMap: dev },
           },
-          // remove duplicate svelte classes
-          { loader: resolve('./.webpack/loader.remove-duplicate-svelte-classes') },
         ],
       },
     ],
@@ -161,6 +157,7 @@ const conf = {
         '!js/vendor/**/*',
       ],
       cleanStaleWebpackAssets: false, // Cleaning after rebuilds doesn't play nice with `mini-css-extract-plugin`
+      // verbose: true,
     }),
     new webpack.DefinePlugin({
       'process.env.FOR_CLIENT_BUNDLE': JSON.stringify(true),
@@ -195,20 +192,12 @@ const conf = {
       writeToFileEmit: true,
     }),
   ],
-  resolve: { alias, conditionNames, extensions, mainFields },
+  resolve: { conditionNames, extensions, mainFields },
   stats: {
     children: false,
     entrypoints: false,
   },
   watch: dev,
 };
-
-// related to WSL2: https://github.com/microsoft/WSL/issues/4739
-if (dev && !!process.env.WSL_INTEROP) {
-  conf.watchOptions = {
-    aggregateTimeout: 200,
-    poll: 1000,
-  };
-}
 
 module.exports = conf;

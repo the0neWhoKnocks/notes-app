@@ -2,21 +2,22 @@
   import { onMount, tick } from 'svelte';
   import Icon, { ICON__ASTERISK } from './Icon.svelte';
   
-  export let autoComplete = false;
-  export let autoFocus = false;
-  export let disabled = false;
-  export let helpText = '';
-  export let hiddenValue = '';
-  export let label = '';
-  export let min = undefined;
-  export let name = '';
-  export let onInput = undefined;
-  export let placeholder = '';
-  export let required;
-  export let type = 'text';
-  export let value = '';
-  let _class = '';
-  export { _class as class };
+  let {
+    autoComplete = false,
+    autoFocus = false,
+    class: _class = '',
+    disabled = false,
+    helpText = '',
+    hiddenValue = '',
+    label = '',
+    min = undefined,
+    name = '',
+    onInput = undefined,
+    placeholder = '',
+    required,
+    type = 'text',
+    value = '',
+  } = $props();
   
   const id = window.btoa(`cli_${name}`).replace(/=/g, '');
   let inputRef;
@@ -37,7 +38,7 @@
     <input
       autocomplete={autoComplete ? 'on' : 'off'}
       bind:this={inputRef}
-      on:input={onInput}
+      oninput={onInput}
       {id}
       {disabled}
       {min}
@@ -55,7 +56,6 @@
   {#if helpText}
     <p class="help-text">{helpText}</p>
   {/if}
-  <slot name="lowerMarkup"></slot>
 </div>
 
 <style>

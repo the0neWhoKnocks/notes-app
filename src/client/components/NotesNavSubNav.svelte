@@ -15,11 +15,13 @@
   } from './Icon.svelte';
   import ModifyNav from './ModifyNav.svelte';
   
-  export let draft = false;
-  export let id = undefined;
-  export let path = BASE_DATA_NODE;
-  export let root = false;
-  export let type = DATA_TYPE__GROUP;
+  let {
+    draft = false,
+    id = undefined,
+    path = BASE_DATA_NODE,
+    root = false,
+    type = DATA_TYPE__GROUP,
+  } = $props();
   
   const log = logger('NotesNavSubNav');
   
@@ -41,13 +43,13 @@
   {#if type === DATA_TYPE__GROUP}
     <button
       title="Add Group"
-      on:click={addGroup}
+      onclick={addGroup}
     >
       <Icon type={ICON__FOLDER} />
     </button>
     <button
       title="Add Note"
-      on:click={addNote}
+      onclick={addNote}
     >
       <Icon type={ICON__FILE} />
     </button>

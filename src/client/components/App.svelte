@@ -36,15 +36,15 @@
   import UserNav from './UserNav.svelte';
   import UserProfileDialog from './UserProfileDialog.svelte';
   
-  export let appTitle = '';
+  let { appTitle = '' } = $props();
   
   const log = logger('App');
-  let mounted = false;
-  let swActivated = false;
-  let swError = false;
-  let swInstalling = false;
-  let swLoadingUpdate = false;
-  let swUpdateAvailable = false;
+  let mounted = $state.raw(false);
+  let swActivated = $state.raw(false);
+  let swError = $state.raw(false);
+  let swInstalling = $state.raw(false);
+  let swLoadingUpdate = $state.raw(false);
+  let swUpdateAvailable = $state.raw(false);
   
   async function loadNotes() {
     try {
@@ -123,7 +123,9 @@
     }
   }
   
-  $: if ($userIsLoggedIn) loadNotes();
+  $effect(() => {
+    if ($userIsLoggedIn) loadNotes();
+  });
   
   onMount(async () => {
     log.info('App starting');
@@ -149,7 +151,7 @@
           <a
             class="app__title-link"
             href="/"
-            on:click={handleAppTitleClick}
+            onclick={handleAppTitleClick}
           >
             <img src="/imgs/favicons/android-chrome-192x192.png" alt="logo" />
             {appTitle}
@@ -163,7 +165,7 @@
       <section class="user-content">
         <section class="user-content__body">
           {#if (
-            $noteGroups 
+            $noteGroups
             && $noteGroups[BASE_DATA_NODE]
             && (
               !Object.keys($noteGroups[BASE_DATA_NODE].groups).length
@@ -201,8 +203,8 @@
       [SW] Activated
     {:else if swUpdateAvailable}
       New Version:
-      <button on:click={handleIgnoreWorkerUpdateClick}>Ignore</button>
-      <button on:click={handleUpdateWorkerClick}>Load</button>
+      <button onclick={handleIgnoreWorkerUpdateClick}>Ignore</button>
+      <button onclick={handleUpdateWorkerClick}>Load</button>
     {:else if swInstalling}
       [SW] Installing
     {:else}
@@ -413,12 +415,12 @@
   .status-msg.offline .status-msg__txt {
     border: dashed 1px #9a4900;
     background: #ffc800;
-  }  
+  }
   .status-msg.sw-update .status-msg__txt {
     display: flex;
     gap: 0.5em;
     align-items: center;
-  }  
+  }
 
   .app {
     width: 100%;

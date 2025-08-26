@@ -1,23 +1,26 @@
-<script context="module">
+<script module>
   let flyoutNum = 0;
 </script>
 <script>
   import { cubicOut } from 'svelte/easing';
   import Portal from 'svelte-portal';
   
-  flyoutNum += 1;
+  let {
+    animDuration = 300,
+    bodyColor = '#eee',
+    borderColor = '#000',
+    children,
+    for: flyoutFor = undefined,
+    onCloseClick = undefined,
+    onCloseEnd = undefined,
+    s_flyoutTitle,
+    title = '',
+    titlebar = true,
+    titleBGColor = '#333',
+    titleTextColor = '#eee',
+  } = $props();
   
-  export let animDuration = 300;
-  export let bodyColor = '#eee';
-  export let borderColor = '#000';
-  let flyoutFor = undefined;
-  export let onCloseClick = undefined;
-  export let onCloseEnd = undefined;
-  export let title = '';
-  export let titlebar = true;
-  export let titleBGColor = '#333';
-  export let titleTextColor = '#eee';
-  export { flyoutFor as for };
+  flyoutNum += 1;
   
   const cssVars = `
     --dialog-anim-duration: ${animDuration}ms;
@@ -70,10 +73,10 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeyDown}/>
+<svelte:window onkeydown={handleKeyDown}/>
 
 <Portal target="#overlays">
-  <div 
+  <div
     class="flyout-wrapper"
     flyout-for={flyoutFor}
     style={cssVars}
@@ -81,7 +84,7 @@
     <div
       class="flyout-mask"
       aria-hidden="true"
-      on:click={handleCloseClick}
+      onclick={handleCloseClick}
       in:toggleMask
       out:toggleMask
     ></div>
@@ -90,22 +93,22 @@
       open
       in:toggleFlyout={{ dir: 'in' }}
       out:toggleFlyout={{}}
-      on:outroend={handleCloseEnd}
+      onoutroend={handleCloseEnd}
     >
       {#if titlebar}
         <nav class="flyout__nav">
           <div class="flyout__title">
-            <slot name="flyoutTitle">{title}</slot>
+            {#if s_flyoutTitle}{@render s_flyoutTitle()}{:else}{title}{/if}
           </div>
           <button
             type="button"
             class="flyout__close-btn"
-            on:click={handleCloseClick}
+            onclick={handleCloseClick}
           >&#10005;</button>
         </nav>
       {/if}
       <div class="flyout__body">
-        <slot></slot>
+        {@render children?.()}
       </div>
     </dialog>
   </div>

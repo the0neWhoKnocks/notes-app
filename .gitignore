@@ -12,3 +12,8 @@ node_modules
 .DS_STORE
 notes-backup*.json
 .creds-docker
+
+# E2E Folders/Files
+e2e/artifacts
+e2e/mnt/*
+e2e/reports

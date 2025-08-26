@@ -1,5 +1,4 @@
 <script>
-  import { beforeUpdate } from 'svelte';
   import {
     DATA_TYPE__NOTE,
     PRISMAJS__COPY_TEXT,
@@ -7,20 +6,17 @@
   import {
     currentNote,
     recentlyViewedOpen,
-  } from '../stores'; 
+  } from '../stores';
   import FindNav from './FindNav.svelte';
   import Icon, { ICON__PRINT, ICON__SEARCH } from './Icon.svelte';
   import ModifyNav from './ModifyNav.svelte';
   import NoteTag from './NoteTag.svelte';
   
-  let findNavOpen = false;
+  let findNavOpen = $state.raw(false);
   let prevNotePath;
-  let searchedNote;
+  let searchedNote = $state.raw();
   
-  let noteRef;
-  $: {
-    noteRef = ($currentNote?.draft) ? $currentNote.draft : $currentNote;
-  }
+  let note = $derived(($currentNote?.draft) ? $currentNote.draft : $currentNote);
   
   function handlePrintClick() {
     window.print();
@@ -28,7 +24,7 @@
   
   function handleFindClick() {
     findNavOpen = true;
-    prevNotePath = noteRef.path;
+    prevNotePath = note.path;
   }
   
   function handleFindClose() {
@@ -41,15 +37,15 @@
     searchedNote = matchedText;
   }
   
-  beforeUpdate(() => {
+  $effect.pre(() => {
     if (findNavOpen && prevNotePath !== $currentNote?.path) handleFindClose();
   });
 </script>
 
-{#if !$recentlyViewedOpen && noteRef?.content}
+{#if !$recentlyViewedOpen && note?.content}
   <article class="full-note" data-prismjs-copy={`${PRISMAJS__COPY_TEXT}`}>
     <header>
-      {noteRef.title}
+      {note.title}
       <nav class="full-note__nav">
         <ModifyNav
           draft={$currentNote.draft}
@@ -57,11 +53,11 @@
           path={$currentNote.path}
           type={DATA_TYPE__NOTE}
         />
-        <button on:click={handlePrintClick} title="Print Note">
-          <Icon type="{ICON__PRINT}" />
+        <button onclick={handlePrintClick} title="Print Note">
+          <Icon type={ICON__PRINT} />
         </button>
-        <button on:click={handleFindClick} title="Search Note">
-          <Icon type="{ICON__SEARCH}" />
+        <button onclick={handleFindClick} title="Search Note">
+          <Icon type={ICON__SEARCH} />
         </button>
       </nav>
       {#if findNavOpen}
@@ -72,16 +68,16 @@
         />
       {/if}
     </header>
-    {#if noteRef?.tags.length}
+    {#if note?.tags.length}
       <div class="full-note__tags">
-        {#each noteRef.tags as tag}
+        {#each note.tags as tag (tag)}
           <NoteTag rounded strokeWidth="2" text={tag} />
         {/each}
       </div>
     {/if}
     <section class="full-note__body">
       <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      {@html (searchedNote || window.marked.parse(noteRef.content))}
+      {@html (searchedNote || window.marked.parse(note.content))}
     </section>
   </article>
 {/if}

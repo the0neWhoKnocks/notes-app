@@ -1,5 +1,9 @@
 <script>
-  let open = false;
+  let {
+    s_toggleItems,
+    s_toggleLabel,
+  } = $props();
+  let open = $state.raw(false);
   
   function toggle() { open = !open; }
 </script>
@@ -8,13 +12,13 @@
   <button
     class="notes-nav-items-toggle__btn"
     class:open={open}
-    on:click={toggle}
+    onclick={toggle}
   >
-    <slot name="toggleLabel" />
+    {@render s_toggleLabel?.()}
   </button>
   {#if open}
     <nav class="notes-nav-items-toggle__items">
-      <slot name="toggleItems" />
+      {@render s_toggleItems?.()}
     </nav>
   {/if}
 </div>

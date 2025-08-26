@@ -252,7 +252,7 @@ export function loadThemeCSS(theme) {
       newEl[attr.name] = attr.value;  
     });
     
-    const url = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.css`;
+    const url = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.min.css`;
     
     newEl.addEventListener('load', () => {
       document.body.className = document.body.className.replace(/theme-[\w]+/, '');

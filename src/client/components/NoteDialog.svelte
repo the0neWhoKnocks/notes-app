@@ -45,24 +45,24 @@
   
   const TABLE_COLUMN_DEFAULT_COUNT = 2;
   const TABLE_COLUMN_MIN_COUNT = 1;
-  let anchorDialogData;
-  let contentText = '';
-  let contentWrapperRef;
-  let editingNote;
-  let formRef;
-  let hideCaret = false;
+  let anchorDialogData = $state();
+  let contentText = $state('');
+  let contentWrapperRef = $state();
+  let editingNote = $state();
+  let formRef = $state();
+  let hideCaret = $state(false);
   let keyDownContentData;
   let oldTags = [];
-  let previewing = false;
-  let previewRef;
+  let previewing = $state(false);
+  let previewRef = $state();
   let queryParams;
-  let saveBtnDisabled;
-  let tableDialogData;
-  let tags = [];
-  let textareaRef;
-  let textSelected = false;
+  let saveBtnDisabled = $state();
+  let tableDialogData = $state();
+  let tags = $state([]);
+  let textareaRef = $state();
+  let textSelected = $state(false);
   let titleValue;
-  let wrap = true;
+  let wrap = $state(true);
   
   function parseForm(form) {
     return [...(new FormData(form)).entries()].reduce((obj, [prop, val]) => {
@@ -294,7 +294,9 @@
     }
   }
   
-  async function handleSubmit() {
+  async function handleSubmit(ev) {
+    ev.preventDefault();
+    
     try {
       await saveNote();
       closeDialog();
@@ -511,13 +513,13 @@
     const _transform = (typeof transformOrChar === 'function')
       ? transformOrChar
       : (line) => {
-        const char = transformOrChar;
-        const leadingSpace = getLeadingSpace(line);
-        
-        return (line.startsWith(`${leadingSpace}${char}`))
-          ? line.replace(new RegExp(`^${leadingSpace}${char}`), leadingSpace)
-          : `${leadingSpace}${char}${line.replace(new RegExp(`^${leadingSpace}`), '')}`;
-      };
+          const char = transformOrChar;
+          const leadingSpace = getLeadingSpace(line);
+          
+          return (line.startsWith(`${leadingSpace}${char}`))
+            ? line.replace(new RegExp(`^${leadingSpace}${char}`), leadingSpace)
+            : `${leadingSpace}${char}${line.replace(new RegExp(`^${leadingSpace}`), '')}`;
+        };
     const selStart = textareaRef.selectionStart;
     const selEnd = textareaRef.selectionEnd;
     const { indexes, lines: selLines } = getSelectedLines();
@@ -800,15 +802,17 @@
     }
   }
   
-  $: if ($dialogDataForNote) {
-    deriveNoteData();
-    document.addEventListener('selectionchange', handleSelection);
-    document.addEventListener('visibilitychange', handleVisChange);
-  }
-  else {
-    document.removeEventListener('selectionchange', handleSelection);
-    document.removeEventListener('visibilitychange', handleVisChange);
-  }
+  $effect(() => {
+    if ($dialogDataForNote) {
+      deriveNoteData();
+      document.addEventListener('selectionchange', handleSelection);
+      document.addEventListener('visibilitychange', handleVisChange);
+    }
+    else {
+      document.removeEventListener('selectionchange', handleSelection);
+      document.removeEventListener('visibilitychange', handleVisChange);
+    }
+  });
 </script>
 
 {#if $dialogDataForNote}
@@ -816,227 +820,232 @@
     modal
     onCloseClick={handleCloseClick}
   >
-    <svelte:fragment slot="dialogTitle">
+    {#snippet s_dialogTitle()}
       {#if editingNote}Edit{:else}Add{/if} Note
-    </svelte:fragment>
-    <form
-      class="note-form"
-      class:previewing={previewing}
-      class:wrap={wrap}
-      slot="dialogBody"
-      bind:this={formRef}
-      on:input={handleChange}
-      on:submit|preventDefault={handleSubmit}
-    >
-      <input type="hidden" name="username" value={$userData.username} />
-      <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value={$dialogDataForNote.action} />
-      <input type="hidden" name="path" value={$dialogDataForNote.path} />
-      <input type="hidden" name="type" value={DATA_TYPE__NOTE} />
-      
-      <GroupNoteNameInput
-        editing={editingNote}
-        label="Title"
-        nameAttr="title"
-        oldNameAttr="oldTitle"
-        onQueryChange={handleQueryChange}
-        path={$dialogDataForNote.path}
-        valueAttr={$dialogDataForNote.title}
-      />
-      <TagsInput
-        autoCompleteItems={Object.keys($allTags)}
-        onTagChange={diffCheck}
-        {tags}
-      />
-      <div class="note-form__content-area">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-        <nav class="note-form__toolbar" on:click={handleToolClick}>
-          <button
-            type="button" title="Heading" data-type="heading" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__HEADING}" />
-          </button>
-          <button
-            type="button" title="Horizontal Rule" data-type="hr" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__HR}" />
-          </button>
-          <button
-            type="button" title="Bold &#013; CTRL + B" data-type="bold" tabindex="-1"
-            disabled={previewing || !textSelected}
-          >
-            <Icon type="{ICON__BOLD}" />
-          </button>
-          <button
-            type="button" title="Italic &#013; CTRL + I" data-type="italic" tabindex="-1"
-            disabled={previewing || !textSelected}
-          >
-            <Icon type="{ICON__ITALIC}" />
-          </button>
-          <button 
-            type="button" title="Strike Through" data-type="strikethrough" tabindex="-1"
-            disabled={previewing || !textSelected}
-          >
-            <Icon type="{ICON__STRIKETHROUGH}" />
-          </button>
-          <button
-            type="button" title="Inline Code" data-type="inlineCode" tabindex="-1"
-            disabled={previewing || !textSelected}
-          >
-            <Icon type="{ICON__INLINE_CODE}" />
-          </button>
-          <button
-            type="button" title="Link" data-type="anchor" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__LINK}" />
-          </button>
-          <button
-            type="button" title="Unordered List" data-type="ul" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__UNORDERED_LIST}" />
-          </button>
-          <button
-            type="button" title="Ordered List" data-type="ol" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__ORDERED_LIST}" />
-          </button>
-          <button
-            type="button" title="Indent &#013; CTRL + ]" data-type="indent" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__INDENT}" />
-          </button>
-          <button
-            type="button" title="Outdent &#013; CTRL + [" data-type="outdent" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__OUTDENT}" />
-          </button>
-          <button
-            type="button" title="Wrap" data-type="wrap" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__NON_BREAKING}" />
-          </button>
-          <div class="note-form__sep"></div>
-          <button
-            type="button" title="Code Block" data-type="codeBlock" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__CODE_BLOCK}" />
-          </button>
-          <button
-            type="button" title="Block Quote" data-type="blockquote" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__QUOTE}" />
-          </button>
-          <button
-            type="button" title="Table" data-type="table" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__TABLE}" />
-          </button>
-          <div class="note-form__sep"></div>
-          <button
-            type="button" title="Table of Contents" data-type="toc" tabindex="-1"
-            disabled={previewing}
-          >
-            <Icon type="{ICON__TOC}" />
-          </button>
-          <div class="note-form__sep"></div>
-          <button type="button" title="Preview" data-type="preview" tabindex="-1">
-            <Icon type="{ICON__PREVIEW}" />
-          </button>
-        </nav>
-        <div
-          class="note-form__content-wrapper"
-          bind:this={contentWrapperRef}
-        >
-          <textarea
-            class="note-form__content"
-            class:has--hidden-caret={hideCaret}
-            name="content"
-            bind:this={textareaRef}
-            bind:value={contentText}
-            on:blur={handleSelection}
-            on:click={handleSelection}
-            on:keydown={handleContentKeyDown}
-            on:keyup={handleContentKeyUp}
-          ></textarea>
-          {#if previewing}
-            <div
-              bind:this={previewRef}
-              class="note-form__content-preview"
-              data-prismjs-copy={PRISMAJS__COPY_TEXT}
+    {/snippet}
+    {#snippet s_dialogBody()}
+      <form
+        class="note-form"
+        class:previewing={previewing}
+        class:wrap={wrap}
+        bind:this={formRef}
+        oninput={handleChange}
+        onsubmit={handleSubmit}
+      >
+        <input type="hidden" name="username" value={$userData.username} />
+        <input type="hidden" name="password" value={$userData.password} />
+        <input type="hidden" name="action" value={$dialogDataForNote.action} />
+        <input type="hidden" name="path" value={$dialogDataForNote.path} />
+        <input type="hidden" name="type" value={DATA_TYPE__NOTE} />
+        
+        <GroupNoteNameInput
+          editing={editingNote}
+          label="Title"
+          nameAttr="title"
+          oldNameAttr="oldTitle"
+          onQueryChange={handleQueryChange}
+          path={$dialogDataForNote.path}
+          valueAttr={$dialogDataForNote.title}
+        />
+        <TagsInput
+          autoCompleteItems={Object.keys($allTags)}
+          onTagChange={diffCheck}
+          {tags}
+        />
+        <div class="note-form__content-area">
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+          <nav class="note-form__toolbar" onclick={handleToolClick}>
+            <button
+              type="button" title="Heading" data-type="heading" tabindex="-1"
+              disabled={previewing}
             >
-              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-              {@html window.marked.parse(contentText)}
-            </div>
-          {/if}
-        </div>        
-      </div>
-      <nav class="note-form__btm-nav">
-        <button type="button" on:click={handleCloseClick}>
-          {#if $dialogDataForNote.fromDraft}
-            Delete Draft
-          {:else}
-            Cancel
-          {/if}
-        </button>
-        <button disabled={saveBtnDisabled}>Save</button>
-      </nav>
-    </form>
+              <Icon type={ICON__HEADING} />
+            </button>
+            <button
+              type="button" title="Horizontal Rule" data-type="hr" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__HR} />
+            </button>
+            <button
+              type="button" title="Bold &#013; CTRL + B" data-type="bold" tabindex="-1"
+              disabled={previewing || !textSelected}
+            >
+              <Icon type={ICON__BOLD} />
+            </button>
+            <button
+              type="button" title="Italic &#013; CTRL + I" data-type="italic" tabindex="-1"
+              disabled={previewing || !textSelected}
+            >
+              <Icon type={ICON__ITALIC} />
+            </button>
+            <button
+              type="button" title="Strike Through" data-type="strikethrough" tabindex="-1"
+              disabled={previewing || !textSelected}
+            >
+              <Icon type={ICON__STRIKETHROUGH} />
+            </button>
+            <button
+              type="button" title="Inline Code" data-type="inlineCode" tabindex="-1"
+              disabled={previewing || !textSelected}
+            >
+              <Icon type={ICON__INLINE_CODE} />
+            </button>
+            <button
+              type="button" title="Link" data-type="anchor" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__LINK} />
+            </button>
+            <button
+              type="button" title="Unordered List" data-type="ul" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__UNORDERED_LIST} />
+            </button>
+            <button
+              type="button" title="Ordered List" data-type="ol" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__ORDERED_LIST} />
+            </button>
+            <button
+              type="button" title="Indent &#013; CTRL + ]" data-type="indent" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__INDENT} />
+            </button>
+            <button
+              type="button" title="Outdent &#013; CTRL + [" data-type="outdent" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__OUTDENT} />
+            </button>
+            <button
+              type="button" title="Wrap" data-type="wrap" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__NON_BREAKING} />
+            </button>
+            <div class="note-form__sep"></div>
+            <button
+              type="button" title="Code Block" data-type="codeBlock" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__CODE_BLOCK} />
+            </button>
+            <button
+              type="button" title="Block Quote" data-type="blockquote" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__QUOTE} />
+            </button>
+            <button
+              type="button" title="Table" data-type="table" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__TABLE} />
+            </button>
+            <div class="note-form__sep"></div>
+            <button
+              type="button" title="Table of Contents" data-type="toc" tabindex="-1"
+              disabled={previewing}
+            >
+              <Icon type={ICON__TOC} />
+            </button>
+            <div class="note-form__sep"></div>
+            <button type="button" title="Preview" data-type="preview" tabindex="-1">
+              <Icon type={ICON__PREVIEW} />
+            </button>
+          </nav>
+          <div
+            class="note-form__content-wrapper"
+            bind:this={contentWrapperRef}
+          >
+            <textarea
+              class="note-form__content"
+              class:has--hidden-caret={hideCaret}
+              name="content"
+              bind:this={textareaRef}
+              bind:value={contentText}
+              onblur={handleSelection}
+              onclick={handleSelection}
+              onkeydown={handleContentKeyDown}
+              onkeyup={handleContentKeyUp}
+            ></textarea>
+            {#if previewing}
+              <div
+                bind:this={previewRef}
+                class="note-form__content-preview"
+                data-prismjs-copy={PRISMAJS__COPY_TEXT}
+              >
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                {@html window.marked.parse(contentText)}
+              </div>
+            {/if}
+          </div>
+        </div>
+        <nav class="note-form__btm-nav">
+          <button type="button" onclick={handleCloseClick}>
+            {#if $dialogDataForNote.fromDraft}
+              Delete Draft
+            {:else}
+              Cancel
+            {/if}
+          </button>
+          <button disabled={saveBtnDisabled}>Save</button>
+        </nav>
+      </form>
+    {/snippet}
   </Dialog>
 {/if}
 {#if anchorDialogData}
   <Dialog for="anchor" onCloseClick={closeAnchorDialog}>
-    <form slot="dialogBody" on:submit={addAnchor}>
-      <LabeledInput
-        autoFocus={!anchorDialogData.text}
-        label="Text"
-        name="text"
-        required
-        value={anchorDialogData.text}
-      />
-      <LabeledInput
-        autoFocus={anchorDialogData.text}
-        label="URL"
-        name="url"
-        required
-      />
-      <button>Add</button>
-    </form>
+    {#snippet s_dialogBody()}
+      <form onsubmit={addAnchor}>
+        <LabeledInput
+          autoFocus={!anchorDialogData.text}
+          label="Text"
+          name="text"
+          required
+          value={anchorDialogData.text}
+        />
+        <LabeledInput
+          autoFocus={anchorDialogData.text}
+          label="URL"
+          name="url"
+          required
+        />
+        <button>Add</button>
+      </form>
+    {/snippet}
   </Dialog>
 {/if}
 {#if tableDialogData}
   <Dialog for="table" onCloseClick={closeTableDialog}>
-    <form class="table-form" slot="dialogBody" on:submit={addTable}>
-      <div class="table-form__items">
-        <LabeledInput
-          autoFocus
-          label="Columns"
-          min={TABLE_COLUMN_MIN_COUNT}
-          onInput={handleTableColumnChange}
-          type="number"
-          value={tableDialogData.columnCount}
-        />
-        {#each Array(tableDialogData.columnCount) as _, colNdx}
+    {#snippet s_dialogBody()}
+      <form class="table-form" onsubmit={addTable}>
+        <div class="table-form__items">
           <LabeledInput
-            label={`Column #${colNdx + 1}`}
-            name={`col${colNdx + 1}`}
-            value=""
+            autoFocus
+            label="Columns"
+            min={TABLE_COLUMN_MIN_COUNT}
+            onInput={handleTableColumnChange}
+            type="number"
+            value={tableDialogData.columnCount}
           />
-        {/each}
-      </div>
-      <button>Add</button>
-    </form>
+          {#each Array(tableDialogData.columnCount) as _, colNdx (colNdx)}
+            <LabeledInput
+              label={`Column #${colNdx + 1}`}
+              name={`col${colNdx + 1}`}
+              value=""
+            />
+          {/each}
+        </div>
+        <button>Add</button>
+      </form>
+    {/snippet}
   </Dialog>
 {/if}
 

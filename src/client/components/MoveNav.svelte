@@ -1,7 +1,9 @@
 <script>
-  export let currentPath = undefined;
-  export let onClick = undefined;
-  export let path = undefined;
+  let {
+    currentPath = undefined,
+    onClick = undefined,
+    path = undefined,
+  } = $props();
   
   function handleClick() {
     if (onClick) onClick(path);
@@ -9,8 +11,8 @@
 </script>
 
 <nav class="move-nav">
-  <button 
+  <button
     disabled={currentPath === path}
-    on:click={handleClick}
+    onclick={handleClick}
   >Here</button>
 </nav>

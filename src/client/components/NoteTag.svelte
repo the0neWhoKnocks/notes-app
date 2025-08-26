@@ -1,17 +1,19 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import {
     loadTaggedNotes,
   } from '../stores.js';
   import getParams from '../utils/getParams';
   import Wrap from './Wrap.svelte';
   
-  export let count = '';
-  export let horizontalPadding = 10;
-  export let rounded = false;
-  export let strokeWidth = 1;
-  export let text = '';
-  export let verticalPadding = 5;
+  let {
+    count = '',
+    horizontalPadding = 10,
+    rounded = false,
+    strokeWidth = 1,
+    text = '',
+    verticalPadding = 5,
+  } = $props();
   
   const edgeSpacing = 30;
   const addAnchor = text.replace(/&nbsp;/g, '').trim();
@@ -22,13 +24,13 @@
     type: (addAnchor) ? 'a' : undefined,
   };
   const offset = 5; // when the text's Y is set to zero, it's not aligned to the top, so fudging the numbers with this.
-  let tagWidth = 60;
-  let tagHeight = 30;
-  let textHeight = 0;
-  let textRef;
   let holeRadius;
-  let pathPoints = [];
-  let roundedPathPoints = [];
+  let pathPoints = $state.raw([]);
+  let roundedPathPoints = $state.raw([]);
+  let tagWidth = $state.raw(60);
+  let tagHeight = $state.raw(30);
+  let textHeight = $state.raw(0);
+  let textRef;
   
   function handleTagClick(ev) {
     ev.preventDefault();
@@ -36,7 +38,12 @@
     loadTaggedNotes( getParams(href).tag );
   }
   
-  onMount(() => {
+  onMount(async () => {
+    // NOTE: There's a race condition when opening the NotesNav, where `getBBox`
+    // returns zero'd dimensions as the Flyout opens. Waiting a `tick` solves
+    // the race condition, but I don't feel great about it.
+    await tick();
+    
     const { width, height } = textRef.getBBox();
     const strokeOffset = strokeWidth / 2;
     tagWidth = width + (horizontalPadding * 2) + edgeSpacing;

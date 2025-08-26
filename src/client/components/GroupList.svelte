@@ -1,22 +1,27 @@
 <script>
+  import Self from './GroupList.svelte';
   import Icon, {
     ICON__FILE,
     ICON__FOLDER,
   } from './Icon.svelte';
 
-  export let data = undefined;
-  export let expanded = false;
-  export let groupPath = '';
-  export let onItemClick = undefined;
+  let {
+    data = undefined,
+    expanded = false,
+    groupPath = '',
+    onItemClick = undefined,
+  } = $props();
+  
+  let isRoot = $derived(!groupPath);
   
   function handleClick(ev) {
     const { ctrlKey, target } = ev;
     
     if (target.classList.contains('group__name')) {
       const group = target.closest('.group');
-      if (!group.hasAttribute('empty')) {
-        if (group.hasAttribute('open')) group.removeAttribute('open');
-        else group.setAttribute('open', '');
+      if (!group.hasAttribute('data-empty')) {
+        if (group.hasAttribute('data-open')) group.removeAttribute('data-open');
+        else group.setAttribute('data-open', '');
       }
     }
     else if (target.classList.contains('item__label')) {
@@ -26,24 +31,22 @@
       }
     }
   }
-  
-  $: isRoot = !groupPath;
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="group-list"
   class:is--root={isRoot}
-  on:click={isRoot && handleClick}
+  onclick={isRoot ? handleClick : null}
 >
   {#each data as item (item.path)}
     {#if item.groupName}
-      {@const { groupName, nameComponent, subGroup } = item}
+      {@const { groupName, nameComponent: NameComponent, subGroup } = item}
       {@const hasItems = !!subGroup.length}
       {@const empty = hasItems ? null : true}
       {@const open = (expanded && hasItems) ? true : null}
-      <div class="group" {empty} {open}>
+      <div class="group" data-empty={empty} data-open={open}>
         <div class="group__name">
           <div class="group__name-wrapper">
             {#if hasItems}
@@ -51,18 +54,16 @@
             {/if}
             <Icon type={ICON__FOLDER} /><span class="group__name-text">{groupName}</span>
           </div>
-          {#if nameComponent}
-            <svelte:component this={nameComponent} {...item} />
-          {/if}
+          {#if NameComponent}<NameComponent {...item} />{/if}
         </div>
         {#if hasItems}
           <div class="group__items">
-            <svelte:self data={subGroup} groupPath={`${groupPath}/${groupName}`} />
+            <Self data={subGroup} groupPath={`${groupPath}/${groupName}`} />
           </div>
         {/if}
       </div>
     {:else}
-      {@const { id, link, name, nameComponent } = item}
+      {@const { id, link, name, nameComponent: NameComponent } = item}
       {@const dataAttrs = {
         'data-id': id,
         'data-path': `${groupPath}/${id}`,
@@ -77,9 +78,7 @@
             <Icon type={ICON__FILE} /><span class="item__label-text">{name}</span>
           </div>
         {/if}
-        {#if nameComponent}
-          <svelte:component this={nameComponent} {...item} />
-        {/if}
+        {#if NameComponent}<NameComponent {...item} />{/if}
       </div>
     {/if}
   {/each}
@@ -106,7 +105,7 @@
     user-select: none;
     position: relative;
   }
-  .group[open]:not([empty])::after {
+  .group[data-open]:not([data-empty])::after {
     content: '';
     width: 2em;
     color: #b3b3b3;
@@ -125,7 +124,7 @@
     display: flex;
     justify-content: space-between;
   }
-  .group:not([empty]) > .group__name {
+  .group:not([data-empty]) > .group__name {
     cursor: pointer;
   }
   
@@ -157,7 +156,7 @@
   .group__name .indicator::before {
     content: '+';
   }
-  .group[open] > .group__name .indicator::before {
+  .group[data-open] > .group__name .indicator::before {
     content: '\2212'; /* minus */
   }
   
@@ -171,7 +170,7 @@
     user-select: none;
     position: relative;
   }
-  .group[open] > .group__items {
+  .group[data-open] > .group__items {
     padding-bottom: 0.25em;
     margin-bottom: 0.25em;
     display: block;
@@ -206,14 +205,14 @@
     display: inline-block;
   }
   
-  .group[open]:not([empty]):hover::after,
-  .group[open]:not([empty]):hover > .group__name,
+  .group[data-open]:not([data-empty]):hover::after,
+  .group[data-open]:not([data-empty]):hover > .group__name,
   .item:hover,
   .item:hover a {
     color: var(--color--text--hover);
   }
   
-  :global(.group[open]:not([empty]):hover > .group__name .svg-icon) {
+  :global(.group[data-open]:not([data-empty]):hover > .group__name .svg-icon) {
     --color--folder--fill: orange;
   }
 </style>

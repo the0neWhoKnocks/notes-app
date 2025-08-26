@@ -9,11 +9,11 @@
     userData,
   } from '../stores';
   import Dialog from './Dialog.svelte';
-  import GroupNoteNameInput from './GroupNoteNameInput.svelte';  
+  import GroupNoteNameInput from './GroupNoteNameInput.svelte';
   
-  let editingGroup;
-  let formRef;
-  let saveBtnDisabled;
+  let editingGroup = $state.raw(false);
+  let formRef = $state();
+  let saveBtnDisabled = $state(true);
   
   function closeDialog() {
     dialogDataForGroup.set();
@@ -29,7 +29,9 @@
     }
   }
   
-  async function handleSubmit() {
+  async function handleSubmit(ev) {
+    ev.preventDefault();
+    
     try {
       await setUserData(formRef);
       closeDialog();
@@ -40,45 +42,46 @@
     }
   }
   
-  $: if ($dialogDataForGroup) {
-    editingGroup = $dialogDataForGroup.action === DATA_ACTION__EDIT;
-    saveBtnDisabled = editingGroup;
-  }
+  $effect(() => {
+    if ($dialogDataForGroup) {
+      editingGroup = $dialogDataForGroup.action === DATA_ACTION__EDIT;
+      saveBtnDisabled = editingGroup;
+    }
+  });
 </script>
 
 {#if $dialogDataForGroup}
-  <Dialog
-    onCloseClick={handleCloseClick}
-  >
-    <svelte:fragment slot="dialogTitle">
+  <Dialog onCloseClick={handleCloseClick}>
+    {#snippet s_dialogTitle()}
       {#if editingGroup}Edit{:else}Add{/if} Group
-    </svelte:fragment>
-    <form
-      class="group-form"
-      slot="dialogBody"
-      bind:this={formRef}
-      on:input={handleChange}
-      on:submit|preventDefault={handleSubmit}
-    >
-      <input type="hidden" name="username" value={$userData.username} />
-      <input type="hidden" name="password" value={$userData.password} />
-      <input type="hidden" name="action" value={$dialogDataForGroup.action} />
-      <input type="hidden" name="path" value={$dialogDataForGroup.path} />
-      <input type="hidden" name="type" value={DATA_TYPE__GROUP} />
-      
-      <GroupNoteNameInput
-        editing={editingGroup}
-        label="Name"
-        nameAttr="name"
-        oldNameAttr="oldName"
-        path={$dialogDataForGroup.path}
-        valueAttr={$dialogDataForGroup.name}
-      />
-      <nav class="group-form__btm-nav">
-        <button type="button" on:click={handleCloseClick}>Cancel</button>
-        <button disabled={saveBtnDisabled}>Save</button>
-      </nav>
-    </form>
+    {/snippet}
+    {#snippet s_dialogBody()}
+      <form
+        class="group-form"
+        bind:this={formRef}
+        oninput={handleChange}
+        onsubmit={handleSubmit}
+      >
+        <input type="hidden" name="username" value={$userData.username} />
+        <input type="hidden" name="password" value={$userData.password} />
+        <input type="hidden" name="action" value={$dialogDataForGroup.action} />
+        <input type="hidden" name="path" value={$dialogDataForGroup.path} />
+        <input type="hidden" name="type" value={DATA_TYPE__GROUP} />
+        
+        <GroupNoteNameInput
+          editing={editingGroup}
+          label="Name"
+          nameAttr="name"
+          oldNameAttr="oldName"
+          path={$dialogDataForGroup.path}
+          valueAttr={$dialogDataForGroup.name}
+        />
+        <nav class="group-form__btm-nav">
+          <button type="button" onclick={handleCloseClick}>Cancel</button>
+          <button disabled={saveBtnDisabled}>Save</button>
+        </nav>
+      </form>
+    {/snippet}
   </Dialog>
 {/if}
 

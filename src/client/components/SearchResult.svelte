@@ -13,12 +13,14 @@
   } from './Icon.svelte';
   import NoteTag from './NoteTag.svelte';
   
-  export let content = undefined;
-  export let path = undefined;
-  export let subTitle = undefined;
-  export let tag = undefined;
-  export let title = undefined;
-  export let type = undefined;
+  let {
+    content = undefined,
+    path = undefined,
+    subTitle = undefined,
+    tag = undefined,
+    title = undefined,
+    type = undefined,
+  } = $props();
   
   function handleClick() {
     if (type === DATA_TYPE__NOTE) loadNote(path);
@@ -31,7 +33,7 @@
   disabled={type === DATA_TYPE__GROUP}
   data-path={path}
   data-tag={tag}
-  on:click={handleClick}
+  onclick={handleClick}
 >
   <div class="search-result__header">
     {#if type === DATA_TYPE__GROUP}

@@ -1,23 +1,25 @@
-<script context="module">
+<script module>
   let dialogNum = 0;
 </script>
 <script>
   import { cubicOut } from 'svelte/easing'; // visualizations https://svelte.dev/repl/6904f0306d6f4985b55f5f9673f762ef?version=3.4.1
   import Portal from 'svelte-portal';
   
-  export let animDuration = 300;
-  export let bodyColor = '#eee';
-  export let borderColor = '#000';
-  export let modal = false;
-  export let onCloseClick = undefined;
-  export let onCloseEnd = undefined;
-  export let onOpenEnd = undefined;
-  export let title = '';
-  export let titleBGColor = '#333';
-  export let titleTextColor = '#eee';
-  
-  let dialogFor = undefined;
-  export { dialogFor as for }
+  let {
+    animDuration = 300,
+    bodyColor = '#eee',
+    borderColor = '#000',
+    for: dialogFor = undefined,
+    modal = false,
+    onCloseClick = undefined,
+    onCloseEnd = undefined,
+    onOpenEnd = undefined,
+    s_dialogTitle,
+    s_dialogBody,
+    title = '',
+    titleBGColor = '#333',
+    titleTextColor = '#eee',
+  } = $props();
   
   dialogNum += 1;
   let dNum = dialogNum;
@@ -77,10 +79,10 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeyDown}/>
+<svelte:window onkeydown={handleKeyDown}/>
 
 <Portal target="#overlays">
-  <div 
+  <div
     class="dialog-wrapper"
     dialog-for={dialogFor}
     style={cssVars}
@@ -88,7 +90,7 @@
     <div
       class="dialog-mask"
       aria-hidden="true"
-      on:click={handleCloseClick}
+      onclick={handleCloseClick}
       in:toggleMask
       out:toggleMask
     ></div>
@@ -98,25 +100,25 @@
       open
       in:toggleDialog="{{ dir: 'in', start: 70 }}"
       out:toggleDialog="{{ start: 50 }}"
-      on:introend={handleOpenEnd}
-      on:outroend={handleCloseEnd}
+      onintroend={handleOpenEnd}
+      onoutroend={handleCloseEnd}
     >
-      {#if !modal || modal && (title || $$slots.dialogTitle)}
+      {#if !modal || (modal && (title || s_dialogTitle))}
         <nav class="dialog__nav">
           <div class="dialog__title">
-            <slot name="dialogTitle">{title}</slot>
+            {#if s_dialogTitle}{@render s_dialogTitle()}{:else}{title}{/if}
           </div>
           {#if !modal}
             <button
               type="button"
               class="dialog__close-btn"
-              on:click={handleCloseClick}
+              onclick={handleCloseClick}
             >&#10005;</button>
           {/if}
         </nav>
       {/if}
       <div class="dialog__body">
-        <slot name="dialogBody"></slot>
+        {@render s_dialogBody?.()}
       </div>
     </dialog>
   </div>

@@ -28,6 +28,6 @@
   }
 </script>
 
-<button on:click={exportData}>
-  <Icon type="{ICON__EXPORT}" /> Export
+<button onclick={exportData}>
+  <Icon type={ICON__EXPORT} /> Export
 </button>

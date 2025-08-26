@@ -13,7 +13,7 @@
   import SearchInput from './SearchInput.svelte';
   import SearchResult from './SearchResult.svelte';
   
-  let results;
+  let results = $state.raw();
   
   function handleClose() {
     searchFlyoutOpen.set(false);
@@ -103,7 +103,9 @@
       : [];
   }
   
-  $: if ($searchFlyoutOpen) results = [];
+  $effect(() => {
+    if ($searchFlyoutOpen) results = [];
+  });
 </script>
 
 {#if $searchFlyoutOpen}
@@ -113,19 +115,20 @@
   >
     <SearchInput focused onSearch={handleSearch} placeholder="Note, Group, or Tag name" />
     <div class="search-results">
-      {#each results as {groups, notes, tags}}
+      {#each results as result (result)}
+        {@const { groups, notes, tags } = result}
         {#if tags.length}
-          {#each tags as tag}
+          {#each tags as tag (tag)}
             <SearchResult {...tag} />
           {/each}
         {/if}
         {#if notes.length}
-          {#each notes as note}
+          {#each notes as note (note)}
             <SearchResult {...note} />
           {/each}
         {/if}
         {#if groups.length}
-          {#each groups as group}
+          {#each groups as group (group)}
             <SearchResult {...group} />
           {/each}
         {/if}
