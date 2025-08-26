@@ -46,4 +46,4 @@ module.exports = async function deleteProfile(req, res) {
     log.error(msg);
     res.error(500, msg);
   }
-}
+};

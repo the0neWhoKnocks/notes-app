@@ -6,7 +6,7 @@ import {
   MSG_TYPE__CACHE_URLS,
   MSG_TYPE__SKIP_WAITING,
 } from './constants.mjs';
-import l from './logger.mjs'; 
+import l from './logger.mjs';
 import swAllowed from './swAllowed.mjs';
 
 const log = l('reg');
@@ -162,7 +162,7 @@ window.sw = {
             });
             window.sw.onInstallHandlers.forEach(handler => { handler(); });
             break;
-          }  
+          }
         }
       });
       
@@ -192,7 +192,7 @@ window.sw = {
         log.info('Registered');
       }
       catch (err) {
-        const msg = `Registration failed:\n${err}`
+        const msg = `Registration failed:\n${err}`;
         log.error(msg);
         throw Error(err);
       }

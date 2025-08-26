@@ -26,7 +26,7 @@ module.exports = async function loadUserData(appConfig, username, password, type
     log.info('migrating old data structure');
     
     let oldData = JSON.parse(await readFile(oldFormat, 'utf8'));
-        oldData = JSON.parse(await decrypt(appConfig, oldData, password));
+    oldData = JSON.parse(await decrypt(appConfig, oldData, password));
     
     await copyFile(oldFormat, `${oldFormat}.bak`);
     await saveUserData({ appConfig, data: oldData, password, type: DATA_TYPE__ALL, username });
@@ -74,4 +74,4 @@ module.exports = async function loadUserData(appConfig, username, password, type
   }
   
   return defaultObj;
-}
+};

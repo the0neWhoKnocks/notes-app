@@ -2,7 +2,7 @@
   "version": "2.1.1",
   "scripts": {
     "build": "./bin/prep-dist.sh && NODE_ENV=production webpack",
-    "lint": "eslint ./*.js \"{bin,e2e,src}/**/*.{js,svelte}\"",
+    "lint": "eslint",
     "start": "node ./dist/server",
     "start:dev": "./bin/prep-dist.sh && webpack & ./watcher.js \"./bin/prep-dist.sh\" \"./dist/public/manifest.json\"",
     "test": "./e2e/bin/test-runner.sh --name notes",

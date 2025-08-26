@@ -39,4 +39,4 @@ function postWithXHR(url, body, opts) {
 module.exports = function postData(url, obj, opts = {}) {
   const body = JSON.stringify((obj instanceof HTMLElement) ? serializeForm(obj) : obj);
   return (opts.onProgress) ? postWithXHR(url, body, opts) : postWithFetch(url, body);
-}
+};

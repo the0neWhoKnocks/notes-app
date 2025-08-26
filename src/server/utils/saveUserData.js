@@ -77,4 +77,4 @@ module.exports = async function saveUserData({
   }
   
   return (result.length === 1) ? result[0] : result;
-}
+};

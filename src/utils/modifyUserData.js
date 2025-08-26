@@ -31,10 +31,10 @@ const getMissingRequiredItems = (required, propObj) => {
   const onlyConditionals = required.every(i => i.startsWith('?') && i.endsWith('?'));
   const reqMsg = groupedProps.required
     .map(prop => `\`${prop}\``)
-    .join(` and `);
+    .join(' and ');
   const condMsg = groupedProps.conditionals
     .map(prop => `\`${prop}\``)
-    .join(` or `);  
+    .join(' or ');
   let msg = '';
 
   if (reqMsg && condMsg) msg = `${reqMsg} or ${condMsg}`;
@@ -323,7 +323,7 @@ exports.default = async function modifyUserData({
           nodeId = kebabCase(name);
           
           if (!groups[nodeId]) {
-            groups[nodeId] = { 
+            groups[nodeId] = {
               ...groupNodeShape(),
               created: creationDate,
               groupName: name,
@@ -401,7 +401,7 @@ exports.default = async function modifyUserData({
           allTags = compileTags(notesData);
         }
         else if (type === DATA_TYPE__GROUP) {
-          const { rawPrefix: parentPath } = parsePath(path)
+          const { rawPrefix: parentPath } = parsePath(path);
           const { groups } = getGroupNode(notesData, parentPath);
           nodeId = kebabCase(oldName);
           const groupCopy = JSON.parse(JSON.stringify(groups[nodeId]));
@@ -537,7 +537,7 @@ exports.default = async function modifyUserData({
                         
                         break;
                       }
-                      case 'removed': { 
+                      case 'removed': {
                         delete objNode[item];
                         msgLines.push(`Removed "${item}"`);
                         break;
@@ -630,4 +630,4 @@ exports.default = async function modifyUserData({
   catch (err) {
     return { error: { code: 500, msg: err.stack } };
   }
-}
+};

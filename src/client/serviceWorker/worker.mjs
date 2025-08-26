@@ -1,4 +1,3 @@
-/* eslint-disable node/no-missing-import */
 // NOTE: imports will be relative to the nested folder in dist/public/js
 
 import envVars from '/js/sw/envVars.mjs';
@@ -29,8 +28,8 @@ import { initDB } from './db.mjs';
 import l from './logger.mjs';
 import swAllowed from './swAllowed.mjs';
 
-const log = l('sw')
-const channel = { 
+const log = l('sw');
+const channel = {
   apiData: new BroadcastChannel(CHANNEL__INIT_API_DATA),
   installCheck: new BroadcastChannel(CHANNEL__INSTALL_CHECK),
   msgs: new BroadcastChannel(CHANNEL__MESSAGES),
@@ -41,8 +40,8 @@ let dbAPI;
 let cryptData;
 
 function genResponse(status, data = {}) {
-  const blob = new Blob([
-    JSON.stringify(data, null, 2)],
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
     { type: 'application/json' }
   );
   // const init = { status: 404, statusText: 'Not Found' };
@@ -124,7 +123,7 @@ async function initCheck(claim = false) {
   if (self.initChecked) return self.initChecked;
   
   return self.initChecked = new Promise((resolve) => {
-    const ids = new Map;
+    const ids = new Map();
     const checkHandler = (ev) => {
       const { data: { appId }, origin } = ev;
       ids.set(origin, appId);
@@ -139,17 +138,17 @@ async function initCheck(claim = false) {
       const { allowedDomains, appId } = envVars;
       const allowed = (ids.size)
         ? [...ids].every(([ url, id ]) => {
-          const { allowed, reason } = swAllowed({
-            allowedDomains,
-            id1: id,
-            id2: appId,
-            url,
-          });
+            const { allowed, reason } = swAllowed({
+              allowedDomains,
+              id1: id,
+              id2: appId,
+              url,
+            });
           
-          if (!allowed) log.debug(`Unregister SW because: ${reason}`);
+            if (!allowed) log.debug(`Unregister SW because: ${reason}`);
           
-          return allowed;
-        })
+            return allowed;
+          })
         : false;
       
       if (allowed) {
@@ -191,7 +190,7 @@ self.addEventListener('fetch', async (ev) => {
         if (offline) {
           const OFFLINE_PREFIX = '[OFFLINE]';
           
-          ev.respondWith(async function() {
+          ev.respondWith(async function () {
             const reqBody = await request.json();
             
             if (reqURL.endsWith(ROUTE__API__USER__LOGIN)) {
@@ -319,7 +318,7 @@ self.addEventListener('fetch', async (ev) => {
         }
       }
       else {
-        log.warn("Missing `cryptData`, skipping API fetch.");
+        log.warn('Missing `cryptData`, skipping API fetch.');
       }
     }
     else {

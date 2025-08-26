@@ -40,4 +40,4 @@ module.exports = async function setData(req, res) {
   catch (err) {
     res.error(500, err);
   }
-}
+};

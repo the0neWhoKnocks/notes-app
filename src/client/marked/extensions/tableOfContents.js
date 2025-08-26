@@ -33,7 +33,7 @@ module.exports = {
     const listItems = headings.map(({ depth, text }) => {
       const { headerIds, headerPrefix } = this.parser.options;
       const wrapperStart = headerIds ? `<a href="#${headerPrefix}${slugger.slug(text)}">` : '';
-      const wrapperEnd = headerIds ? `</a>` : '';
+      const wrapperEnd = headerIds ? '</a>' : '';
       const listStart = (depth > prevDepth)
         ? Array(depth - prevDepth).fill('<ul>').join('')
         : '';

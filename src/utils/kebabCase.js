@@ -8,4 +8,4 @@ module.exports = function kebabCase(str) {
     .replace(/[^a-zA-Z0-9- ]/g, '')
     // capitalize any words with a leading space (and replace the space with a hyphen)
     .replace(/\s+(\w)?/gi, (m, l) => `-${l.toLowerCase()}`);
-}
+};

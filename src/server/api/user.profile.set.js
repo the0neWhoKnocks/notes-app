@@ -89,4 +89,4 @@ module.exports = async function setProfile(req, res) {
     log.error(msg);
     res.error(500, msg);
   }
-}
+};

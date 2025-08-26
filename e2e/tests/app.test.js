@@ -27,7 +27,6 @@ const { exec } = AppFixture;
 test.describe.configure({ mode: 'serial' }); // Required to stop tests on failure.
 
 test.describe('Init', () => {
-  
   test('Fill out config data', async ({ app }) => {
     await exec(`rm -rf ${PATH__DATA}/*`);
     await app.loadPage();
@@ -150,7 +149,6 @@ test.describe('Notes', () => {
     const keyReg = /^\{([^}]+)\}$/;
     
     for (let t of parts) {
-      // eslint-disable-next-line playwright/no-conditional-in-test
       if (keyReg.test(t)) {
         const [ , key ] = t.match(keyReg);
         await loc.press(key);
@@ -204,7 +202,7 @@ test.describe('Notes', () => {
         wysiwygTOCBtn = toolbar.locator('button[data-type="toc"]');
         wysiwygPreviewBtn = toolbar.locator('button[data-type="preview"]');
         
-        await expect(form).toBeVisible()
+        await expect(form).toBeVisible();
       },
     };
     
@@ -264,13 +262,13 @@ test.describe('Notes', () => {
     await typeStuff(content, '{End}{Enter}{Enter}');
     await app.scroll(content).toBottom();
     
-    await content.type('Italic text')
+    await content.type('Italic text');
     await highlight(content, -4);
     await wysiwygItalicBtn.click();
     await typeStuff(content, '{End}{Enter}{Enter}');
     await app.scroll(content).toBottom();
     
-    await content.type('Strikethrough text')
+    await content.type('Strikethrough text');
     await highlight(content, -4);
     await wysiwygStrikeBtn.click();
     await typeStuff(content, '{End}{Enter}{Enter}');
@@ -282,7 +280,7 @@ test.describe('Notes', () => {
     await typeStuff(content, '{End}{Enter}{Enter}');
     await app.scroll(content).toBottom();
     
-    await content.type('A link')
+    await content.type('A link');
     await highlight(content, -6);
     await wysiwygLinkBtn.click();
     await app.getEl('#Y2xpX3VybA').type('/relative/path');
@@ -485,7 +483,7 @@ test.describe('Notes', () => {
     
     test('While Creating a New Note', async ({ app }) => {
       const NOTE_TITLE = 'Draft Note';
-      const NOTE_ID = 'draft-note'
+      const NOTE_ID = 'draft-note';
       const NOTE_CONTENT = 'asdf asdf asdf asdf asdf sadf';
       
       // await app.deleteUserData(true); // NOTE: uncomment when tweaking test to get past partially created data

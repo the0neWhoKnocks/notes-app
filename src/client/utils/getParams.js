@@ -4,4 +4,4 @@ module.exports = function getParams(url) {
       obj[prop] = val;
       return obj;
     }, {});
-}
+};

@@ -250,7 +250,7 @@ export function loadThemeCSS(theme) {
     const currEl = document.getElementById('prismTheme');
     const newEl = document.createElement('link');
     [...currEl.attributes].filter((attr) => attr.name !== 'href').forEach((attr) => {
-      newEl[attr.name] = attr.value;  
+      newEl[attr.name] = attr.value;
     });
     
     const url = `/css/vendor/prism/themes/prism${theme ? `-${theme}` : ''}.min.css`;
@@ -426,7 +426,7 @@ export async function syncOfflineData(creds) {
       log.error(stack);
       alert(stack);
     }
-  } 
+  }
 }
 
 async function handleNetworkChange() {
@@ -440,7 +440,7 @@ async function handleNetworkChange() {
   }
 }
 export function trackNetworkStatus() {
-  window.addEventListener('online',  handleNetworkChange);
+  window.addEventListener('online', handleNetworkChange);
   window.addEventListener('offline', handleNetworkChange);
   window.addEventListener('load', handleNetworkChange);
 }
@@ -566,7 +566,7 @@ export function getNoteBlurbs(notePaths) {
     // in case something goes wrong updating paths, only return payloads for
     // notes that can be found.
     if (note) {
-      const { content, title } = note
+      const { content, title } = note;
       arr.push({
         content,
         path,

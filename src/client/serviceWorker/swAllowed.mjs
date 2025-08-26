@@ -8,7 +8,7 @@ export default function swAllowed({
   const { hostname } = new URL(url);
   
   if (!allowedDomains) {
-    payload.reason = `No allowed domains specified.`;
+    payload.reason = 'No allowed domains specified.';
     return payload;
   }
   else if (!allowedDomains.includes(hostname)) {

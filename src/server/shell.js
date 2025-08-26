@@ -293,9 +293,9 @@ const shell = ({
                 ...body.scripts,
                 ...body.asyncScripts,
               ]
-              .map(asset => {
-                return (typeof asset === 'object') ? asset.url : asset;
-              })
+                .map(asset => {
+                  return (typeof asset === 'object') ? asset.url : asset;
+                })
             )
           },
           envVars: ${swEnvVars},

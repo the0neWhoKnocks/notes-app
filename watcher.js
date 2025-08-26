@@ -16,7 +16,7 @@ if (process.env.NODE_EXTRA_CA_CERTS) {
   bSyncHTTPS = {
     cert: process.env.NODE_EXTRA_CA_CERTS,
     key: process.env.NODE_EXTRA_CA_CERTS.replace('.crt', '.key'),
-  }
+  };
 }
 else {
   httpModule = require('http');

@@ -32,4 +32,4 @@ module.exports = function createConfig(req, res) {
     log.info(message);
     res.json({ message });
   });
-}
+};

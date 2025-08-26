@@ -27,4 +27,4 @@ exports.default = function genAPIPayload({ data, endpoint, ...rest }) {
       else return { ...data };
     }
   }
-}
+};

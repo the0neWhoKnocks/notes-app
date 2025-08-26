@@ -1,4 +1,4 @@
-const LABEL = 'worker'
+const LABEL = 'worker';
 const styles = ({ color, bgColor }) => `
   color: ${color};
   font-size: 0.8rem;

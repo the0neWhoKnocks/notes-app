@@ -82,4 +82,4 @@ module.exports = function transformNoteData(
   }
   
   return ret;
-}
+};

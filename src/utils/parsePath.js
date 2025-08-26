@@ -15,4 +15,4 @@ module.exports = function parsePath(path) {
   }
   
   return ret;
-}
+};

@@ -14,7 +14,7 @@ const getPasswordKey = (password) => {
     false,
     ['deriveKey']
   );
-}
+};
 
 const deriveKey = (passwordKey, salt, keyUsage) => {
   return crypto.subtle.deriveKey(
@@ -29,7 +29,7 @@ const deriveKey = (passwordKey, salt, keyUsage) => {
     false,
     keyUsage
   );
-}
+};
 
 export const bufferToBase64 = (buff) => {
   // NOTE: Was getting a RangeError when dealing with large payloads. Apparently
@@ -37,7 +37,7 @@ export const bufferToBase64 = (buff) => {
   // and went with the fix outlined in https://gist.github.com/jonleighton/958841?permalink_comment_id=2915919#gistcomment-2915919.
   
   return btoa(new Uint8Array(buff).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-}
+};
 export const base64ToBuffer = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(null));
 
 export async function encrypt({ iv, salt } = {}, data, password) {
@@ -65,7 +65,7 @@ export async function encrypt({ iv, salt } = {}, data, password) {
     return result;
   }
   catch (err) {
-    throw Error(`${LOG_PREFIX} Encryption failed: \n${err}`)
+    throw Error(`${LOG_PREFIX} Encryption failed: \n${err}`);
   }
 }
 

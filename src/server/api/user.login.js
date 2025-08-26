@@ -52,4 +52,4 @@ module.exports = function userLogin(req, res) {
           res.error(500, msg);
         });
     });
-}
+};
