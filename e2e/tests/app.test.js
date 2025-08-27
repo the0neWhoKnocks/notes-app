@@ -417,22 +417,24 @@ test.describe('Notes', () => {
   });
   
   test('Display a List of Related Search Results', async ({ app }) => {
+    const getInnerHTML = (loc) => loc.evaluate((el) => el.innerHTML.replaceAll(/<!---->/g, ''));
+    
     const results = await search.find('test');
     await expect(results).toHaveCount(3);
     
     const res1 = results.nth(0);
     await expect(res1).toHaveAttribute('data-tag', 'test');
-    await expect(await res1.locator('.search-result__title').innerHTML()).toEqual('<mark>test</mark>');
+    expect(await getInnerHTML(res1.locator('.search-result__title'))).toEqual('<mark>test</mark>');
     
     const res2 = results.nth(1);
     await expect(res2).toHaveAttribute('data-path', 'root/full-test-note');
-    await expect(await res2.locator('.search-result__title').innerHTML()).toEqual('Full <mark>Test</mark> Note');
-    await expect(await res2.locator('.search-result__content').innerHTML()).toEqual('me random <mark>test</mark> text to t ... t text to <mark>test</mark> search.\n\n');
+    expect(await getInnerHTML(res2.locator('.search-result__title'))).toEqual('Full <mark>Test</mark> Note');
+    expect(await getInnerHTML(res2.locator('.search-result__content'))).toEqual('me random <mark>test</mark> text to t ... t text to <mark>test</mark> search.\n\n');
     
     const res3 = results.nth(2);
     await expect(res3).toHaveAttribute('data-path', 'root/test-group');
     await expect(res3).toBeDisabled();
-    await expect(await res3.locator('.search-result__title').innerHTML()).toEqual('<mark>Test</mark> Group');
+    expect(await getInnerHTML(res3.locator('.search-result__title'))).toEqual('<mark>Test</mark> Group');
     
     await app.screenshot('search results');
     
@@ -580,7 +582,7 @@ test.describe('Notes', () => {
       // disregard draft =========================================================
       await app.getEl('.note-form__btm-nav :text-is("Delete Draft")').click();
       await expect(editBtn).not.toContainText('Draft');
-      await app.screenshot('[draft] Edit button does not displays Draft');
+      await app.screenshot('[draft] Edit button does not display Draft');
       await editBtn.click();
       txt = await content.inputValue();
       await expect(txt).not.toContain(CHANGED_TXT);
