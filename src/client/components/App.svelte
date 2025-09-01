@@ -89,27 +89,18 @@
       const ensureDB = () => window.sw.initAPIData($userData);
       
       window.sw.onActivated(async () => {
-        swInstalling = false;
-        swUpdateAvailable = false;
         swActivated = true;
-        
-        await ensureDB();
-        
+        try { await ensureDB(); }
+        catch (err) { log.error(err); }
         swActivated = false;
+        
+        if (swLoadingUpdate) window.navigation.reload();
       });
       
-      window.sw.onError(() => {
-        swError = true;
-      });
-      
-      window.sw.onInstall(() => {
-        if (!swUpdateAvailable) swInstalling = true;
-      });
-      
-      window.sw.onUpdateAvailable(() => {
-        swInstalling = false;
-        swUpdateAvailable = true;
-      });
+      window.sw.onError(() => { swError = true; });
+      window.sw.onInstall(() => { swInstalling = true; });
+      window.sw.onInstalled(() => { swInstalling = false; });
+      window.sw.onUpdateAvailable(() => { swUpdateAvailable = true; });
       
       try {
         await window.sw.register();

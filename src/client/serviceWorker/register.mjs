@@ -67,24 +67,6 @@ window.sw = {
     return p;
   },
   
-  listenForWaiting(reg, cb) {
-    function awaitStateChange() {
-      reg.installing.addEventListener('statechange', ({ target: { state } }) => {
-        switch (state) {
-          case 'installed': cb(); break;
-          default: {
-            log.debug(`Unhandled state change: ${state}`);
-          }
-        }
-      });
-    }
-    
-    if (reg.waiting) return cb();
-    if (reg.installing) awaitStateChange();
-    
-    reg.addEventListener('updatefound', awaitStateChange);
-  },
-  
   onActivatedHandlers: [],
   onActivated(handler) {
     window.sw.onActivatedHandlers.push(handler);
@@ -98,6 +80,11 @@ window.sw = {
   onInstallHandlers: [],
   onInstall(handler) {
     window.sw.onInstallHandlers.push(handler);
+  },
+  
+  onInstalledHandlers: [],
+  onInstalled(handler) {
+    window.sw.onInstalledHandlers.push(handler);
   },
   
   onUpdateAvailableHandlers: [],
@@ -166,15 +153,6 @@ window.sw = {
         }
       });
       
-      // NOTE: This the end of the User accepted update process when they've
-      // chosen to Reload. This gets triggered by `skipWaiting` in `worker`.
-      let refreshing;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-      });
-      
       navigator.serviceWorker.ready.then(() => {
         window.sw.postMessage = window.sw.channel.postMessage.bind(window.sw.channel);
         if (window.sw.messageQueue.length) {
@@ -185,8 +163,29 @@ window.sw = {
       try {
         const reg = await navigator.serviceWorker.register('/js/sw/worker.mjs', { scope: '/', type: 'module' });
         
-        window.sw.listenForWaiting(reg, () => {
+        const callUpdateHandlers = () => {
           window.sw.onUpdateAvailableHandlers.forEach(handler => { handler(); });
+        };
+        
+        // New worker waiting to be activated. Gets hit only after a worker was
+        // loaded into a waiting state and the page was reloaded.
+        if (reg.waiting && reg.active) { callUpdateHandlers(); }
+        
+        // For the first install and any following updates.
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing;
+          
+          if (worker === null) return;
+          
+          worker?.addEventListener('statechange', () => {
+            if (worker.state === 'installed') {
+              window.sw.onInstalledHandlers.forEach(handler => { handler(); });
+              
+              // Gets hit when there's an existing worker and another worker gets
+              // loaded and put into a waiting state.
+              if (navigator.serviceWorker.controller) { callUpdateHandlers(); }
+            }
+          });
         });
         
         log.info('Registered');
