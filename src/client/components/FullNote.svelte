@@ -43,7 +43,7 @@
 </script>
 
 {#if !$recentlyViewedOpen && note?.content}
-  <article class="full-note" data-prismjs-copy={`${PRISMAJS__COPY_TEXT}`}>
+  <article class="full-note" id="note" data-prismjs-copy={`${PRISMAJS__COPY_TEXT}`}>
     <header>
       {note.title}
       <nav class="full-note__nav">

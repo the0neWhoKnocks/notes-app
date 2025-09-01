@@ -813,6 +813,10 @@
       document.removeEventListener('visibilitychange', handleVisChange);
     }
   });
+  
+  $effect(() => {
+    window.previewingNote = previewing;
+  });
 </script>
 
 {#if $dialogDataForNote}
@@ -978,6 +982,7 @@
               <div
                 bind:this={previewRef}
                 class="note-form__content-preview"
+                id="notePreview"
                 data-prismjs-copy={PRISMAJS__COPY_TEXT}
               >
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -->
