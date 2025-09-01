@@ -70,13 +70,12 @@ const shell = ({
         }
 
         html, body {
-          width: 100vw;
-          height: 100vh;
           padding: 0;
           margin: 0;
         }
 
         body {
+          height: 100vh;
           color: #333;
           font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
           font-size: 16px;
