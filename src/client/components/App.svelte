@@ -233,7 +233,7 @@
     --color--prism--lang-top: 2.8em;
     --color--prism--ln-bg: var(--color--prism--lang-bg);
     --color--prism--ln-left: 0;
-    --color--prism--ln-top: 3.2em;
+    --color--prism--ln-top: 3.3em;
     --color--prism--text: #626262;
     --color--tag--bg: #dbdbdb;
     --color--tag--border: #909090;
@@ -248,13 +248,24 @@
     --color--prism--code-text: #806f77;
     --color--prism--lang-bg: #fdfdfd;
     --color--prism--ln-left: 0.65em;
-    --color--prism--ln-top: 2.2em;
+    --color--prism--ln-top: 2.35em;
     --color--prism--text: #806f77;
     --color--tag--bg: #358ccb;
     --color--tag--border: #6dc2ff;
     --color--tag--text: #eaf6ff;
     
     background: #3e3238;
+    
+    & :global(pre[class*=language-]) {
+      &::after,
+      &::before {
+        content: none;
+      }
+      
+      :global(& > code) {
+        background-image: unset;
+      }
+    }
   }
   :global(body.theme-dark) {
     --color--app--bg: #cebdac;
@@ -265,13 +276,23 @@
     --color--prism--lang-top: 3em;
     --color--prism--ln-bg: linear-gradient(90deg, #1f1f1f, #4d4033 17%);
     --color--prism--ln-left: 0.25em;
-    --color--prism--ln-top: 3.4em;
+    --color--prism--ln-top: 3.55em;
     --color--prism--text: #4e4740;
     --color--tag--bg: #ead7c3;
     --color--tag--border: #9d846b;
     --color--tag--text: #826f5b;
     
     background: #887d73;
+    
+    & :global(pre[class*=language-]:has(+ .toolbar)) {
+      border-top: unset;
+      border-radius: 0 0 0.5em 0.5em;
+    }
+    & :global(pre[class*=language-] + .toolbar) {
+      border: 0.3em solid #7a6651;
+      border-bottom: unset;
+      border-radius: 0.5em 0.5em 0 0;
+    }
   }
   :global(body.theme-okaidia) {
     --color--app--bg: #4b4d41;
@@ -279,13 +300,21 @@
     --color--app--highlight: #272822;
     --color--prism--code-text: #7b7d6f;
     --color--prism--lang-bg: #272822;
-    --color--prism--ln-top: 3.1em;
+    --color--prism--ln-top: 3.3em;
     --color--prism--text: #7b7d6f;
     --color--tag--bg: #272822;
     --color--tag--border: #71775c;
     --color--tag--text: #d3dcc4;
     
     background: #33342c;
+    
+    & :global(pre[class*=language-]:has(+ .toolbar)) {
+      border-radius: 0 0 0.3em 0.3em;
+    }
+    & :global(pre[class*=language-] + .toolbar) {
+      border-bottom: unset;
+      border-radius: 0.3em 0.3em 0 0;
+    }
   }
   :global(body.theme-solarizedlight) {
     --color--app--bg: #e9e5db;
@@ -299,6 +328,14 @@
     --color--tag--text: #524e46;
     
     background: #887d62;
+    
+    & :global(pre[class*=language-]:has(+ .toolbar)) {
+      border-radius: 0 0 0.3em 0.3em;
+    }
+    & :global(pre[class*=language-] + .toolbar) {
+      border-bottom: unset;
+      border-radius: 0.3em 0.3em 0 0;
+    }
   }
   :global(body.theme-tomorrow) {
     --color--app--bg: #43464f;
@@ -320,13 +357,23 @@
     --color--prism--code-text: #bbb;
     --color--prism--lang-bg: #141414;
     --color--prism--ln-left: 0.25em;
-    --color--prism--ln-top: 3.4em;
+    --color--prism--ln-top: 3.55em;
     --color--prism--text: #bbb;
     --color--tag--bg: #232323;
     --color--tag--border: #919191;
     --color--tag--text: #dcdcdc;
     
     background: #1d1d1d;
+    
+    & :global(pre[class*=language-]:has(+ .toolbar)) {
+      border-top: unset;
+      border-radius: 0 0 0.5em 0.5em;
+    }
+    & :global(pre[class*=language-] + .toolbar) {
+      border: 0.3em solid #545454;
+      border-bottom: unset;
+      border-radius: 0.5em 0.5em 0 0;
+    }
   }
   
   :global(button) {
