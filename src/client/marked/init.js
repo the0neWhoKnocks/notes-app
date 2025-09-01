@@ -51,6 +51,13 @@ function addLangDeps(arr) {
   }, []);
 }
 
+function highlightCode() {
+  const noteEl = (window.previewingNote)
+    ? document.getElementById('notePreview')
+    : document.getElementById('note');
+  window.Prism.highlightAllUnder(noteEl);
+}
+
 function loadLangs() {
   if (window.langsTO) clearTimeout(window.langsTO);
   window.langsTO = setTimeout(async () => {
@@ -83,10 +90,10 @@ function loadLangs() {
     
     if (langPromises.length) {
       await Promise.all(langPromises).then(() => {
-        window.Prism.highlightAll();
+        highlightCode();
       });
     }
-    else window.Prism.highlightAll();
+    else highlightCode();
     
     langs = [];
   }, 100);
@@ -143,13 +150,9 @@ export default function init() {
     }
   });
   
+  // https://marked.js.org/using_advanced#options
   window.marked.setOptions({
     headerPrefix: 'header_',
-    highlight: (code, lang) => {
-      return (window.Prism.languages[lang])
-        ? window.Prism.highlight(code, window.Prism.languages[lang], lang)
-        : code;
-    },
     renderer,
   });
   
