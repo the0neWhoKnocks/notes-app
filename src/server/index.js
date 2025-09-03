@@ -194,9 +194,9 @@ app
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-line-numbers.min.js`,
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-toolbar.min.js`,
         `/${PUBLIC_JS_VENDOR}/prism/plugins/prism-copy-to-clipboard.min.js`,
-        manifest['vendor.js'],
-        manifest['sw.register.js'],
-        manifest[`${VIEW}.js`],
+        manifest['vendor.mjs'],
+        manifest['sw.register.mjs'],
+        manifest[`${VIEW}.mjs`],
       ],
       styles: [
         { attrs: { id: 'prismTheme' }, url: `/${PUBLIC_CSS_VENDOR}/prism/themes/prism.min.css` },

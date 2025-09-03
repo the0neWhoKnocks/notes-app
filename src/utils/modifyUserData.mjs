@@ -1,5 +1,12 @@
 // NOTE: Since this file is used by the SW as well as the Server, NodeJS built-ins
-// can't be utilized (since WP may package up a huge chunk of code).
+// can't be utilized (since Bundler may package up a huge chunk of code).
+
+import c from '../constants.js';
+import dNU from './dataNodeUtils.js';
+import groupNodeShape from './groupNodeShape.js';
+import kebabCase from './kebabCase.js';
+import parsePath from './parsePath.js';
+import parseTags from './parseTags.js';
 
 const {
   BASE_DATA_NODE,
@@ -14,12 +21,8 @@ const {
   DATA_TYPE__NOTE,
   DATA_TYPE__PREFS,
   DATA_TYPE__RECENT,
-} = require('../constants');
-const { getGroupNode, getNoteNode } = require('./dataNodeUtils');
-const groupNodeShape = require('./groupNodeShape');
-const kebabCase = require('./kebabCase');
-const parsePath = require('./parsePath');
-const parseTags = require('./parseTags');
+} = c;
+const { getGroupNode, getNoteNode } = dNU;
 
 const getMissingRequiredItems = (required, propObj) => {
   const groupedProps = required.reduce((obj, prop) => {
@@ -186,8 +189,7 @@ const finalizeData = (data, logMsg) => ({
   logMsg,
 });
 
-// NOTE: Need to specify `default` so that WP can convert this into an ES module.
-exports.default = async function modifyUserData({
+export default async function modifyUserData({
   loadCurrentData,
   reqBody,
 }) {
@@ -630,4 +632,4 @@ exports.default = async function modifyUserData({
   catch (err) {
     return { error: { code: 500, msg: err.stack } };
   }
-};
+}

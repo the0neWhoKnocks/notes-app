@@ -19,7 +19,6 @@ const constants = {
   DATA_TYPE__PREFS: 'preferences',
   DATA_TYPE__RECENT: 'recentlyViewed',
   DOM__SVELTE_MOUNT_POINT: 'view',
-  LOC__TIME_ZONE: process.env.TIME_ZONE || 'America/Los_Angeles',
   NAMESPACE__LOGGER: 'notes',
   NAMESPACE__STORAGE,
   NAMESPACE__STORAGE__USER: `${NAMESPACE__STORAGE}.user`,

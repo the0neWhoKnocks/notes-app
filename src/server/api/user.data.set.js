@@ -2,8 +2,8 @@ const log = require('../../utils/logger')('api.user.data.set');
 const {
   EP__SET__USER_DATA,
   default: genAPIPayload,
-} = require('../../utils/genAPIPayload');
-const modifyUserData = require('../../utils/modifyUserData').default;
+} = require('../../utils/genAPIPayload.mjs');
+const modifyUserData = require('../../utils/modifyUserData.mjs').default;
 const loadUserData = require('../utils/loadUserData');
 const saveUserData = require('../utils/saveUserData');
 

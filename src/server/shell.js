@@ -7,10 +7,16 @@ const buildNodes = (arr, template) => {
   return arr.map(asset => {
     let url = asset;
     let attrs = '';
+    
+    if (asset.endsWith?.('.mjs')) {
+      asset = { url, attrs: { type: 'module' } };
+    }
+    
     if (typeof asset === 'object') {
       url = asset.url;
       attrs = Object.keys(asset.attrs).map(attr => `${attr}="${asset.attrs[attr]}"`).join(' ');
     }
+    
     return template
       .replace('[url]', url)
       .replace('[attrs]', attrs);

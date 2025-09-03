@@ -70,10 +70,9 @@ const fileCheck = (file, timeout = 30) => new Promise((resolveCheck, rejectCheck
 
   if (exists()) resolveCheck();
   else {
-    logger.info(`Waiting for "${filePath}"\n to exist before starting.\n`);
     const int = setInterval(() => {
       elapsedTime++;
-      logger.info('Looking for file');
+      logger.info(`Waiting for "${filePath}"\n to exist before starting.\n`);
       
       if (exists()) {
         logger.info('File found, starting...\n');
@@ -134,7 +133,7 @@ fileGate
             
             if (serverSyncCmd) {
               const { execSync } = require('child_process');
-              execSync(serverSyncCmd);
+              execSync(`${serverSyncCmd} --update`);
             }
           }, 300);
         }

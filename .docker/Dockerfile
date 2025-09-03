@@ -70,8 +70,8 @@ RUN npm i --quiet
 # Build is separate to utilize the build-cache if the package.json hasn't changed.
 COPY --chown=node:node ./bin/prep-dist.sh ./bin/
 COPY --chown=node:node ./src ./src
+COPY --chown=node:node ./rollup.config.js ./
 COPY --chown=node:node ./svelte.config.js ./
-COPY --chown=node:node ./webpack.config.js ./
 RUN npm run build
 
 
