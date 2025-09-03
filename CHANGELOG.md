@@ -1,6 +1,36 @@
 # Changelog
 ---
 
+## v3.0.0
+
+<details>
+  <summary>Expand for v3.0.0 Details</summary>
+
+  **Bugfixes**
+  - [2348b51](/the0neWhoKnocks/notes-app/commit/2348b51): Flakey update notice for SW
+  - [06246a3](/the0neWhoKnocks/notes-app/commit/06246a3): Code line numbers incremented on FullNote after Previewing during edits
+  - [26f82b6](/the0neWhoKnocks/notes-app/commit/26f82b6): Drag/scroll on Mobile exposes empty gap at bottom
+  - [4469564](/the0neWhoKnocks/notes-app/commit/4469564): Recently Viewed nav flickers on/off
+
+  **Dev-Ops**
+  - [25ed62d](/the0neWhoKnocks/notes-app/commit/25ed62d): Update Webpack
+  - [2fd7dea](/the0neWhoKnocks/notes-app/commit/2fd7dea): 'require' snuck into svelte component
+  - [5ad02b8](/the0neWhoKnocks/notes-app/commit/5ad02b8): Watcher waiting for file message
+  - [3945dc7](/the0neWhoKnocks/notes-app/commit/3945dc7): tests
+  - [9cfffcb](/the0neWhoKnocks/notes-app/commit/9cfffcb): lint
+  - [8d716c5](/the0neWhoKnocks/notes-app/commit/8d716c5): Update to Svelte5
+  - [2194ca7](/the0neWhoKnocks/notes-app/commit/2194ca7): Stop container regardless of internal exit code
+  - [0b248b9](/the0neWhoKnocks/notes-app/commit/0b248b9): Backport test stuff
+  - [1dd7c24](/the0neWhoKnocks/notes-app/commit/1dd7c24): Update NodeJS
+  - [6d2818e](/the0neWhoKnocks/notes-app/commit/6d2818e): Move 'pageVisibility' to BaseFixture
+  - [446fa5b](/the0neWhoKnocks/notes-app/commit/446fa5b): fix eslint rule
+
+  **Features**
+  - [d9cb785](/the0neWhoKnocks/notes-app/commit/d9cb785): Prism theme adjustments
+</details>
+
+---
+
 ## v2.1.1
 
 <details>
