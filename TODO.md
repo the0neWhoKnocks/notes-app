@@ -1,6 +1,12 @@
 # TODO
 ---
 
+Rollup notes:
+- sourcemaps for svelte files slightly off.
+- plugin development seems not maintained for a lot of components in the svelte chain.
+- didn't report a missing used variable. (deleted `LOC__TIME_ZONE` from constants but was used in `timestamp`) - may be because cjs is statically analyzed and the error wasn't picked up until I switched to `exports.`
+
+
 Feat:
 - [x] Normalize how the query params are displayed in the GroupDialog, and NoteDialog.
 - [x] Parse URL param 'note' so that it loads on page load.
