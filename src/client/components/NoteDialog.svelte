@@ -7,7 +7,7 @@
     PRISMAJS__COPY_TEXT,
   } from '../../constants';
   import { getNoteNode } from '../../utils/dataNodeUtils';
-  const serializeForm = require('../utils/serializeForm');
+  import serializeForm from '../utils/serializeForm';
   import {
     allTags,
     currentNote,
