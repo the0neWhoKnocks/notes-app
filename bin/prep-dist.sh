@@ -1,8 +1,25 @@
 #!/bin/sh
 
+UPDATING=false
+
+while test $# != 0; do
+  case "$1" in
+    --update) UPDATING=true ;;
+    --) shift; break;;
+    *)  usage ;;
+  esac
+
+  shift
+done
+
 # In case any old deps get removed/renamed, don't want any false positives if
 # code is referencing old files that shouldn't be getting used.
-rm -rf ./dist/public/js/vendor
+if ! $UPDATING; then
+  rm -rf \
+    ./dist/public/css \
+    ./dist/public/js \
+    ./dist/public/manifest.json
+fi
 
 mkdir -p \
   ./dist \

@@ -1,16 +1,16 @@
-const {
+import {
   DATA_ACTION__ADD,
   DATA_ACTION__EDIT,
   DATA_TYPE__NOTE,
-} = require('../constants');
-const { getNoteNode } = require('./dataNodeUtils');
+} from '../constants.js';
+import { getNoteNode } from './dataNodeUtils.js';
 
-exports.EP__SET__USER_DATA = 'setUserData';
+export const EP__SET__USER_DATA = 'setUserData';
 
 // Ensures that Server and SW response shapes stay in sync.
-exports.default = function genAPIPayload({ data, endpoint, ...rest }) {
+export default function genAPIPayload({ data, endpoint, ...rest }) {
   switch (endpoint) {
-    case exports.EP__SET__USER_DATA: {
+    case EP__SET__USER_DATA: {
       const { action, nodeId, nodePath, type } = rest;
       
       if (
@@ -27,4 +27,4 @@ exports.default = function genAPIPayload({ data, endpoint, ...rest }) {
       else return { ...data };
     }
   }
-};
+}

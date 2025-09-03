@@ -133,7 +133,7 @@ fileGate
             
             if (serverSyncCmd) {
               const { execSync } = require('child_process');
-              execSync(serverSyncCmd);
+              execSync(`${serverSyncCmd} --update`);
             }
           }, 300);
         }

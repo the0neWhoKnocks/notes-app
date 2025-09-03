@@ -1,9 +1,9 @@
-import { LOC__TIMEZONE } from '../../constants';
+import { LOC__TIME_ZONE } from '../../constants';
 
 export default function timestamp({
   date = new Date(),
   format = '[y]-[mo]-[d] [h]:[mi]:[s][md]',
-  timeZone = LOC__TIMEZONE,
+  timeZone = LOC__TIME_ZONE,
 } = {}) {
   // NOTE: Since the format positioning changes per locale, sticking with this one.
   // - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString#using_locales

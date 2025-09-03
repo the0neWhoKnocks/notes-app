@@ -28,7 +28,6 @@
     "browser-sync": "3.0.4",
     "browserslist": "4.25.1",
     "chokidar": "3.5.2",
-    "clean-webpack-plugin": "4.0.0",
     "css-loader": "7.1.2",
     "css-minimizer-webpack-plugin": "7.0.2",
     "eslint": "9.33.0",
@@ -43,8 +42,8 @@
     "svelte-loader": "3.2.4",
     "svelte-portal": "2.2.0",
     "terser-webpack-plugin": "5.3.14",
-    "webpack": "5.91.0",
-    "webpack-cli": "4.9.1",
+    "webpack": "5.101.3",
+    "webpack-cli": "6.0.1",
     "webpack-manifest-plugin": "4.0.2"
   }
 }

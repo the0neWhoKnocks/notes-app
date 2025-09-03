@@ -1,6 +1,5 @@
 const { resolve } = require('path');
 const webpack = require('webpack');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const IgnoreEmitPlugin = require('ignore-emit-webpack-plugin');
@@ -52,7 +51,7 @@ const outputFilename = ({ chunk: { name }, contentHashType }) => {
     case 'javascript': {
       _name = (/\.(c|m)?js$/.test(name))
         ? '[name]'
-        : `[name]_[contenthash:${HASH_LENGTH}].js`;
+        : `[name]_[contenthash:${HASH_LENGTH}].mjs`;
       break;
     }
   }
@@ -63,20 +62,20 @@ const outputFilename = ({ chunk: { name }, contentHashType }) => {
 const conf = {
   devtool: dev && 'source-map',
   entry: {
-    'js/app': resolve(__dirname, './src/client/index.js'),
+    'js/app': './src/client/index.js',
     'js/sw/constants.mjs': {
-      import: resolve(__dirname, './src/client/serviceWorker/constants.mjs'),
-      library: { type: 'module' },
+      import: './src/client/serviceWorker/constants.mjs',
+      library: { type: 'modern-module' },
     },
     'js/sw/genAPIPayload.mjs': {
-      import: resolve(__dirname, './src/utils/genAPIPayload.js'),
-      library: { type: 'module' },
+      import: './src/utils/genAPIPayload.mjs',
+      library: { type: 'modern-module' },
     },
     'js/sw/modifyUserData.mjs': {
-      import: resolve(__dirname, './src/utils/modifyUserData.js'),
-      library: { type: 'module' },
+      import: './src/utils/modifyUserData.mjs',
+      library: { type: 'modern-module' },
     },
-    'js/sw.register': resolve(__dirname, './src/client/serviceWorker/register.mjs'),
+    'js/sw.register': './src/client/serviceWorker/register.mjs',
   },
   experiments: {
     outputModule: true,
@@ -135,33 +134,9 @@ const conf = {
     publicPath: '/',
   },
   plugins: [
-    new CleanWebpackPlugin({
-      cleanOnceBeforeBuildPatterns: [
-        '**/*',
-        '!manifest.json', // the watcher won't pick up on changes if this is deleted
-        // NOTE - Uncomment/update the below if you have extra assets that should
-        // not be deleted. Examples of such files/folders are anything generated
-        // at startup before the bundling has started. Note that you have to
-        // exclude the folder and it's contents separately.
-        '!css',
-        '!css/fonts',
-        '!css/fonts/**/*',
-        '!css/vendor',
-        '!css/vendor/**/*',
-        '!imgs',
-        '!imgs/**/*',
-        '!js',
-        '!js/sw',
-        '!js/sw/**/*',
-        '!js/vendor',
-        '!js/vendor/**/*',
-      ],
-      cleanStaleWebpackAssets: false, // Cleaning after rebuilds doesn't play nice with `mini-css-extract-plugin`
-      // verbose: true,
-    }),
     new webpack.DefinePlugin({
       'process.env.FOR_CLIENT_BUNDLE': JSON.stringify(true),
-      'process.env.TIME_ZONE': JSON.stringify(process.env.TIME_ZONE),
+      'process.env.TZ': JSON.stringify(process.env.TZ),
     }),
     new MiniCssExtractPlugin({
       chunkFilename: outputFilename,

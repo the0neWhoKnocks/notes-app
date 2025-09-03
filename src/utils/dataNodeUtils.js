@@ -31,7 +31,5 @@ function getPathNode(obj, path, type) {
   return ret;
 }
 
-module.exports = {
-  getGroupNode: (...args) => getPathNode(...args, DATA_TYPE__GROUP),
-  getNoteNode: (...args) => getPathNode(...args, DATA_TYPE__NOTE),
-};
+exports.getGroupNode = (...args) => getPathNode(...args, DATA_TYPE__GROUP);
+exports.getNoteNode = (...args) => getPathNode(...args, DATA_TYPE__NOTE);
