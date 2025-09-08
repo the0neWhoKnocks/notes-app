@@ -20,9 +20,12 @@
   function handleThemeSelect({ target: { value } }) {
     if (value !== undefined) {
       userPreferences.setPreference('theme', value);
-      loadThemeCSS(value);
     }
   }
+  
+  $effect(() => {
+    loadThemeCSS($userPreferences.theme);
+  });
 </script>
 
 <DropDown bind:open={$themeSelectorOpen}>
