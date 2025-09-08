@@ -97,7 +97,7 @@ const fileGate = (waitForFileBeforeStart)
 const watchedFiles = [
   './src/client/serviceWorker/**/*.mjs',
   './src/server/**/*.js',
-  './src/utils/**/*.js',
+  './src/utils/**/*.{cjs,mjs,js}',
   './src/constants.js',
 ];
 const watchedClientFiles = [
