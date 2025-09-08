@@ -65,10 +65,10 @@
     }
   }
   
-  function transformNotePath({ path }) {
+  function transformNotePath({ path, pathLabel }) {
     const ICON__FILE = '&#x01F4C4;';
     const ICON__FOLDER = '&#x01F4C2;';
-    const markup = path
+    const markup = (pathLabel || path)
       .split('/')
       .reduce((arr, item, ndx, srcArr) => {
         const odd = !!(ndx % 2);

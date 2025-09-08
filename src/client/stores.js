@@ -307,7 +307,19 @@ function diff(objA, objB, { diffs, parentKey, parentObjB, parentPath = '' } = {}
       objBKeys.forEach((prop) => {
         if (!objA[prop]) {
           const _parentPath = parentPath ? `${parentPath}/${prop}` : prop;
-          _diffs.removed.push({ obj: _objB[prop], path: _parentPath });
+          const valB = _objB[prop];
+          let pathLabel = _parentPath;
+          
+          if (Array.isArray(objA)) {
+            const key = (parentKey === 'tags') ? 'tag' : parentKey;
+            pathLabel = `${parentPath}/ ${key} [ ${valB} ]`;
+          }
+          
+          _diffs.removed.push({
+            obj: _objB[prop],
+            path: _parentPath,
+            pathLabel,
+          });
         }
       });
     }

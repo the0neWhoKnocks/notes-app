@@ -638,6 +638,13 @@ export default async function modifyUserData({
                       }
                       case 'removed': {
                         delete objNode[item];
+                        
+                        if (Array.isArray(objNode)) {
+                          for (let i=objNode.length - 1; i>=0; i--) {
+                            if (!objNode[i]) { objNode.splice(i, 1); }
+                          }
+                        }
+                        
                         msgLines.push(`Removed "${item}"`);
                         break;
                       }
