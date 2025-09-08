@@ -274,7 +274,7 @@ export function loadThemeCSS(theme) {
   });
 }
 
-function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
+function diff(objA, objB, { diffs, parentKey, parentObjB, parentPath = '' } = {}) {
   const _diffs = diffs || {
     added: [],
     modified: [],
@@ -325,10 +325,15 @@ function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
           prop !== 'modified' // already know that it's changed, don't need to track this
           && valA !== valB
         ) {
+          let propLabel = prop;
+          
+          if (Array.isArray(objA)) { propLabel = `${parentKey} ${+prop + 1}`; }
+          
           _diffs.modified.push({
             from: valB,
             path: parentPath ? parentPath : prop,
             prop,
+            propLabel,
             to: valA,
           });
         }
@@ -336,6 +341,7 @@ function diff(objA, objB, { diffs, parentObjB, parentPath = '' } = {}) {
       else {
         diff(valA, valB, {
           diffs: _diffs,
+          parentKey: prop,
           parentObjB: _objB,
           parentPath: parentPath ? `${parentPath}/${prop}` : prop,
         });

@@ -26,7 +26,7 @@
             </div>
           </label>
           {#if typeProp === 'modified'}
-            <div class="prop">{diff.prop}</div>
+            <div class="prop">{diff.propLabel || diff.prop}</div>
             <div class="from">{diff.from}</div>
             <div class="to">{diff.to}</div>
           {/if}
