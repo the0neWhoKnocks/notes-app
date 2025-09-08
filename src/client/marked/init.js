@@ -1,10 +1,12 @@
 import tableOfContents from './extensions/tableOfContents';
 
-// NOTE: When adding in support for a new lang, look in the source lang file for
+// NOTE: When adding in support for a new lang, look in the source lang file 
+// (prismjs/components/prism-<lang>.js) for:
 // - (regex) `Prism\.languages\.[\w]+=` to find any `langAliases`.
 // - `clone` and `extend`, to find any `langDeps`.
 const langAliases = {
   atom: 'markup',
+  env: 'nix',
   html: 'markup',
   js: 'javascript',
   mathml: 'markup',
@@ -27,7 +29,6 @@ const langDeps = {
   jsonp: ['json'],
   jsx: ['javascript', 'markup'],
   markdown: ['markup'],
-  yml: ['yaml'],
 };
 const loadedLangs = [];
 let langs = [];
@@ -52,6 +53,19 @@ function addLangDeps(arr) {
 }
 
 function highlightCode() {
+  // Sometimes the aliases get auto-assigned and sometimes they're left blank.
+  // This ensures that they get assigned.
+  Object.entries(langAliases).forEach(([ alias, lang ]) => {
+    if (
+      // since the langs are lazy loaded, only assign after the lang exists
+      window.Prism.languages[lang]
+      // if the alias was already assigned, leave it alone
+      && !window.Prism.languages[alias]
+    ) {
+      window.Prism.languages[alias] = window.Prism.languages[lang];
+    }
+  });
+  
   const noteEl = (window.previewingNote)
     ? document.getElementById('notePreview')
     : document.getElementById('note');
