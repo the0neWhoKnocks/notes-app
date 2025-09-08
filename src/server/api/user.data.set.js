@@ -3,7 +3,11 @@ const {
   EP__SET__USER_DATA,
   default: genAPIPayload,
 } = require('../../utils/genAPIPayload.mjs');
-const modifyUserData = require('../../utils/modifyUserData.mjs').default;
+const {
+  default: modifyUserData,
+  formatDataTypes,
+} = require('../../utils/modifyUserData.mjs');
+const encrypt = require('../utils/encrypt');
 const loadUserData = require('../utils/loadUserData');
 const saveUserData = require('../utils/saveUserData');
 
@@ -24,7 +28,8 @@ module.exports = async function setData(req, res) {
   }
   
   try {
-    await saveUserData({ appConfig, data, password, type, username });
+    const types = await formatDataTypes(data, type, { config: appConfig, encrypt, password });
+    await saveUserData({ appConfig, types, username });
     
     log.info(logMsg);
     

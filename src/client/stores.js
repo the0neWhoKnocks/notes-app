@@ -66,17 +66,23 @@ export async function setUserData(payload) {
   if (
     notesData
     && JSON.stringify(notesData) !== oldNotes
-  ) noteGroups.set(notesData);
+  ) {
+    noteGroups.set(notesData);
+  }
   
   if (
     preferences
     && JSON.stringify(preferences) !== oldPrefs
-  ) userPreferences.set(preferences);
+  ) {
+    userPreferences.set(preferences);
+  }
   
   if (
     recent
     && JSON.stringify(recent) !== oldRecent
-  ) recentlyViewed.set(recent);
+  ) {
+    recentlyViewed.set(recent);
+  }
   
   if (
     tags

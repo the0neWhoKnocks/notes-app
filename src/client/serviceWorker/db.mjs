@@ -1,6 +1,10 @@
 import {
   CRYPT__SALT,
   CRYPT__IV_LENGTH,
+  DB__STORE_NAME__CRYPT,
+  DB__STORE_NAME__NOTES,
+  DB__STORE_NAME__PREFS,
+  DB__STORE_NAME__USERS,
   DB_NAME,
   DB_VERSION,
 } from './constants.mjs';
@@ -10,11 +14,18 @@ import l from './logger.mjs';
 const log = l('db');
 let dbRef;
 
-const dbAPI = {
-  dbExists: async () => {
-    const dbs = await indexedDB.databases();
-    return !!dbs.find(({ name }) => name === DB_NAME);
-  },
+const dbStores = [
+  [DB__STORE_NAME__CRYPT, 'version'],
+  // - Essentially create a store for any files that the Server writes to.
+  // - Since I'm storing an encoded JSON payload for each entry, I only care
+  //   about `username`. So `store.get(encodedUsername)` will give me a DB
+  //   representation of what a Server file would.
+  [DB__STORE_NAME__USERS, 'username'],
+  [DB__STORE_NAME__NOTES, 'username'],
+  [DB__STORE_NAME__PREFS, 'username'],
+];
+
+const storeAPI = {
   get: async (storeKey, failSilently = false) => {
     if (dbAPI.store) {
       const store = await dbAPI.store();
@@ -39,24 +50,6 @@ const dbAPI = {
     }
     else if (!failSilently) throw Error(`Store hasn't been selected`);
   },
-  selectStore: (storeName) => {
-    if (dbRef) {
-      dbAPI.store = async () => {
-        // In case a DB is deleted in the middle of App usage (edge-case),
-        // reinitialize so no errors are thrown.
-        const dbExists = await dbAPI.dbExists();
-        if (!dbExists) await initDB();
-        
-        const trans = dbRef.transaction(storeName, 'readwrite');
-        return trans.objectStore(storeName);
-      };
-    }
-    else {
-      throw Error('No DB reference found');
-    }
-    
-    return dbAPI;
-  },
   set: async (data) => {
     if (dbAPI.store) {
       const store = await dbAPI.store();
@@ -75,20 +68,46 @@ const dbAPI = {
   },
 };
 
+const dbAPI = {
+  dbExists: async () => {
+    const dbs = await indexedDB.databases();
+    return !!dbs.find(({ name }) => name === DB_NAME);
+  },
+  selectStore: (storeName) => {
+    if (dbRef) {
+      dbAPI.store = async () => {
+        // In case a DB is deleted in the middle of App usage (edge-case),
+        // reinitialize so no errors are thrown.
+        const exists = await dbAPI.dbExists();
+        if (!exists) await initDB();
+        
+        const trans = dbRef.transaction(storeName, 'readwrite');
+        return trans.objectStore(storeName);
+      };
+    }
+    else {
+      throw Error('No DB reference found');
+    }
+    
+    return storeAPI;
+  },
+};
+
 export function initDB() {
   return new Promise((resolve, reject) => {
     const db = indexedDB.open(DB_NAME, DB_VERSION);
     
-    // First time setup, flesh out the DB
+    // First time (or DB version update) setup, flesh out the DB
     db.onupgradeneeded = () => {
-      const cryptStore = db.result.createObjectStore('crypt', { keyPath: 'version' });
-      cryptStore.createIndex('version', 'version', { unique: true });
-    
-      const usersStore = db.result.createObjectStore('users', { keyPath: 'username' });
-      usersStore.createIndex('username', 'username', { unique: true });
-    
-      const userDataStore = db.result.createObjectStore('userData', { keyPath: 'username' });
-      userDataStore.createIndex('username', 'username', { unique: true });
+      const _db = db.result;
+      
+      // Start fresh during a DB update.
+      [..._db.objectStoreNames].forEach((name) => { _db.deleteObjectStore(name); });
+      
+      for (let [ name, key ] of dbStores) {
+        const store = _db.createObjectStore(name, { keyPath: key });
+        store.createIndex(key, key, { unique: true });
+      }
       
       log.info('Added base data');
     };
@@ -97,12 +116,12 @@ export function initDB() {
       dbRef = db.result;
       
       try {
-        const cryptDataExists = await dbAPI.selectStore('crypt').get(DB_VERSION, true);
+        const cryptDataExists = await dbAPI.selectStore(DB__STORE_NAME__CRYPT).get(DB_VERSION, true);
         if (!cryptDataExists) {
           const salt = (new TextEncoder()).encode(CRYPT__SALT);
           const iv = crypto.getRandomValues(new Uint8Array(CRYPT__IV_LENGTH));
           
-          await dbAPI.selectStore('crypt').set({
+          await dbAPI.selectStore(DB__STORE_NAME__CRYPT).set({
             iv: bufferToBase64(iv),
             salt: bufferToBase64(salt),
             version: DB_VERSION,

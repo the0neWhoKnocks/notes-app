@@ -9,17 +9,23 @@ import {
   DATA_ACTION__EDIT,
   DATA_ACTION__IMPORT,
   DATA_ACTION__MOVE,
+  DATA_KEY__NOTES,
+  DATA_KEY__PREFS,
   DATA_TYPE__ALL,
   DATA_TYPE__GROUP,
   DATA_TYPE__NOTE,
+  DATA_TYPE__NOTES,
   DATA_TYPE__PREFS,
   DATA_TYPE__RECENT,
 } from '../constants.js';
 import { getGroupNode, getNoteNode } from './dataNodeUtils.js';
+import genSchema from './genSchema.js';
 import groupNodeShape from './groupNodeShape.js';
 import kebabCase from './kebabCase.js';
 import parsePath from './parsePath.js';
 import parseTags from './parseTags.js';
+
+const forWorker = typeof WorkerGlobalScope !== 'undefined';
 
 const getMissingRequiredItems = (required, propObj) => {
   const groupedProps = required.reduce((obj, prop) => {
@@ -185,6 +191,99 @@ const finalizeData = (data, logMsg) => ({
   data: sortObjByKeys(data),
   logMsg,
 });
+
+export const formatDataTypes = async (
+  data = {},
+  type = DATA_TYPE__ALL,
+  { config, encrypt, password } = {}
+) => {
+  const types = [];
+  
+  if (type === DATA_TYPE__ALL) {
+    const { [DATA_TYPE__PREFS]: prefs, ...notes } = data;
+    types.push(
+      [DATA_TYPE__PREFS, { ...genSchema(DATA_TYPE__PREFS).defaultObj[DATA_TYPE__PREFS], ...prefs }],
+      [DATA_TYPE__NOTES, { ...genSchema(DATA_TYPE__NOTES).defaultObj, ...notes }],
+    );
+  }
+  else {
+    let schema = genSchema(type).defaultObj;
+    let _data = data;
+    
+    switch (type) {
+      case DATA_TYPE__PREFS: {
+        schema = schema[DATA_TYPE__PREFS];
+        _data = data[DATA_TYPE__PREFS];
+        break;
+      }
+    }
+    
+    types.push([type, { ...schema, ..._data }]);
+  }
+  
+  const encryptFn = async (d) => {
+    if (forWorker) {
+      return await encrypt(config, JSON.stringify(d), password);
+    }
+    
+    return (await encrypt(config, d, password)).combined;
+  };
+  
+  const dataTypes = [];
+  for (let [ _type, _data ] of types) {
+    const encryptedData = await encryptFn(_data);
+    let k;
+    
+    switch (_type) {
+      case DATA_TYPE__GROUP:
+      case DATA_TYPE__NOTE:
+      case DATA_TYPE__NOTES:
+      case DATA_TYPE__RECENT: k = DATA_KEY__NOTES; break;
+      case DATA_TYPE__PREFS: k = DATA_KEY__PREFS; break;
+      default: {
+        throw new Error(`Type '${_type}' is not supported when setting User data.`);
+      }
+    }
+    
+    dataTypes.push([k, encryptedData, _data]);
+  }
+  
+  return dataTypes;
+};
+
+export const loadDefaultData = async ({ config, encrypt, password, setDefault, type } = {}) => {
+  const { defaultObj } = genSchema(type);
+  const types = await formatDataTypes(defaultObj, DATA_TYPE__ALL, { config, encrypt, password });
+  await setDefault(types);
+  return defaultObj;
+};
+
+export const loadExistingData = async ({ config, encrypt, notes, password, prefs, type } = {}) => {
+  const { defaultObj, notesTypes, prefsTypes } = genSchema(type);
+  const data = {};
+    
+  if (notesTypes.includes(type)) {
+    let notesData;
+    try { notesData = await notes.load(); }
+    catch (err) {
+      const types = await formatDataTypes(notesData, DATA_TYPE__NOTES, { config, encrypt, password });
+      notesData = await notes.setDefault(types, err);
+    }
+    Object.assign(data, notesData);
+  }
+  
+  if (prefsTypes.includes(type)) {
+    let prefsData;
+    try { prefsData = await prefs.load(); }
+    catch (err) {
+      const types = await formatDataTypes(prefsData, DATA_TYPE__PREFS, { config, encrypt, password });
+      prefsData = await prefs.setDefault(types, err);
+    }
+    Object.assign(data, { [DATA_TYPE__PREFS]: { ...prefsData } });
+  }
+  
+  return { ...defaultObj, ...data };
+};
 
 // NOTE: Need to specify `default` so that WP can convert this into an ES module.
 export default async function modifyUserData({

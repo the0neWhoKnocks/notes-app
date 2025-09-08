@@ -6,8 +6,8 @@ const {
   DATA_TYPE__NOTES,
   DATA_TYPE__PREFS,
   DATA_TYPE__RECENT,
-} = require('../../constants');
-const groupNodeShape = require('../../utils/groupNodeShape');
+} = require('../constants');
+const groupNodeShape = require('./groupNodeShape');
 
 module.exports = function genSchema(type) {
   const defaultObj = {};
@@ -22,6 +22,7 @@ module.exports = function genSchema(type) {
     DATA_TYPE__ALL,
     DATA_TYPE__PREFS,
   ];
+  
   if (notesTypes.includes(type)) {
     Object.assign(defaultObj, {
       allTags: {},
@@ -31,6 +32,7 @@ module.exports = function genSchema(type) {
       recentlyViewed: [],
     });
   }
+  
   if (prefsTypes.includes(type)) {
     Object.assign(defaultObj, { [DATA_TYPE__PREFS]: {} });
   }

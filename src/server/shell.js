@@ -40,6 +40,17 @@ const addNodes = (type, arr) => {
   return _arr.join('\n');
 };
 
+const faviconURLs = {
+  config: '/imgs/favicons/browserconfig.xml',
+  favicon: '/imgs/favicons/favicon.ico',
+  favicon16: '/imgs/favicons/favicon-16x16.png',
+  favicon32: '/imgs/favicons/favicon-32x32.png',
+  headerIcon: '/imgs/favicons/android-chrome-192x192.png',
+  manifest: '/imgs/favicons/site.webmanifest',
+  maskIcon: '/imgs/favicons/safari-pinned-tab.svg',
+  touchIcon: '/imgs/favicons/apple-touch-icon.png',
+};
+
 const shell = ({
   body,
   head,
@@ -55,14 +66,14 @@ const shell = ({
       <meta charset="utf-8">
       <meta name="viewport" content="initial-scale=1.0, width=device-width">
       
-      <link rel="apple-touch-icon" sizes="180x180" href="/imgs/favicons/apple-touch-icon.png">
-      <link rel="icon" type="image/png" sizes="32x32" href="/imgs/favicons/favicon-32x32.png">
-      <link rel="icon" type="image/png" sizes="16x16" href="/imgs/favicons/favicon-16x16.png">
-      <link rel="manifest" href="/imgs/favicons/site.webmanifest">
-      <link rel="mask-icon" href="/imgs/favicons/safari-pinned-tab.svg" color="#5bbad5">
-      <link rel="shortcut icon" href="/imgs/favicons/favicon.ico">
+      <link rel="apple-touch-icon" sizes="180x180" href="${faviconURLs.touchIcon}">
+      <link rel="icon" type="image/png" sizes="32x32" href="${faviconURLs.favicon32}">
+      <link rel="icon" type="image/png" sizes="16x16" href="${faviconURLs.favicon16}">
+      <link rel="manifest" href="${faviconURLs.manifest}">
+      <link rel="mask-icon" href="${faviconURLs.maskIcon}" color="#5bbad5">
+      <link rel="shortcut icon" href="${faviconURLs.favicon}">
       <meta name="msapplication-TileColor" content="#2d89ef">
-      <meta name="msapplication-config" content="/imgs/favicons/browserconfig.xml">
+      <meta name="msapplication-config" content="${faviconURLs.config}">
       <meta name="theme-color" content="#f7e19a">
       
       <style>
@@ -291,6 +302,8 @@ const shell = ({
             JSON.stringify(
               [
                 '/',
+                '/css/fonts/FiraCode-VariableFont.ttf',
+                ...Object.values(faviconURLs),
                 ...head.styles,
                 ...body.styles,
                 ...body.asyncStyles,

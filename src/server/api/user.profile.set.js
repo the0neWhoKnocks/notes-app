@@ -5,6 +5,7 @@ const {
   PATH__USERS,
 } = require('../../constants');
 const log = require('../../utils/logger')('api.user.profile.set');
+const { formatDataTypes } = require('../../utils/modifyUserData.mjs');
 const decrypt = require('../utils/decrypt');
 const encrypt = require('../utils/encrypt');
 const getUserDataPath = require('../utils/getUserDataPath');
@@ -64,7 +65,8 @@ module.exports = async function setProfile(req, res) {
     
     if (password !== oldPassword) {
       const userData = await loadUserData(appConfig, oldUsername, oldPassword);
-      await saveUserData({ appConfig, data: userData, password, type: DATA_TYPE__ALL, username });
+      const types = await formatDataTypes(userData, DATA_TYPE__ALL, { config: appConfig, encrypt, password });
+      await saveUserData({ appConfig, types, username });
     }
     
     if (

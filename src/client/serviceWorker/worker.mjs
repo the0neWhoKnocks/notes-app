@@ -2,7 +2,11 @@
 
 import envVars from '/js/sw/envVars.mjs';
 import genAPIPayload, { EP__SET__USER_DATA } from './genAPIPayload.mjs';
-import modifyUserData from './modifyUserData.mjs';
+import modifyUserData, {
+  formatDataTypes,
+  loadDefaultData,
+  loadExistingData,
+} from './modifyUserData.mjs';
 import {
   API_PREFIX,
   CACHE_KEY,
@@ -10,6 +14,13 @@ import {
   CHANNEL__INSTALL_CHECK,
   CHANNEL__MESSAGES,
   CHANNEL__OFFLINE_DATA,
+  DATA_KEY__NOTES,
+  DATA_KEY__PREFS,
+  DATA_TYPE__ALL,
+  DB__STORE_NAME__CRYPT,
+  DB__STORE_NAME__NOTES,
+  DB__STORE_NAME__PREFS,
+  DB__STORE_NAME__USERS,
   DB_VERSION,
   MSG_TYPE__CACHE_URLS,
   MSG_TYPE__CLEAR_OFFLINE_DATA,
@@ -55,38 +66,50 @@ function genResponse(status, data = {}) {
 // 2. Handle odd Chromium bug that only happens when DevTools are open
 //    - https://stackoverflow.com/a/49719964/5156659
 //    - https://bugs.chromium.org/p/chromium/issues/detail?id=1098389
-function _fetch(req, offline, ev, cb) {
-  const fp = new Promise((resolve, reject) => {
+function _fetch(req, offline, ev, { offlineCb, successCb } = {}) {
+  if (offline && offlineCb) return offlineCb();
+  
+  const tryReq = async () => {
     if (req.cache === 'only-if-cached' && req.mode !== 'same-origin') return;
     
-    const f = fetch(req);
-    
-    if (cb) f.then(resp => {
-      return cb(resp.clone());
-    });
-    
-    f.then(resolve).catch(err => {
-      if (!isIgnoredOffline(req.url, offline)) {
-        log.error(`Error fetching "${req.url}"\n${err}`);
+    try {
+      const resp = await fetch(req);
+      
+      if (successCb) { await successCb(resp.clone()); }
+      
+      return resp;
+    }
+    catch (fetchErr) {
+      if (
+        !isIgnoredOffline(req.url, offline)
+        && fetchErr.message !== 'Failed to fetch'
+      ) {
+        log.error(`Error fetching "${req.url}"\n${fetchErr}`);
       }
       
-      reject(err);
-    });
-  });
+      // Server may be down, so try to serve up cached results.
+      // eslint-disable-next-line no-useless-catch
+      try {
+        const cachedResp = await offlineCb();
+        if (cachedResp) { return cachedResp; }
+        // else { throw fetchErr; }
+      }
+      catch (cacheErr) { throw cacheErr; }
+    }
+  };
   
-  ev.waitUntil(fp);
-  
-  return fp;
+  const prom = tryReq();
+  ev.waitUntil(prom);
+  return prom;
 }
 
 async function setUserInfo(creds) {
   try {
     if (cryptData) {
-      const _creds = Promise.resolve(creds); // allow for a Promise or an Object to be passed in
-      const { password, username } = await _creds;
+      const { password, username } = creds;
       const encryptedUsername = await encrypt(cryptData, username, password);
       
-      await dbAPI.selectStore('users').set({ username: encryptedUsername });
+      await dbAPI.selectStore(DB__STORE_NAME__USERS).set({ username: encryptedUsername });
       log.info('Saved login info');
     }
     else {
@@ -168,6 +191,96 @@ async function initCheck(claim = false) {
   });
 }
 
+async function loadUserData(config, username, password, {
+  checkForUpdates,
+  offline,
+  type = DATA_TYPE__ALL,
+} = {}) {
+  const encryptedUsername = await encrypt(cryptData, username, password);
+  let hasUpdates = false;
+  
+  const loadParse = async (storeName) => {
+    const storeData = await dbAPI.selectStore(storeName).get(encryptedUsername, true);
+    if (checkForUpdates && storeData.offlineUpdates) hasUpdates = true;
+    return JSON.parse(await decrypt(cryptData, storeData.data, password));
+  };
+  
+  const setTypeDefault = async (types, err) => {
+    let data;
+    
+    log.debug(err);
+    // TODO Since the DB is initialized on install, I don't think there'll be a
+    // similar case in the worker. Leaving this here for reference in case a
+    // reason pops up to use it.
+    // -------------------------------------------------------------------------
+    // if (err.message.includes('ENOENT')) {
+    //   data = await saveUserData({ config, offline, password, types, username });
+    // }
+    return data;
+  };
+  
+  try {
+    const data = await loadExistingData({
+      config,
+      encrypt,
+      notes: {
+        load: async () => await loadParse(DB__STORE_NAME__NOTES),
+        setDefault: setTypeDefault,
+      },
+      password,
+      prefs: {
+        load: async () => await loadParse(DB__STORE_NAME__PREFS),
+        setDefault: setTypeDefault,
+      },
+      type,
+    });
+    
+    if (checkForUpdates && hasUpdates) data.hasUpdates = true;
+    
+    return data;
+  }
+  catch (err) {
+    log.debug(err); // TODO may not need any error reporting here
+    
+    return await loadDefaultData({
+      config,
+      encrypt,
+      password,
+      setDefault: async (types) => { await saveUserData({ config, offline, password, types, username }); },
+      type,
+    });
+  }
+}
+
+async function saveUserData({ config, offline, password, types, username } = {}) {
+  const encryptedUsername = await encrypt(config, username, password);
+  const result = [];
+  
+  for (let [ type, encryptedData, rawData ] of types) {
+    let storeName;
+    switch (type) {
+      case DATA_KEY__NOTES: storeName = DB__STORE_NAME__NOTES; break;
+      case DATA_KEY__PREFS: storeName = DB__STORE_NAME__PREFS; break;
+    }
+    
+    try {
+      await dbAPI.selectStore(storeName).set({
+        data: encryptedData,
+        offlineUpdates: offline,
+        username: encryptedUsername,
+      });
+      result.push(rawData);
+    }
+    catch (err) {
+      const msg = `Error writing data for '${type}' to "${storeName}"\n${err.stack}`;
+      log.error(msg);
+      throw new Error(msg);
+    }
+  }
+  
+  return (result.length === 1) ? result[0] : result;
+}
+
 self.addEventListener('install', () => {
   channel.msgs.postMessage({ status: 'installing' });
 });
@@ -181,165 +294,163 @@ self.addEventListener('fetch', async (ev) => {
   await ev.waitUntil(initCheck());
   
   const { request } = ev;
-  const offline = !navigator.onLine;
   const reqURL = request.url;
+  
+  // NOTE: Sometimes overwritten if the Server is down and an `offlineCb` is
+  // called manually.
+  let offline = !navigator.onLine;
   
   try {
     if (reqURL.includes(API_PREFIX)) {
       if (cryptData) {
-        if (offline) {
+        const req = request.clone();
+        
+        const offlineCb = async () => {
           const OFFLINE_PREFIX = '[OFFLINE]';
+          const reqBody = await req.json();
+          offline = true;
           
-          ev.respondWith(async function () {
-            const reqBody = await request.json();
-            
+          if (reqURL.endsWith(ROUTE__API__USER__LOGIN)) {
+            try {
+              const { password, username } = reqBody;
+              const encryptedUsername = await encrypt(cryptData, username, password);
+              
+              await dbAPI.selectStore(DB__STORE_NAME__USERS).get(encryptedUsername);
+              return genResponse(200, reqBody);
+            }
+            catch (err) {
+              return genResponse(404, { message: `${OFFLINE_PREFIX} Error for login:\n${err}` });
+            }
+          }
+          else if (reqURL.endsWith(ROUTE__API__USER__DATA__SET)) {
+            try {
+              const { action, password, username, type } = reqBody;
+              const { data, error, logMsg, nodeId } = await modifyUserData({
+                loadCurrentData: async () => {
+                  return await loadUserData(cryptData, username, password, { offline, type });
+                },
+                logMsg: `${OFFLINE_PREFIX} User data modified`,
+                reqBody,
+              });
+              
+              if (error) {
+                const { code, msg } = error;
+                return genResponse(code, msg);
+              }
+              
+              const types = await formatDataTypes(data, type, { config: cryptData, encrypt, password });
+              await saveUserData({ config: cryptData, offline, password, types, username });
+              
+              log.info(`${OFFLINE_PREFIX} ${logMsg}`);
+              
+              return genResponse(200, genAPIPayload({
+                action,
+                data,
+                endpoint: EP__SET__USER_DATA,
+                nodeId,
+                nodePath: reqBody.path,
+                type,
+              }));
+            }
+            catch (err) {
+              return genResponse(404, { message: `${OFFLINE_PREFIX} Error modifying User data:\n${err}` });
+            }
+          }
+          else if (reqURL.endsWith(ROUTE__API__USER__DATA__GET)) {
+            try {
+              const { password, type, username } = reqBody;
+              
+              if (!username && !password) return genResponse(400, { message: 'Missing `username` and `password`' });
+              else if (!username) return genResponse(400, { message: 'Missing `username`' });
+              else if (!password) return genResponse(400, { message: 'Missing `password`' });
+              
+              const data = await loadUserData(cryptData, username, password, { offline, type });
+              
+              log.info('Got data');
+              return genResponse(200, data);
+            }
+            catch (err) {
+              return genResponse(404, { message: `${OFFLINE_PREFIX} Error for User data:\n${err}` });
+            }
+          }
+          
+          return genResponse(404, { message: `${OFFLINE_PREFIX} No data found for "${reqURL}"` });
+        };
+        
+        const successCb = async (data) => {
+          const reqBody = await req.json();
+          
+          // only save good data
+          if (data.status < 400) {
             if (reqURL.endsWith(ROUTE__API__USER__LOGIN)) {
-              try {
-                const { password, username } = reqBody;
-                const encryptedUsername = await encrypt(cryptData, username, password);
-                
-                await dbAPI.selectStore('users').get(encryptedUsername);
-                return genResponse(200, reqBody);
-              }
-              catch (err) {
-                return genResponse(404, { message: `${OFFLINE_PREFIX} Error for login:\n${err}` });
-              }
+              const creds = await data.json();
+              await setUserInfo(creds);
             }
-            else if (reqURL.endsWith(ROUTE__API__USER__DATA__SET)) {
+            else if (
+              reqURL.endsWith(ROUTE__API__USER__DATA__GET)
+              || reqURL.endsWith(ROUTE__API__USER__DATA__SET)
+            ) {
               try {
-                const { action, password, username, type } = reqBody;
-                const encryptedUsername = await encrypt(cryptData, username, password);
-                const { data, error, logMsg, nodeId } = await modifyUserData({
-                  loadCurrentData: async () => {
-                    const encryptedUserData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
-                    return (encryptedUserData)
-                      ? JSON.parse(await decrypt(cryptData, encryptedUserData.data, password))
-                      : {};
-                  },
-                  logMsg: `${OFFLINE_PREFIX} User data modified`,
-                  reqBody,
-                });
-                
-                if (error) {
-                  const { code, msg } = error;
-                  return genResponse(code, msg);
-                }
-                
-                const jsonData = JSON.stringify(data);
-                const encryptedData = await encrypt(cryptData, jsonData, password);
-                await dbAPI.selectStore('userData').set({
-                  data: encryptedData,
-                  offlineUpdates: true,
-                  username: encryptedUsername,
-                });
-                
-                log.info(`${OFFLINE_PREFIX} ${logMsg}`);
-                return genResponse(200, genAPIPayload({
-                  action,
-                  data,
-                  endpoint: EP__SET__USER_DATA,
-                  nodeId,
-                  nodePath: reqBody.path,
+                const {
+                  offlineChangesExist,
+                  password,
                   type,
-                }));
+                  username,
+                } = reqBody;
+                const userData = await data.json();
+                
+                if (userData) {
+                  if (offlineChangesExist) {
+                    log.info('Offline changes exist, skipping save of User data');
+                  }
+                  else {
+                    const types = await formatDataTypes(userData, type, { config: cryptData, encrypt, password });
+                    await saveUserData({ config: cryptData, offline, password, types, username });
+                    log.info('Cached User data');
+                  }
+                }
+                else {
+                  log.warn('No User data returned');
+                }
               }
               catch (err) {
-                return genResponse(404, { message: `${OFFLINE_PREFIX} Error modifying User data:\n${err}` });
+                log.error(`Error saving User data\n${err}`);
               }
             }
-            else if (reqURL.endsWith(ROUTE__API__USER__DATA__GET)) {
-              try {
-                const { password, username } = reqBody;
-                const encryptedUsername = await encrypt(cryptData, username, password);
-                const { data: userData } = await dbAPI.selectStore('userData').get(encryptedUsername);
-                const decryptedData = JSON.parse(await decrypt(cryptData, userData, password));
-                return genResponse(200, decryptedData);
-              }
-              catch (err) {
-                return genResponse(404, { message: `${OFFLINE_PREFIX} Error for User data:\n${err}` });
-              }
-            }
-            
-            return genResponse(404, { message: `${OFFLINE_PREFIX} No data found for "${reqURL}"` });
-          }());
-        }
-        else {
-          const reqBody = request.clone().json();
+          }
+          else {
+            log.info('Skipping save, error response recieved');
+          }
           
-          return ev.respondWith(
-            _fetch(request, offline, ev, async (data) => {
-              // only save good data
-              if (data.status < 400) {
-                if (reqURL.endsWith(ROUTE__API__USER__LOGIN)) {
-                  await setUserInfo(data.json());
-                }
-                else if (
-                  reqURL.endsWith(ROUTE__API__USER__DATA__GET)
-                  || reqURL.endsWith(ROUTE__API__USER__DATA__SET)
-                ) {
-                  try {
-                    const {
-                      offlineChangesExist,
-                      password,
-                      username,
-                    } = await reqBody;
-                    const encryptedUsername = await encrypt(cryptData, username, password);
-                    const userData = await data.json();
-                    
-                    if (userData) {
-                      if (offlineChangesExist) {
-                        log.info('Offline changes exist, skipping save of User data');
-                      }
-                      else {
-                        const jsonData = JSON.stringify(userData);
-                        const encryptedData = await encrypt(cryptData, jsonData, password);
-                        
-                        await dbAPI.selectStore('userData').set({
-                          data: encryptedData,
-                          username: encryptedUsername,
-                        });
-                        log.info('Cached User data');
-                      }
-                    }
-                    else {
-                      log.warn('No User data returned');
-                    }
-                  }
-                  catch (err) {
-                    log.error(`Error saving User data\n${err}`);
-                  }
-                }
-              }
-              else {
-                log.info('Skipping save, error response recieved');
-              }
-            })
-          );
-        }
+          return data;
+        };
+        
+        return ev.respondWith(
+          _fetch(request, offline, ev, { offlineCb, successCb })
+        );
       }
       else {
         log.warn('Missing `cryptData`, skipping API fetch.');
       }
     }
     else {
-      if (offline) {
-        ev.respondWith((async () => {
-          const cachedResp = await caches.match(request);
+      const offlineCb = async () => {
+        offline = true;
         
-          if (cachedResp) {
-            log.debug(`From Cache: "${reqURL}"`);
-            return cachedResp;
-          }
-          else if (isIgnoredOffline(reqURL, offline)) {
-            log.debug(`Mock Response: "${reqURL}"`);
-            return new Response('', { status: 200 });
-          }
-        })());
-      }
-      else {
-        log.debug(`Fetching: "${reqURL}"`);
-        ev.respondWith(_fetch(request, offline, ev));
-      }
+        const cachedResp = await caches.match(request);
+        
+        if (cachedResp) {
+          log.debug(`From Cache: "${reqURL}"`);
+          return cachedResp;
+        }
+        else if (isIgnoredOffline(reqURL, offline)) {
+          log.debug(`Mock Response: "${reqURL}"`);
+          return new Response('', { status: 200 });
+        }
+      };
+      
+      log.debug(`Fetching: "${reqURL}"`);
+      ev.respondWith(_fetch(request, offline, ev, { offlineCb }));
     }
   }
   catch (err) {
@@ -355,7 +466,7 @@ channel.apiData.addEventListener('message', async (ev) => {
       dbAPI = await initDB();
       
       if (!cryptData) {
-        const { iv, salt } = await dbAPI.selectStore('crypt').get(DB_VERSION);
+        const { iv, salt } = await dbAPI.selectStore(DB__STORE_NAME__CRYPT).get(DB_VERSION);
         cryptData = {
           iv: base64ToBuffer(iv),
           salt: base64ToBuffer(salt),
@@ -407,22 +518,20 @@ channel.offlineData.addEventListener('message', async (ev) => {
   if (cryptData && ev.data?.creds) {
     const { creds, type } = ev.data;
     const { password, username } = creds;
-    const encryptedUsername = await encrypt(cryptData, username, password);
-    const userData = await dbAPI.selectStore('userData').get(encryptedUsername, true);
+    const userData = await loadUserData(cryptData, username, password, { checkForUpdates: true });
     let data;
     
     switch (type) {
       case MSG_TYPE__CLEAR_OFFLINE_DATA: {
-        if (userData?.offlineUpdates) {
-          delete userData.offlineUpdates;
-          await dbAPI.selectStore('userData').set(userData);
+        if (userData?.hasUpdates) {
+          delete userData.hasUpdates;
+          const types = await formatDataTypes(userData, DATA_TYPE__ALL, { config: cryptData, encrypt, password });
+          await saveUserData({ config: cryptData, password, types, username });
         }
         break;
       }
       case MSG_TYPE__GET_OFFLINE_DATA: {
-        if (userData?.offlineUpdates) {
-          data = JSON.parse(await decrypt(cryptData, userData.data, password));
-        }
+        if (userData?.hasUpdates) { data = userData; }
         break;
       }
     }
