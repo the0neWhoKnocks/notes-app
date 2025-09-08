@@ -20,7 +20,14 @@ export default function genAPIPayload({ data, endpoint, ...rest }) {
           || action === DATA_ACTION__EDIT
         )
       ) {
-        const nPath = (action === DATA_ACTION__ADD) ? `${nodePath}/${nodeId}` : nodePath;
+        let nPath = (action === DATA_ACTION__ADD) ? `${nodePath}/${nodeId}` : nodePath;
+        
+        if (action === DATA_ACTION__EDIT) {
+          const parts = nodePath.split('/');
+          parts.pop();
+          nPath = `${parts.join('/')}/${nodeId}`;
+        }
+        
         const { note } = getNoteNode(data.notesData, nPath);
         return { ...data, newData: note, newPath: nPath };
       }

@@ -19,6 +19,7 @@ import {
 import kebabCase from '../utils/kebabCase';
 import logger from '../utils/logger';
 import postData from './utils/postData';
+import serializeForm from './utils/serializeForm';
 import {
   getStorageType,
   setStorage,
@@ -55,9 +56,12 @@ export async function setUserData(payload) {
   const oldRecent = JSON.stringify(getStoreValue(recentlyViewed));
   const oldTags = JSON.stringify(getStoreValue(allTags));
   
+  if (payload instanceof HTMLElement) { payload = serializeForm(payload); }
+  
   const newData = await postData(ROUTE__API__USER__DATA__SET, payload);
   const {
     allTags: tags,
+    newPath,
     notesData,
     preferences,
     recentlyViewed: recent,
@@ -68,6 +72,16 @@ export async function setUserData(payload) {
     && JSON.stringify(notesData) !== oldNotes
   ) {
     noteGroups.set(notesData);
+    
+    // If the User's viewing a note, change the title and save - update the URL
+    // and the note pointer.
+    const cN = getStoreValue(currentNote);
+    const { oldTitle, title } = payload;
+    if (cN && oldTitle !== title) {
+      const { id, note } = getNoteNode(notesData, newPath);
+      updateHistory({ params: { note: newPath } });
+      await currentNote.set({ ...note, id, path: newPath });
+    }
   }
   
   if (
