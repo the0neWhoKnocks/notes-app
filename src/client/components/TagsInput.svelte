@@ -48,7 +48,7 @@
     switch (ev.which) {
       case KEY__ENTER:
         ev.preventDefault();
-        addTag(ev.currentTarget.value);
+        addTag(ev.target.value);
         break;
     }
   }
@@ -67,6 +67,7 @@
     inputRef.value = ev.target.innerText;
     inputRef.focus();
     inputRef.dispatchEvent(new KeyboardEvent('keydown', {
+      bubbles: true,
       keyCode: KEY__ENTER,
       which: KEY__ENTER,
     }));
@@ -107,7 +108,7 @@
         // stop the element from scroll via the down key
         ev.preventDefault();
         const el = ev.target;
-
+        
         switch (ev.which) {
           case KEY__DOWN: {
             let nextEl = getSiblingsFor(el).next(autoCompleteItemSelector);
@@ -144,7 +145,7 @@
     if (tag !== '') {
       // TODO: maybe just bind value
       inputRef.value = '';
-      inputRef.dispatchEvent(new Event('change'));
+      inputRef.dispatchEvent(new Event('change', { bubbles: true }));
 
       // only add new tags
       if (tags.includes(tag)) return;
@@ -217,7 +218,7 @@
       onclick={handleAutoCompleteSelect}
       onkeydown={handleAutoCompleteSelect}
     >
-    {#each items as item (item)}
+    {#each items as item (item.tag)}
       {@const { start, middle, end, tag } = item}
       <button
         type="button"
