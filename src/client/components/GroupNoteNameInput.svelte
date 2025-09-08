@@ -30,7 +30,7 @@
     val = encodeURIComponent(val);
     query = `?note=${val}`;
     
-    if (onQueryChange) onQueryChange(queryParams);
+    onQueryChange?.(queryParams);
   };
   
   function handleInput(ev) {

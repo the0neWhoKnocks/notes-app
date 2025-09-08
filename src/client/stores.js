@@ -509,7 +509,7 @@ export async function loadNote(notePath) {
     
     // could be 'undefined' if a User hits up a dead URL
     if (note) {
-      updateHistory({ params: { note: encodeURIComponent(path) } });
+      updateHistory({ params: { note: path } });
       await currentNote.set({ ...note, id, path });
     }
     // no note found, so update URL
@@ -561,7 +561,7 @@ export async function loadTaggedNotes(tag) {
   // could be 'undefined' if a User hits up a dead URL
   if (tag && aT && aT[tag]) {
     currentTag.set(tag);
-    updateHistory({ params: { tag: encodeURIComponent(tag) } });
+    updateHistory({ params: { tag } });
   }
   // no note found, so update URL
   else updateHistory();
@@ -605,7 +605,7 @@ export async function updateItemPath(payload) {
     if (cN) {
       const { id, newParentPath } = payload;
       updateHistory({
-        params: { note: encodeURIComponent(`${newParentPath}/${id}`) },
+        params: { note: `${newParentPath}/${id}` },
       });
     }
     

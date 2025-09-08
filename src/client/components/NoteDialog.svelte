@@ -45,24 +45,43 @@
   
   const TABLE_COLUMN_DEFAULT_COUNT = 2;
   const TABLE_COLUMN_MIN_COUNT = 1;
-  let anchorDialogData = $state();
-  let contentText = $state('');
+  let anchorDialogData = $state.raw();
+  let contentText = $state.raw('');
   let contentWrapperRef = $state();
-  let editingNote = $state();
+  let editingNote = $state.raw(false);
   let formRef = $state();
-  let hideCaret = $state(false);
+  let hideCaret = $state.raw(false);
   let keyDownContentData;
   let oldTags = [];
-  let previewing = $state(false);
+  let previewing = $state.raw(false);
   let previewRef = $state();
   let queryParams;
-  let saveBtnDisabled = $state();
+  let saveBtnDisabled = $state.raw(false);
   let tableDialogData = $state();
-  let tags = $state([]);
+  let tags = $state.raw([]);
   let textareaRef = $state();
-  let textSelected = $state(false);
+  let textSelected = $state.raw(false);
   let titleValue;
-  let wrap = $state(true);
+  let wrap = $state.raw(true);
+  
+  $effect.pre(() => {
+    if ($dialogDataForNote) {
+      const { action, content, fromDraft, tags: _tags, title } = $dialogDataForNote;
+      
+      tags = _tags;
+      oldTags = (tags || []).join(', ');
+      titleValue = title;
+      editingNote = action === DATA_ACTION__EDIT;
+      saveBtnDisabled = editingNote;
+      contentText = content || '';
+      
+      if (fromDraft) saveBtnDisabled = false;
+    }
+  });
+  
+  $effect(() => {
+    window.previewingNote = previewing;
+  });
   
   function parseForm(form) {
     return [...(new FormData(form)).entries()].reduce((obj, [prop, val]) => {
@@ -628,7 +647,9 @@
     if (
       !isNaN(count)
       && count >= TABLE_COLUMN_MIN_COUNT
-    ) tableDialogData.columnCount = count;
+    ) {
+      tableDialogData.columnCount = count;
+    }
   }
   
   async function handleToolClick(ev) {
@@ -767,19 +788,6 @@
     }
   }
   
-  function deriveNoteData() {
-    const { action, content, fromDraft, tags: _tags, title } = $dialogDataForNote;
-    
-    tags = _tags;
-    oldTags = (_tags || []).join(', ');
-    titleValue = title;
-    editingNote = action === DATA_ACTION__EDIT;
-    saveBtnDisabled = editingNote;
-    contentText = content || '';
-    
-    if (fromDraft) saveBtnDisabled = false;
-  }
-  
   function handleVisChange() {
     // Note has been edited, try to save draft.
     if (!saveBtnDisabled) {
@@ -804,7 +812,6 @@
   
   $effect(() => {
     if ($dialogDataForNote) {
-      deriveNoteData();
       document.addEventListener('selectionchange', handleSelection);
       document.addEventListener('visibilitychange', handleVisChange);
     }
@@ -812,10 +819,6 @@
       document.removeEventListener('selectionchange', handleSelection);
       document.removeEventListener('visibilitychange', handleVisChange);
     }
-  });
-  
-  $effect(() => {
-    window.previewingNote = previewing;
   });
 </script>
 
