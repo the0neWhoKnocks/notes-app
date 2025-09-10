@@ -131,7 +131,7 @@ test.describe('Notes', () => {
   const GROUP_NAME = 'Test Group';
   const NOTE_NAME = 'Full Test Note';
   let note, notesBtn, search, searchBtn, themeBtn;
-  let cancelBtn, content, deleteDraftBtn, form, saveBtn, title, toolbar,
+  let cancelBtn, content, deleteDraftBtn, form, saveBtn, tagsInput, title, toolbar,
     wysiwygBoldBtn, wysiwygCodeBlockBtn, wysiwygCodeBtn, wysiwygHRBtn,
     wysiwygIndentBtn, wysiwygItalicBtn, wysiwygLinkBtn, wysiwygOLBtn,
     wysiwygPreviewBtn, wysiwygQuoteBtn, wysiwygStrikeBtn, wysiwygTOCBtn,
@@ -173,12 +173,41 @@ test.describe('Notes', () => {
         await app.getEl('.flyout .notes > .sub-nav button[title="Add Note"]').click();
         this.setUpLocs();
       },
+      async clickEdit() {
+        await app.els.editBtn().click();
+        await expect(form).toBeAttached();
+      },
+      async deleteNote({ btn, title: nTitle }) {
+        await btn.click();
+        await app.waitForDialog('.delete-form');
+        if (nTitle) {
+          await expect(app.getEl('.delete-form__msg')).toContainText(`Delete note ${nTitle} from /?`);
+        }
+        const delResp = app.genDeleteNoteReqPromise();
+        await app.getEl('.delete-form__btm-nav :text-is("Yes")').click();
+        await delResp;
+      },
+      async loadNote(nTitle) {
+        await expect(form).not.toBeAttached();
+        await app.getEl(`.notes .item__label-text:text-is("${nTitle}")`).click();
+        await expect(app.getEl('.flyout')).not.toBeAttached();
+      },
       async openNotesFlyout() {
         await notesBtn.click();
         await expect(app.getEl('[flyout-for="notesNav"]')).toBeVisible();
       },
+      async resetTestNote(nTitle) {
+        const noteItems = app.getEl(`.notes .item:has(.item__label-text:has-text("${nTitle}"))`);
+        if (await noteItems.count()) {
+          for (let n of (await noteItems.all()).reverse()) {
+            await note.deleteNote({ btn: n.locator('button[title="Delete"]') });
+          }
+        }
+        return noteItems;
+      },
       async setUpLocs() {
         form = app.getEl('.note-form');
+        tagsInput = form.locator('input[placeholder="Add Tag..."]');
         title = form.locator('[name="title"]');
         toolbar = form.locator('.note-form__toolbar');
         content = form.locator('.note-form__content');
@@ -225,9 +254,7 @@ test.describe('Notes', () => {
     await title.fill(NOTE_NAME);
     await expect(form.locator('.query')).toContainText('?note=root%2Ffull-test-note');
     
-    const tagsInput = form.locator('.tags-input__input');
-    await tagsInput.fill('test');
-    await typeStuff(tagsInput, '{Enter}');
+    await typeStuff(tagsInput, 'test{Enter}');
     
     await content.fill('');
     await content.focus();
@@ -308,9 +335,21 @@ test.describe('Notes', () => {
     await app.scroll(content).toBottom();
     await typeStuff(content, '```js{Enter}// code block{Enter}var x = \'y\';{Enter}```{Enter}');
     await app.scroll(content).toBottom();
-    await content.type('code block from button');
+    
+    const codeBlockTxt = 'code block from button';
+    await content.type(codeBlockTxt);
     await highlight(content, -22);
     await wysiwygCodeBlockBtn.click();
+    const langDialog = await app.waitForDialog('.code-lang-form');
+    const langInput = langDialog.locator('.auto-complete-input__input');
+    const langList = langDialog.locator('.auto-complete-input__list');
+    await langInput.type('j');
+    await expect(langList).toBeAttached();
+    await langDialog.locator('.auto-complete-input__option:text-is("js")').click();
+    await expect(langInput).toHaveValue('js');
+    await langDialog.locator('button:text-is("Add")').click();
+    const contentVal = await content.inputValue();
+    expect(contentVal).toContain(`\`\`\`js\n${codeBlockTxt}\n\`\`\``);
     await app.scroll(content).toBottom();
     await typeStuff(content, '{Control+End}{Enter}{Enter}');
     await app.scroll(content).toBottom();
@@ -369,6 +408,76 @@ test.describe('Notes', () => {
     await expect(label).toHaveAttribute('href', '?note=root%2Ffull-test-note');
     
     await app.getEl(SELECTOR__FLYOUT__CLOSE_BTN).click();
+  });
+  
+  test('Tag Auto-Completion', async ({ app }) => {
+    const NOTE_TITLE = 'Tags';
+    
+    await note.openNotesFlyout();
+    const noteItem = await note.resetTestNote(NOTE_TITLE);
+    const noteLink = noteItem.locator('.item__label');
+    const deleteTagBtn = app.getEl('.tags-input__tag-delete-btn');
+    
+    await note.clickAdd();
+    await title.fill(NOTE_TITLE);
+    await typeStuff(tagsInput, 'bar{Enter}');
+    await content.fill('tags');
+    await saveBtn.click();
+    await noteLink.click();
+    await expect(app.getEl('.flyout')).not.toBeAttached();
+    
+    await note.clickEdit();
+    await deleteTagBtn.click();
+    await expect(deleteTagBtn).not.toBeAttached();
+    await tagsInput.type('ba');
+    await expect(app.getEl('.auto-complete-input__list')).toBeAttached();
+    await app.page.keyboard.down('ArrowDown');
+    await expect(app.getEl('[data-opt="bar"]')).toBeFocused();
+    await app.page.keyboard.down('Enter');
+    await expect(app.getEl('.tags-input__tag:has-text("bar")')).toBeAttached();
+    
+    await deleteTagBtn.click();
+    await expect(deleteTagBtn).not.toBeAttached();
+    await tagsInput.type('ba');
+    await expect(app.getEl('.auto-complete-input__list')).toBeAttached();
+    await app.getEl('[data-opt]:has-text("bar")').click();
+    await expect(app.getEl('.tags-input__tag:has-text("bar")')).toBeAttached();
+  });
+  
+  test('URL Updates After Edit & Delete', async ({ app }) => {
+    const NOTE_TITLE = 'Temp';
+    
+    await note.openNotesFlyout();
+    const noteItem = await note.resetTestNote(NOTE_TITLE);
+    const noteLink = noteItem.locator('.item__label');
+    
+    await note.clickAdd();
+    await title.fill(NOTE_TITLE);
+    await content.fill('dfasdfasdf');
+    await saveBtn.click();
+    await noteLink.click();
+    await expect(app.getEl('.flyout')).not.toBeAttached();
+    await expect(app.page).toHaveQueryParam({ note: 'root/temp' });
+    
+    // Param shouldn't have been altered after editing content =================
+    await note.clickEdit();
+    await content.fill('dfasd');
+    await saveBtn.click();
+    await expect(form).not.toBeAttached();
+    await expect(app.page).toHaveQueryParam({ note: 'root/temp' });
+    
+    // Param should change after title change ==================================
+    await note.clickEdit();
+    await title.fill('Temp 2');
+    await saveBtn.click();
+    await expect(form).not.toBeAttached();
+    await expect(app.page).toHaveQueryParam({ note: 'root/temp-2' });
+    
+    // Param should be removed if the note was deleted =========================
+    await note.deleteNote({ btn: app.getEl('.full-note__nav button[title="Delete"]') });
+    await expect(app.page).not.toHaveQueryParam({ note: 'root/temp-2' });
+    await expect(app.getEl('.dialog')).not.toBeAttached();
+    await expect(app.getEl('.recently-viewed')).toBeAttached();
   });
   
   test.describe('Group', () => {
@@ -481,12 +590,11 @@ test.describe('Notes', () => {
   });
   
   test.describe('Draft', () => {
-    const SELECTOR__EDIT_BTN = '.modify-nav button[title="Edit"]';
-    
     test('While Creating a New Note', async ({ app }) => {
       const NOTE_TITLE = 'Draft Note';
       const NOTE_ID = 'draft-note';
       const NOTE_CONTENT = 'asdf asdf asdf asdf asdf sadf';
+      const editBtn = app.els.editBtn();
       
       // await app.deleteUserData(true); // NOTE: uncomment when tweaking test to get past partially created data
       
@@ -518,15 +626,9 @@ test.describe('Notes', () => {
       await app.screenshot('[draft] content used in note view');
       
       // Delete draft and verify it's deletion =================================
-      const editBtn = app.getEl(SELECTOR__EDIT_BTN);
       await expect(editBtn).toContainText('Draft');
       await editBtn.click();
-      await deleteDraftBtn.click();
-      await app.waitForDialog('.delete-form');
-      await expect(app.getEl('.delete-form__msg')).toContainText(`Delete note ${NOTE_TITLE} from /?`);
-      const delResp = app.genDeleteNoteReqPromise();
-      await app.getEl('.delete-form__btm-nav :text-is("Yes")').click();
-      await delResp;
+      await note.deleteNote({ btn: deleteDraftBtn, title: NOTE_TITLE });
       await note.openNotesFlyout();
       await expect(app.getEl(`.notes .item__label:text-is("${NOTE_TITLE}")`)).toHaveCount(0);
       await app.screenshot('[draft] deletion deletes note since there was no previous data');
@@ -548,10 +650,10 @@ test.describe('Notes', () => {
       
     test('While Editing Existing Note', async ({ app }) => {
       const CHANGED_TXT = '::TOC::\n\nedit\n\n';
+      let editBtn = app.els.editBtn();
       
       await app.loadNotePage(NOTE_NAME);
       
-      let editBtn = app.getEl(SELECTOR__EDIT_BTN);
       await expect(editBtn).not.toContainText('Draft');
       await editBtn.click();
       await note.setUpLocs();
@@ -570,7 +672,7 @@ test.describe('Notes', () => {
       await app.loadPage();
       await app.logIn();
       await app.loadNotePage(NOTE_NAME);
-      editBtn = app.getEl(SELECTOR__EDIT_BTN);
+      editBtn = app.els.editBtn();
       await expect(editBtn).toContainText('Draft');
       await app.screenshot('[draft] Edit button displays Draft');
       await editBtn.click();
@@ -600,9 +702,7 @@ test.describe('Notes', () => {
     await title.fill(NOTE_TITLE);
     await content.fill(NOTE_CONTENT);
     await saveBtn.click();
-    await expect(app.getEl('.note-form')).toBeHidden();
-    await app.getEl(`.notes .item__label-text:text-is("${NOTE_TITLE}")`).click();
-    await expect(app.getEl('.flyout')).toBeHidden();
+    await note.loadNote(NOTE_TITLE);
     
     // NOTE: Since the config generates unique data on creation, I can only verify
     // that User folder names are changing, not that they equal a static value.

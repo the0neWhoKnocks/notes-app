@@ -15,6 +15,10 @@ const SELECTOR__LOGIN_FORM = '.login-form';
 export class AppFixture extends BaseFixture {
   constructor({ browser, context, page, testCtx, testInfo }) {
     super({ browser, context, page, testCtx, testInfo });
+    
+    this.els = {
+      editBtn: () => this.getEl('.modify-nav button[title="Edit"]'),
+    };
   }
   
   async clearStorage() {
