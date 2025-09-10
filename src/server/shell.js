@@ -54,6 +54,7 @@ const faviconURLs = {
 const shell = ({
   body,
   head,
+  prismLangs,
   props,
   swEnvVars,
 } = {}) => {
@@ -297,6 +298,7 @@ const shell = ({
         window.app = {
           props: ${JSON.stringify(props || {})},
         };
+        window.prismLangs = ${JSON.stringify(prismLangs)};
         window.sw = {
           assetsToCache: ${
             JSON.stringify(

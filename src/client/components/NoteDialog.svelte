@@ -19,6 +19,7 @@
     updateCurrNote,
     userData,
   } from '../stores';
+  import AutoCompleteInput from './AutoCompleteInput.svelte';
   import Dialog from './Dialog.svelte';
   import GroupNoteNameInput from './GroupNoteNameInput.svelte';
   import Icon, {
@@ -46,6 +47,7 @@
   const TABLE_COLUMN_DEFAULT_COUNT = 2;
   const TABLE_COLUMN_MIN_COUNT = 1;
   let anchorDialogData = $state.raw();
+  let codeLangDialogData = $state.raw();
   let contentText = $state.raw('');
   let contentWrapperRef = $state();
   let editingNote = $state.raw(false);
@@ -57,6 +59,7 @@
   let previewRef = $state();
   let queryParams;
   let saveBtnDisabled = $state.raw(false);
+  let selectedTextRange;
   let tableDialogData = $state();
   let tags = $state.raw([]);
   let textareaRef = $state();
@@ -479,8 +482,9 @@
     return block;
   }
   
-  function wrapSelectionWithBlock(char) {
+  function wrapSelectionWithBlock(char, { topSuffix } = {}) {
     const block = blockCheck(char);
+    const tSuffix = topSuffix || '';
     let indexes;
     let leadingSpace = '';
     
@@ -514,15 +518,15 @@
       startPos = block.start + leadingSpace.length;
       preSelect = block;
       selection = selection
-        .replace(new RegExp(`^(\\s+)?${char}\\n`, 'm'), '')
+        .replace(new RegExp(`^(\\s+)?${char}${tSuffix}\\n`, 'm'), '')
         .replace(new RegExp(`\\n(\\s+)?${char}$`, 'm'), '');
     }
     else {
-      endPos = indexes.end + endChunk.length;
-      startPos = indexes.start + (leadingSpace.length * 2) + char.length + addedNewLines;
+      endPos = tSuffix.length + indexes.end + endChunk.length;
+      startPos = indexes.start + (leadingSpace.length * 2) + char.length + tSuffix.length + addedNewLines;
     }
     
-    updateEditorValue(`${wrapper}${selection}${endChunk}`, {
+    updateEditorValue(`${wrapper}${tSuffix}${selection}${endChunk}`, {
       preSelect,
       postSelect: { end: endPos, start: startPos },
     });
@@ -652,6 +656,15 @@
     }
   }
   
+  function captureSelectionRage() {
+    selectedTextRange = window.getSelection().getRangeAt(0);
+  }
+  
+  function applySelectionRange() {
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(selectedTextRange);
+  }
+  
   async function handleToolClick(ev) {
     const INDENT = '   '; // needs to be 3 for MD nested lists
     const { ctrlKey, key, target, type: keyType } = ev;
@@ -729,9 +742,11 @@
         });
         break;
       
-      case 'codeBlock':
-        wrapSelectionWithBlock('```');
+      case 'codeBlock': {
+        captureSelectionRage();
+        codeLangDialogData = true;
         break;
+      }
       
       case 'blockquote':
         toggleCharAtLineStart('> ');
@@ -808,6 +823,29 @@
         }
       }, 0);
     }
+  }
+  
+  function handleLangInputInit(ref) {
+    // using `then` because async effects are buggy
+    tick().then(() => { ref.focus(); });
+  }
+  
+  function closeCodeLangDialog() {
+    codeLangDialogData = undefined;
+  }
+  
+  function wrapCodeBlock(ev) {
+    ev.preventDefault();
+    
+    closeCodeLangDialog();
+    
+    const lang = (new FormData(ev.currentTarget)).get('codeLang');
+    
+    applySelectionRange();
+    
+    let opts;
+    if (lang) { opts = { topSuffix: lang }; }
+    wrapSelectionWithBlock('```', opts);
   }
   
   $effect(() => {
@@ -1056,6 +1094,22 @@
     {/snippet}
   </Dialog>
 {/if}
+{#if codeLangDialogData}
+  <Dialog for="codeLang" onCloseClick={closeCodeLangDialog}>
+    {#snippet s_dialogTitle()}Language{/snippet}
+    {#snippet s_dialogBody()}
+      <form class="code-lang-form" onsubmit={wrapCodeBlock}>
+        <AutoCompleteInput
+          name="codeLang"
+          options={window.prismLangs}
+          onInit={handleLangInputInit}
+          placeholder="None"
+        />
+        <button>Add</button>
+      </form>
+    {/snippet}
+  </Dialog>
+{/if}
 
 <style>
   :root {
@@ -1065,6 +1119,21 @@
   
   :global([dialog-for="anchor"] .dialog__body) {
     padding: 1em;
+  }
+  
+  :global([dialog-for="codeLang"]) {
+    & .dialog,
+    & .dialog__body {
+      overflow: unset;
+    }
+    
+    & .dialog {
+      top: 30%;
+    }
+    
+    & .dialog__body {
+      padding: 1em;
+    }
   }
   
   .note-form {
@@ -1077,6 +1146,7 @@
     padding: 1em;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
   
   .note-form button:disabled {

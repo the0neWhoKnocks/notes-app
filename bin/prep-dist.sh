@@ -91,6 +91,7 @@ if [ -d ./node_modules ]; then
   rsync -avh \
     --exclude 'prism-core.min.js' \
     ./node_modules/prismjs/components/prism-*.min.js \
+    ./node_modules/prismjs/components.json \
     ./dist/public/js/vendor/prism/langs
   rsync -avh \
     ./node_modules/prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js \

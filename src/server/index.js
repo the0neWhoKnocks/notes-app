@@ -51,6 +51,21 @@ const swEnvVars = JSON.stringify({
   appId: process.env.SW__APP_ID,
 });
 
+const { languages } = require(`${PATH__PUBLIC}/${CLIENT_LANGS_PATH}/components.json`);
+const prismLangs = new Set();
+for (let lang in languages) {
+  prismLangs.add(lang);
+  
+  let aliases = languages[lang].alias;
+  if (aliases) {
+    if (typeof aliases === 'string') { aliases = [aliases]; }
+    
+    for (let alias of aliases) {
+      prismLangs.add(alias);
+    }
+  }
+}
+
 function app(req, res) {
   const [url] = req.url.split('?');
   const handlers = app.reqHandlers.reduce((arr, { handlers, path, type }) => {
@@ -214,6 +229,7 @@ app
     res.end(shell({
       body,
       head,
+      prismLangs: [...prismLangs].sort(),
       props: {
         appTitle: APP__TITLE,
         configExists: !!req.appConfig,

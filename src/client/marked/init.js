@@ -1,9 +1,8 @@
 import tableOfContents from './extensions/tableOfContents';
 
-// NOTE: When adding in support for a new lang, look in the source lang file 
-// (prismjs/components/prism-<lang>.js) for:
-// - (regex) `Prism\.languages\.[\w]+=` to find any `langAliases`.
-// - `clone` and `extend`, to find any `langDeps`.
+// NOTE: When adding in support for a new lang, look in
+// `node_modules/prismjs/components.json` for `require`. It'll be a String or
+// an Array.
 const langAliases = {
   atom: 'markup',
   env: 'nix',
@@ -32,6 +31,11 @@ const langDeps = {
 };
 const loadedLangs = [];
 let langs = [];
+
+// Add my aliases in to the langs I've loaded from the Server.
+const pL = new Set(window.prismLangs);
+Object.keys(langAliases).forEach((a) => { pL.add(a); });
+window.prismLangs = [...pL].sort();
 
 function deDupeArray(arr) {
   return arr.reduce((_arr, item) => {
