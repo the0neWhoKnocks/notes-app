@@ -1,6 +1,32 @@
 # Changelog
 ---
 
+## v3.1.0
+
+<details>
+  <summary>Expand for v3.1.0 Details</summary>
+
+  **Bugfixes**
+  - [0f93279](/the0neWhoKnocks/notes-app/commit/0f93279): Renaming a note doesn't updates URL
+  - [c814afe](/the0neWhoKnocks/notes-app/commit/c814afe): Auto-complete for Tags broken
+  - [17213d9](/the0neWhoKnocks/notes-app/commit/17213d9): Extra note path added to URL after editing
+  - [1c9735b](/the0neWhoKnocks/notes-app/commit/1c9735b): DiffDialog displays number when modifying tags
+  - [6ef2009](/the0neWhoKnocks/notes-app/commit/6ef2009): Theme not applied after accepting change from DiffDialog
+  - [201df6d](/the0neWhoKnocks/notes-app/commit/201df6d): Worker not kicking in when Server is down
+
+  **Dev-Ops**
+  - [ccb8379](/the0neWhoKnocks/notes-app/commit/ccb8379): tests
+  - [26e5036](/the0neWhoKnocks/notes-app/commit/26e5036): Watch all JS types in utils
+
+  **Features**
+  - [26500be](/the0neWhoKnocks/notes-app/commit/26500be): Update theme immediately
+  - [437eadd](/the0neWhoKnocks/notes-app/commit/437eadd): Add language selector for code blocks
+  - [dcb4266](/the0neWhoKnocks/notes-app/commit/dcb4266): Highlight 'env' code blocks
+  - [c66c72f](/the0neWhoKnocks/notes-app/commit/c66c72f): Clarify diffs
+</details>
+
+---
+
 ## v3.0.0
 
 <details>
