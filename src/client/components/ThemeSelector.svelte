@@ -1,6 +1,5 @@
 <script>
   import {
-    loadThemeCSS,
     themeSelectorOpen,
     userPreferences,
   } from '../stores';
@@ -22,10 +21,6 @@
       userPreferences.setPreference('theme', value);
     }
   }
-  
-  $effect(() => {
-    loadThemeCSS($userPreferences.theme);
-  });
 </script>
 
 <DropDown bind:open={$themeSelectorOpen}>

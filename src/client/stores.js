@@ -1,9 +1,9 @@
-import { tick } from 'svelte';
 import { get as getStoreValue, writable } from 'svelte/store';
 import {
   BASE_DATA_NODE,
   DATA_ACTION__EDIT,
   DATA_ACTION__MOVE,
+  DATA_KEY__PREFS,
   DATA_TYPE__GROUP,
   DATA_TYPE__PREFS,
   DATA_TYPE__RECENT,
@@ -58,6 +58,17 @@ export async function setUserData(payload) {
   
   if (payload instanceof HTMLElement) { payload = serializeForm(payload); }
   
+  // When a User is changing the theme, update it immediately.
+  let prefsUpdated = false;
+  if (payload[DATA_KEY__PREFS]?.theme !== undefined) {
+    userPreferences.set({
+      ...getStoreValue(userPreferences),
+      ...payload[DATA_KEY__PREFS],
+    });
+    await loadThemeCSS(payload[DATA_KEY__PREFS].theme);
+    prefsUpdated = true;
+  }
+  
   const newData = await postData(ROUTE__API__USER__DATA__SET, payload);
   const {
     allTags: tags,
@@ -84,11 +95,14 @@ export async function setUserData(payload) {
     }
   }
   
+  // This usually kicks in after applying a diff.
   if (
-    preferences
+    !prefsUpdated
+    && preferences
     && JSON.stringify(preferences) !== oldPrefs
   ) {
     userPreferences.set(preferences);
+    await loadThemeCSS(preferences.theme);
   }
   
   if (
@@ -457,7 +471,6 @@ export async function syncOfflineData(creds) {
       noteGroups.set(notesData);
       recentlyViewed.set(recent);
       userPreferences.set(preferences);
-      await tick(); // ensure components have rendered changes
       await loadThemeCSS(preferences.theme);
     }
     catch ({ message, stack }) {
