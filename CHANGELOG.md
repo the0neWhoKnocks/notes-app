@@ -1,6 +1,19 @@
 # Changelog
 ---
 
+## v3.2.0
+
+<details>
+  <summary>Expand for v3.2.0 Details</summary>
+
+  **Features**
+  - [d24d0f0](/the0neWhoKnocks/notes-app/commit/d24d0f0): Offload long SW processes and get Server data to User quicker
+  - [a53c2ae](/the0neWhoKnocks/notes-app/commit/a53c2ae): Serve static assets from SW cache first
+  - [fe6cb06](/the0neWhoKnocks/notes-app/commit/fe6cb06): Error message component instead of alert
+</details>
+
+---
+
 ## v3.1.1
 
 <details>
