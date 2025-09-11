@@ -281,6 +281,11 @@ async function saveUserData({ config, offline, password, types, username } = {})
   return (result.length === 1) ? result[0] : result;
 }
 
+// There are process intensive actions that could slow a non-cached response from
+// being served to the User. So dump them in here to do there thing in the background
+// and let the new Server data get to the User.
+function offloadToBackground(fn) { fn(); }
+
 self.addEventListener('install', () => {
   channel.msgs.postMessage({ status: 'installing' });
 });
@@ -384,7 +389,7 @@ self.addEventListener('fetch', async (ev) => {
           if (data.status < 400) {
             if (reqURL.endsWith(ROUTE__API__USER__LOGIN)) {
               const creds = await data.json();
-              await setUserInfo(creds);
+              offloadToBackground(() => { setUserInfo(creds); });
             }
             else if (
               reqURL.endsWith(ROUTE__API__USER__DATA__GET)
@@ -404,9 +409,11 @@ self.addEventListener('fetch', async (ev) => {
                     log.info('Offline changes exist, skipping save of User data');
                   }
                   else {
-                    const types = await formatDataTypes(userData, type, { config: cryptData, encrypt, password });
-                    await saveUserData({ config: cryptData, offline, password, types, username });
-                    log.info('Cached User data');
+                    offloadToBackground(async () => {
+                      const types = await formatDataTypes(userData, type, { config: cryptData, encrypt, password });
+                      await saveUserData({ config: cryptData, offline, password, types, username });
+                      log.info('Cached User data');
+                    });
                   }
                 }
                 else {
