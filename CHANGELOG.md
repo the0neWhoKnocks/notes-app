@@ -1,6 +1,21 @@
 # Changelog
 ---
 
+## v3.2.1
+
+<details>
+  <summary>Expand for v3.2.1 Details</summary>
+
+  **Bugfixes**
+  - [542fd96](/the0neWhoKnocks/notes-app/commit/542fd96): Error when editing note with hyphens in title
+
+  **Dev-Ops**
+  - [9dcb4c6](/the0neWhoKnocks/notes-app/commit/9dcb4c6): Remove useless timeout
+  - [b8a6bdd](/the0neWhoKnocks/notes-app/commit/b8a6bdd): Shell fails when asset items have an 'undefined' item
+</details>
+
+---
+
 ## v3.2.0
 
 <details>
