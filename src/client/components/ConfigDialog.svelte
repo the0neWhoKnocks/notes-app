@@ -2,6 +2,7 @@
   import {
     ROUTE__API__CONFIG__CREATE,
   } from '../../constants';
+  import { errorMessage } from '../stores';
   import postData from '../utils/postData';
   import Dialog from './Dialog.svelte';
   import HRWithText from './HRWithText.svelte';
@@ -14,7 +15,7 @@
     
     postData(formRef.action, formRef)
       .then(() => { window.location.reload(); })
-      .catch((err) => { alert(err); });
+      .catch((err) => { errorMessage.set(err); });
   }
 </script>
 

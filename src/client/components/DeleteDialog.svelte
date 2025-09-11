@@ -8,6 +8,7 @@
   import {
     deleteNoteData,
     dialogDataForDelete,
+    errorMessage,
     userData,
   } from '../stores';
   import Dialog from './Dialog.svelte';
@@ -31,7 +32,7 @@
       closeDialog();
     }
     catch (err) {
-      alert(err.message);
+      errorMessage.set(err);
       if (err.stack) throw (err);
     }
   }

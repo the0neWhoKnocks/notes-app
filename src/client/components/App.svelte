@@ -6,6 +6,7 @@
   import {
     checkLoggedInState,
     clearOfflineChanges,
+    errorMessage,
     initialUserDataLoaded,
     loadNote,
     loadTaggedNotes,
@@ -20,6 +21,7 @@
   import getParams from '../utils/getParams';
   import DeleteDialog from './DeleteDialog.svelte';
   import DiffDialog from './DiffDialog.svelte';
+  import ErrorMessage from './ErrorMessage.svelte';
   import FullNote from './FullNote.svelte';
   import GroupDialog from './GroupDialog.svelte';
   import ImportButton from './ImportButton.svelte';
@@ -61,7 +63,7 @@
       
       initialUserDataLoaded.set(true);
     }
-    catch ({ message }) { alert(message); }
+    catch ({ message }) { errorMessage.set(message); }
   }
   
   async function discardOfflineChanges() {
@@ -212,6 +214,7 @@
 <LoginDialog />
 <SearchFlyout />
 <UserProfileDialog />
+<ErrorMessage />
 
 <style>
   :global(body) {
@@ -374,7 +377,7 @@
     background: var(--color--app--bg);
   }
   :global(button:not(:disabled):hover),
-  :global(button:not(:disabled):focus) {
+  :global(button:not(:disabled):focus-visible) {
     outline: solid 1px var(--color--app--fg);
     outline-offset: -6px;
   }

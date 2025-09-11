@@ -1,5 +1,6 @@
 <script>
   import { onDestroy, onMount, tick } from 'svelte';
+  import { errorMessage } from '../stores';
   import Icon, {
     ICON__ARROW_DOWN,
     ICON__ARROW_UP,
@@ -158,7 +159,9 @@
         inputRef.focus();
         window.addEventListener('keyup', handleKeyUp);
       }
-      else alert(`No element found for selector "${selector}"`);
+      else {
+        errorMessage.set(`No element found for selector "${selector}"`);
+      }
     }
     else if (ev.animationName.endsWith('hide')) {
       if (styleRef) styleRef.remove();
@@ -276,7 +279,7 @@
   .find-nav :is(:global(button, input)) {
     border: none;
   }
-  .find-nav :is(:global(button, input)):where(:global(:focus, :hover)) {
+  .find-nav :is(:global(button, input)):where(:global(:focus-visible, :hover)) {
     border: none;
     outline: none;
     background-color: #eee;

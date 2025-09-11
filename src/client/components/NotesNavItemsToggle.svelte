@@ -40,7 +40,7 @@
     align-items: center;
     position: relative;
   }
-  .notes-nav-items-toggle__btn:focus,
+  .notes-nav-items-toggle__btn:focus-visible,
   .notes-nav-items-toggle__btn:hover {
     outline: none;
   }

@@ -14,6 +14,7 @@
     deleteItem,
     dialogDataForNote,
     editItem,
+    errorMessage,
     noteGroups,
     setUserData,
     updateCurrNote,
@@ -324,7 +325,7 @@
       closeDialog();
     }
     catch (err) {
-      alert(err.message);
+      errorMessage.set(err);
       if (err.stack) throw (err);
     }
   }
@@ -1184,7 +1185,7 @@
   .note-form__toolbar button:disabled {
     opacity: 0.25;
   }
-  .note-form__toolbar button:not(:disabled):focus,
+  .note-form__toolbar button:not(:disabled):focus-visible,
   .note-form__toolbar button:not(:disabled):hover {
     outline-color: currentColor;
   }
@@ -1215,7 +1216,7 @@
   .note-form__content.has--hidden-caret {
     caret-color: transparent;
   }
-  .note-form__content:focus {
+  .note-form__content:focus-visible {
     outline: none;
   }
   .note-form:not(.wrap) .note-form__content {

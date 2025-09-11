@@ -5,13 +5,14 @@
   } from '../../constants';
   import postData from '../utils/postData';
   import {
+    errorMessage,
     login,
     loggedInStateChecked,
     offline,
     userData,
     userIsLoggedIn,
     userStorageType,
-  } from '../stores.js';
+  } from '../stores';
   import Dialog from './Dialog.svelte';
   import HRWithText from './HRWithText.svelte';
   import LabeledInput from './LabeledInput.svelte';
@@ -35,7 +36,7 @@
           persistent: rememberCredentials,
         });
       })
-      .catch(({ message }) => { alert(message); });
+      .catch(({ message }) => { errorMessage.set(message); });
   }
   
   function closeCreateAccount() {

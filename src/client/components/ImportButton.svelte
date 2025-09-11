@@ -4,10 +4,11 @@
     DATA_TYPE__ALL,
   } from '../../constants';
   import {
+    errorMessage,
     setUserData,
     userData,
     userNavOpen,
-  } from '../stores.js';
+  } from '../stores';
   import pickJSONFile from '../utils/pickJSONFile';
   import Icon, { ICON__UPLOAD } from './Icon.svelte';
 
@@ -27,7 +28,7 @@
         });
       }
     }
-    catch ({ message }) { alert(message); }
+    catch ({ message }) { errorMessage.set(message); }
   }
 </script>
 

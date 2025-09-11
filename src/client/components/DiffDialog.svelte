@@ -6,6 +6,7 @@
   } from '../../constants';
   import {
     dialogDataForDiff,
+    errorMessage,
     setUserData,
     userData,
   } from '../stores';
@@ -60,7 +61,7 @@
       closeDialog();
     }
     catch (err) {
-      alert(err.message);
+      errorMessage.set(err);
       if (err.stack) throw (err);
     }
   }
@@ -197,7 +198,7 @@
     background-color: var(--diff--ui--bg-color);
   }
   .diff-form__btm-nav button:not(:disabled):hover,
-  .diff-form__btm-nav button:not(:disabled):focus {
+  .diff-form__btm-nav button:not(:disabled):focus-visible {
     outline-color: var(--diff--ui--fg-color);
   }
 </style>

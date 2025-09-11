@@ -87,7 +87,7 @@
       background: #fff;
     }
     
-    & :where(:global(button, input)):focus {
+    & :where(:global(button, input)):focus-visible {
       outline: solid 1px hsl(0deg 0% 0% / 50%);
       outline-offset: -5px;
     }

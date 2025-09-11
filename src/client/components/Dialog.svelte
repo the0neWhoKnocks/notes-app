@@ -9,6 +9,7 @@
     animDuration = 300,
     bodyColor = '#eee',
     borderColor = '#000',
+    focusClose = false,
     for: dialogFor = undefined,
     modal = false,
     onCloseClick = undefined,
@@ -21,8 +22,10 @@
     titleTextColor = '#eee',
   } = $props();
   
+  let closeBtnRef = $state();
   dialogNum += 1;
   let dNum = dialogNum;
+  let prevActive;
   
   const cssVars = `
     --dialog-anim-duration: ${animDuration}ms;
@@ -57,22 +60,28 @@
   });
   
   function handleCloseEnd() {
-    if (onCloseEnd) onCloseEnd();
+    if (onCloseEnd) { onCloseEnd(); }
     dialogNum -= 1;
   }
   
   function handleOpenEnd() {
-    if (onOpenEnd) onOpenEnd();
+    if (focusClose) {
+      prevActive = document.activeElement;
+      closeBtnRef?.focus();
+    }
+    
+    if (onOpenEnd) { onOpenEnd(); }
   }
   
   function handleCloseClick() {
-    if (!modal && onCloseClick) onCloseClick();
+    prevActive?.focus();
+    if (!modal && onCloseClick) { onCloseClick(); }
   }
   
   function handleKeyDown({ key }) {
     switch (key) {
       case 'Escape': {
-        if (dNum === dialogNum) handleCloseClick();
+        if (dNum === dialogNum) { handleCloseClick(); }
         break;
       }
     }
@@ -113,6 +122,7 @@
               type="button"
               class="dialog__close-btn"
               onclick={handleCloseClick}
+              bind:this={closeBtnRef}
             >&#10005;</button>
           {/if}
         </nav>
@@ -194,9 +204,16 @@
     color: var(--dialog-title-text-color);
     border: none;
     background: var(--dialog-title-bg-color);
-  }
-  .is--modal .dialog__close-btn {
-    display: none;
+    
+    .is--modal & {
+      display: none;
+    }
+    
+    &:not(:disabled):hover,
+    &:not(:disabled):focus-visible {
+      outline: solid 1px var(--dialog-title-text-color);
+      outline-offset: -6px;
+    }
   }
   
   .dialog-mask {

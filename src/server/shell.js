@@ -276,7 +276,7 @@ const shell = ({
           background: transparent;
           opacity: 0.5;
         }
-        :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar > .toolbar-item > button:is(:focus, :hover) {
+        :is(.full-note, .note-form__content-preview) .code-toolbar > .toolbar > .toolbar-item > button:is(:focus-visible, :hover) {
           opacity: 1;
         }
         :is(.full-note, .note-form__content-preview) .code-toolbar > .line-numbers-rows {

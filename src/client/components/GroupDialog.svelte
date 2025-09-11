@@ -5,6 +5,7 @@
   } from '../../constants';
   import {
     dialogDataForGroup,
+    errorMessage,
     setUserData,
     userData,
   } from '../stores';
@@ -37,7 +38,7 @@
       closeDialog();
     }
     catch (err) {
-      alert(err.message);
+      errorMessage.set(err);
       if (err.stack) throw (err);
     }
   }

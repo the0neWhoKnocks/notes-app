@@ -34,6 +34,7 @@ export const dialogDataForDiff = writable();
 export const dialogDataForGroup = writable();
 export const dialogDataForMove = writable();
 export const dialogDataForNote = writable();
+export const errorMessage = writable();
 export const initialUserDataLoaded = writable(false);
 export const loadingTaggedNotes = writable(false);
 export const loggedInStateChecked = writable(false);
@@ -229,7 +230,9 @@ export const userPreferences = (function createPrefsStore() {
           type: DATA_TYPE__PREFS,
         });
       }
-      catch ({ message }) { alert(`Error saving preference for "${prop}"\n${message}`); }
+      catch ({ message }) {
+        errorMessage.set(`Error saving preference for "${prop}"\n${message}`);
+      }
     },
     subscribe,
     update,
@@ -473,10 +476,7 @@ export async function syncOfflineData(creds) {
       userPreferences.set(preferences);
       await loadThemeCSS(preferences.theme);
     }
-    catch ({ message, stack }) {
-      log.error(stack);
-      alert(stack);
-    }
+    catch ({ stack }) { errorMessage.set(stack); }
   }
 }
 
@@ -650,9 +650,7 @@ export async function updateItemPath(payload) {
     
     dialogDataForMove.set();
   }
-  catch ({ message }) {
-    alert(`Error during move:\n${message}`);
-  }
+  catch ({ message }) { errorMessage.set(`Error during move:\n${message}`); }
 }
 
 export async function deleteNoteData(data) {

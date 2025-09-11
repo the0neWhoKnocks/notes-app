@@ -42,9 +42,9 @@ module.exports = function userLogin(req, res) {
             err.message.includes('bad decrypt')
             || err.message.includes('unable to authenticate data')
           ) {
-            const msg = `Credentials were invalid for Username: "${username}" | Password: "${password}"`;
+            let msg = 'Credentials were invalid';
             log.error(msg);
-            return res.error(500, msg);
+            return res.error(500, `${msg}\n  Username: "${username}"\n  Password: "${password}"`, { masked: true });
           }
           
           const msg = `The Server encountered a problem while trying to log you in:\n${err.stack}`;

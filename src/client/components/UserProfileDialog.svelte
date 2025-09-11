@@ -5,6 +5,7 @@
     ROUTE__API__USER__PROFILE__SET,
   } from '../../constants';
   import {
+    errorMessage,
     logout,
     profileUpdated,
     userData,
@@ -25,12 +26,14 @@
   let password = $state.raw('');
   let username = $state.raw('');
 
-  function handleSubmit(ev) {
+  async function handleSubmit(ev) {
     ev.preventDefault();
     
-    postData(formRef.action, formRef)
-      .then((data) => { profileUpdated(data); })
-      .catch(({ message }) => { alert(message); });
+    try {
+      const data = await postData(formRef.action, formRef);
+      profileUpdated(data);
+    }
+    catch ({ message }) { errorMessage.set(message); }
   }
   
   function handleCloseClick() {

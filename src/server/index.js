@@ -128,12 +128,14 @@ app
     if (!res.error) {
       res.error = (...err) => {
         let error;
+        let masked = false;
         let statusCode;
         
         if (typeof err[0] === 'number') {
-          const [c, e] = err;
+          const [ c, e, opts ] = err;
           error = e;
           statusCode = c;
+          if (opts?.masked) { masked = true; }
         }
         else if (err[0] instanceof Error) {
           const { message: e, statusCode: c } = err[0];
@@ -141,7 +143,7 @@ app
           statusCode = c;
         }
         
-        log.error(`[${statusCode}] | ${error}`);
+        if (!masked) { log.error(`[${statusCode}] | ${error}`); }
         // NOTE - utilizing `message` so that if an Error is thrown on the Client
         // within a `then`, there's no extra logic to get error data within the
         // `catch`.

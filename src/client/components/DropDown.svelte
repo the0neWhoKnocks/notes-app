@@ -64,7 +64,7 @@
     align-items: center;
     justify-content: space-between;
   }
-  .drop-down__toggle:focus,
+  .drop-down__toggle:focus-visible,
   .drop-down__toggle:hover {
     outline-offset: 0;
   }

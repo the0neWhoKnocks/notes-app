@@ -5,7 +5,12 @@ import {
   DATA_TYPE__GROUP,
   PATH__DATA,
 } from '@src/constants'; // eslint-disable-line n/no-missing-import
-import BaseFixture, { createTest, expect } from './BaseFixture';
+import BaseFixture, {
+  createTest,
+  expect as baseExpect,
+  wrapBad,
+  wrapGood,
+} from './BaseFixture';
 
 export const CREDS__PASS = 'pass';
 export const CREDS__USER = 'user';
@@ -26,6 +31,10 @@ export class AppFixture extends BaseFixture {
       window.localStorage.clear();
       window.sessionStorage.clear();
     });
+  }
+  
+  async closeError() {
+    await this.getEl('.dialog:has(.error-message) .dialog__close-btn').click();
   }
   
   async createConfig() {
@@ -246,4 +255,16 @@ export class AppFixture extends BaseFixture {
 }
 
 export const test = createTest({ FxClass: AppFixture, fxKey: 'app' });
-export { expect };
+export const expect = baseExpect.extend({
+  async toHaveError(page, expectedMsg) {
+    const msg = await page.locator('.error-message').textContent();
+    const pass = (expectedMsg instanceof RegExp)
+      ? expectedMsg.test(msg)
+      : expectedMsg.includes(msg);
+    
+    return {
+      message: () => `Expected error message to ${this.isNot ? 'not ' : ''}contain "${wrapGood(expectedMsg)}", but it had "${wrapBad(msg)}"`,
+      pass,
+    };
+  },
+});

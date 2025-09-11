@@ -41,17 +41,14 @@ test.describe('Init', () => {
     
     await app.createUser({ user: CREDS__USER, pass: CREDS__PASS });
     // going from create to login will persist what was entered, the doubling is expected
-    await expect(app.page).toHaveAlertMsg(
-      async () => {
-        await app.logIn({
-          user: CREDS__USER,
-          pass: CREDS__PASS,
-          screenshot: '[login_user] incorrect creds filled out',
-          willFail: true,
-        });
-      },
-      `An account for "${CREDS__USER}${CREDS__USER}" doesn't exist.`
-    );
+    await app.logIn({
+      user: CREDS__USER,
+      pass: CREDS__PASS,
+      screenshot: '[login_user] incorrect creds filled out',
+      willFail: true,
+    });
+    await expect(app.page).toHaveError(`An account for "${CREDS__USER}${CREDS__USER}" doesn't exist.`);
+    await app.closeError();
     
     await app.logIn({
       user: CREDS__USER,
