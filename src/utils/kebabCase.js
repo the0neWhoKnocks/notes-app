@@ -6,6 +6,6 @@ module.exports = function kebabCase(str) {
     .toLocaleLowerCase()
     // kill any non alpha-numeric chars (but leave spaces and hyphens)
     .replace(/[^a-zA-Z0-9- ]/g, '')
-    // capitalize any words with a leading space (and replace the space with a hyphen)
-    .replace(/\s+(\w)?/gi, (m, l) => `-${l.toLowerCase()}`);
+    // lowercase any words with a leading space (and replace the space with a hyphen)
+    .replace(/\s+(\w)?/gi, (m, l) => `-${l?.toLowerCase() || ''}`);
 };
