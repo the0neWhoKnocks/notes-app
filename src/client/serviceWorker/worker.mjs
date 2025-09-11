@@ -437,7 +437,11 @@ self.addEventListener('fetch', async (ev) => {
       const offlineCb = async () => {
         offline = true;
         
-        const cachedResp = await caches.match(request);
+        // Since I depend on query params when viewing a Note, if the site goes
+        // offline the request for `/` would fail because `/?note=<name>` would
+        // not be cached. Luckily, all static assets and the root page aren't
+        // dependant on query params so they can be ignored during the cache check.
+        const cachedResp = await caches.match(request, { ignoreSearch: true });
         
         if (cachedResp) {
           log.debug(`From Cache: "${reqURL}"`);
