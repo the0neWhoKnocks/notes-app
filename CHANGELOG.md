@@ -1,6 +1,17 @@
 # Changelog
 ---
 
+## v3.1.1
+
+<details>
+  <summary>Expand for v3.1.1 Details</summary>
+
+  **Bugfixes**
+  - [ef8d19e](/the0neWhoKnocks/notes-app/commit/ef8d19e): When offline, the SW fails to load content when viewing note
+</details>
+
+---
+
 ## v3.1.0
 
 <details>
