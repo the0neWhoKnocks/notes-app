@@ -4,7 +4,7 @@ const {
 } = require('../constants');
 
 const buildNodes = (arr, template) => {
-  return arr.map(asset => {
+  return arr.filter(a => !!a).map(asset => {
     let url = asset;
     let attrs = '';
     
