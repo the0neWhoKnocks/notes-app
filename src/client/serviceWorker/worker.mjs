@@ -434,9 +434,10 @@ self.addEventListener('fetch', async (ev) => {
       }
     }
     else {
-      const offlineCb = async () => {
-        offline = true;
-        
+      // Static resources can be served from cache first. Since the Worker will
+      // get re-installed with every new App release due to version change,
+      // there's no worry that old assets will be served.
+      const getResp = async () => {
         // Since I depend on query params when viewing a Note, if the site goes
         // offline the request for `/` would fail because `/?note=<name>` would
         // not be cached. Luckily, all static assets and the root page aren't
@@ -447,14 +448,22 @@ self.addEventListener('fetch', async (ev) => {
           log.debug(`From Cache: "${reqURL}"`);
           return cachedResp;
         }
-        else if (isIgnoredOffline(reqURL, offline)) {
-          log.debug(`Mock Response: "${reqURL}"`);
-          return new Response('', { status: 200 });
+        else {
+          log.debug(`Fetching: "${reqURL}"`);
+          return _fetch(request, offline, ev, {
+            offlineCb: async () => {
+              offline = true;
+              
+              if (isIgnoredOffline(reqURL, offline)) {
+                log.debug(`Mock Response: "${reqURL}"`);
+                return new Response('', { status: 200 });
+              }
+            },
+          });
         }
       };
       
-      log.debug(`Fetching: "${reqURL}"`);
-      ev.respondWith(_fetch(request, offline, ev, { offlineCb }));
+      ev.respondWith(getResp());
     }
   }
   catch (err) {
